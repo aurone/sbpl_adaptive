@@ -1414,7 +1414,6 @@ bool URDFCollisionModel::computeGroupIK(
 
     if (!robot_state_->setFromIK(joint_model_group, ee_pose_map, n_attempts,
             time_s, moveit::core::GroupStateValidityCallbackFn(), options)) {
-        ROS_ERROR("Failed to set state from IK");
         return false;
     }
 #endif
