@@ -1,0 +1,10 @@
+<launch>
+
+  <node pkg="tf" type="static_transform_publisher" name="fake_map_broadcaster" args="0 0 0 0 0 0 1 /map /world 1000" />
+
+  <node pkg="sbpl_adaptive_collision_checking" type="sbpl_adaptive_collision_checking_test" name="sbpl_adaptive_collision_checking_test" output="screen" respawn="false" launch-prefix="gdb -ex run --args">
+
+  </node>
+
+</launch>
+

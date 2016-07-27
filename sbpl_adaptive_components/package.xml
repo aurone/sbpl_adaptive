@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package>
+  <name>sbpl_adaptive_components</name>
+  <version>0.0.0</version>
+  <description>SBPL common components for planning with adaptive dimensionality</description>
+
+  <author email="kgochev@seas.upenn.edu">Kalin Gochev</author>
+  <maintainer email="andrew.dornbush@gmail.com">Andrew Dornbush</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>sbpl_adaptive</build_depend>
+  <build_depend>sbpl_adaptive_collision_checking</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>sbpl_adaptive</run_depend>
+  <run_depend>sbpl_adaptive_collision_checking</run_depend>
+
+</package>

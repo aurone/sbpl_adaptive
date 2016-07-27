@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+  <name>sbpl_adaptive</name>
+  <version>0.0.0</version>
+  <description>SBPL extension for planning with adaptive dimensionality</description>
+
+  <author email="kgochev@seas.upenn.edu">Kalin Gochev</author>
+  <maintainer email="andrew.dornbush@gmail.com">Andrew Dornbush</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+
+  <run_depend>roscpp</run_depend>
+
+</package>

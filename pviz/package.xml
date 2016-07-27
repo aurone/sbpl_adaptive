@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package>
+  <name>pviz</name>
+  <version>0.0.0</version>
+  <description>SBPL extension for planning with adaptive dimensionality</description>
+
+  <author email="kgochev@seas.upenn.edu">Kalin Gochev</author>
+  <maintainer email="andrew.dornbush@gmail.com">Andrew Dornbush</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>cmake_modules</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>ikfast_pr2</build_depend>
+  <build_depend>kdl_parser</build_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>trajectory_msgs</build_depend>
+  <build_depend>visualization_msgs</build_depend>
+
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>ikfast_pr2</run_depend>
+  <run_depend>kdl_parser</run_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>trajectory_msgs</run_depend>
+  <run_depend>visualization_msgs</run_depend>
+
+</package>

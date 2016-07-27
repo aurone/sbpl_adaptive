@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<package>
+  <name>sbpl_adaptive_collision_checking</name>
+  <version>0.0.0</version>
+  <description>SBPL collision checking</description>
+
+  <author email="kgochev@seas.upenn.edu">Kalin Gochev</author>
+  <maintainer email="andrew.dornbush@gmail.com">Andrew Dornbush</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>moveit_core</build_depend>
+  <build_depend>moveit_msgs</build_depend>
+  <build_depend>moveit_ros_planning</build_depend>
+  <build_depend>octomap_msgs</build_depend>
+  <build_depend>sbpl_geometry_utils</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>tf_conversions</build_depend>
+  
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>moveit_core</run_depend>
+  <run_depend>moveit_msgs</run_depend>
+  <run_depend>moveit_ros_planning</run_depend>
+  <run_depend>octomap_msgs</run_depend>
+  <run_depend>sbpl_geometry_utils</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>tf_conversions</run_depend>
+</package>
