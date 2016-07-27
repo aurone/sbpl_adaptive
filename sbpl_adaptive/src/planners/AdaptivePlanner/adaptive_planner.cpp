@@ -13,7 +13,7 @@ AdaptivePlanner::AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, 
 	logstream_ = stdout;
 	SBPL_INFO("Creating adaptive planner...");
 	bforwardsearch = bSearchForward;
-	adaptive_environment_.reset(environment);
+	adaptive_environment_ = environment;
 
 	StartStateID = environment->StartStateID;
 	GoalStateID = environment->GoalStateID;
@@ -40,9 +40,9 @@ AdaptivePlanner::AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, 
 
 	SBPL_INFO("Initializing planners...");
 
-	planner.reset(new ARAPlanner(adaptive_environment_.get(), bSearchForward));
+	planner.reset(new ARAPlanner(adaptive_environment_, bSearchForward));
 	planner->set_search_mode(false);
-	tracker.reset(new ARAPlanner_AD(adaptive_environment_.get(), bSearchForward));
+	tracker.reset(new ARAPlanner_AD(adaptive_environment_, bSearchForward));
 	tracker->set_search_mode(false);
 	SBPL_INFO("done!");
 }
@@ -112,11 +112,11 @@ int AdaptivePlanner::replan(double allocated_time_secs, double allocated_time_pe
 	std::vector<int> ModifiedStates;
 	std::vector<int> TrkModifiedStates;
 	repair_time = 0.0;
-	
+
 	SBPL_INFO("Forcing planning from scratch for planner and tracker...");
 	planner->force_planning_from_scratch();
 	tracker->force_planning_from_scratch();
-	
+
 	std::vector<int> LastTrackPath;
 	bool LastTrackSuccess = false;
 	double t_elapsed_s;

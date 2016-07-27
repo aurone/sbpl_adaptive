@@ -16,15 +16,15 @@
 		#define LOG_INFO(a,...) fprintf(logstream_, "[INFO] " a "\n", ##__VA_ARGS__); fflush(logstream_)
 		#define LOG_WARN(a,...) fprintf(logstream_, "[WARN] " a "\n", ##__VA_ARGS__); fflush(logstream_)
 		#define LOG_ERROR(a,...) fprintf(logstream_, "[ERROR] " a "\n", ##__VA_ARGS__); fflush(logstream_)
-	#else 
+	#else
 		#define INIT_LOG logstream_ = stdout
 		#define LOG_INFO(a,...) SBPL_INFO("[ADP] " a , ##__VA_ARGS__)
 		#define LOG_WARN(a,...) SBPL_WARN("[ADP] " a , ##__VA_ARGS__)
 		#define LOG_ERROR(a,...) SBPL_ERROR("[ADP] " a , ##__VA_ARGS__)
-	#endif 
+	#endif
 #else
 	#define INIT_LOG logstream_ = stdout
-	#define LOG_INFO(...) 
+	#define LOG_INFO(...)
 	#define LOG_WARN(a,...) SBPL_WARN("[ADP] " a, ##__VA_ARGS__)
 	#define LOG_ERROR(a,...) SBPL_ERROR("[ADP] " a, ##__VA_ARGS__)
 #endif*/
@@ -135,7 +135,8 @@ public:
 	double track_time_total_s;
 	double plan_time_total_s;
 protected:
-	std::shared_ptr<AdaptiveDiscreteSpaceInformation> adaptive_environment_;
+    AdaptiveDiscreteSpaceInformation* adaptive_environment_;
+//	std::shared_ptr<AdaptiveDiscreteSpaceInformation> adaptive_environment_;
 private:
 
 	std::unique_ptr<SBPLPlanner> planner;
