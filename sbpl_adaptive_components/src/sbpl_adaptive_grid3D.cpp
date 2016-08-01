@@ -403,7 +403,7 @@ visualization_msgs::Marker AdaptiveGrid3D_t::getCostToGoalGridVisualization(std:
                     p.z = wz;
                     std_msgs::ColorRGBA col;
                     double r, g, b;
-                    HSVtoRGB(&r, &g, &b, hue, 1.0, 1.0);
+                    leatherman::HSVtoRGB(&r, &g, &b, hue, 1.0, 1.0);
                     col.r = r;
                     col.g = g;
                     col.b = b;

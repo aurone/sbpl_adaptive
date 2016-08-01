@@ -4,9 +4,7 @@ project(sbpl_adaptive)
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
-find_package(catkin REQUIRED COMPONENTS
-    roscpp
-)
+find_package(catkin REQUIRED COMPONENTS roscpp)
 
 find_package(PkgConfig REQUIRED)
 #find_package(sbpl REQUIRED)

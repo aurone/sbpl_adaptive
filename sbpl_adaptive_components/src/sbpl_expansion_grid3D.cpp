@@ -7,6 +7,8 @@
 
 #include <sbpl_adaptive_components/sbpl_expansion_grid3D.h>
 
+#include <Eigen/Dense>
+
 namespace sbpl_adaptive_components {
 
 ExpansionGrid3D::ExpansionGrid3D(sbpl_adaptive_collision_checking::SBPLCollisionSpace* cspace) {
@@ -105,4 +107,4 @@ visualization_msgs::MarkerArray ExpansionGrid3D::getVoxelVisualization(const sbp
 	return markers;
 }
 
-}
+} // namespace sbpl_adaptive_components
