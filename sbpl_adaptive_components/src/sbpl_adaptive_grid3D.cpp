@@ -4,7 +4,10 @@
  *  Created on: Nov 4, 2014
  *      Author: Kalin Gochev
  */
+
 #include <sbpl_adaptive_components/sbpl_adaptive_grid3D.h>
+
+#include <sbpl_adaptive_components/common.h>
 
 namespace sbpl_adaptive_components {
 
@@ -418,4 +421,4 @@ visualization_msgs::Marker AdaptiveGrid3D_t::getCostToGoalGridVisualization(std:
 	return marker;
 }
 
-} //namespace
+} // namespace sbpl_adaptive_components
