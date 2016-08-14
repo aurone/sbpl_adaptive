@@ -431,7 +431,7 @@ MHASearchState* MHAPlanner_AD::get_state(int state_id)
     
     int* idxs = environment_->StateID2IndexMapping[state_id];
     
-    if (idxs[MHAMDP_STATEID2IND] == -1 || m_search_states.size() == 0) {
+    if (idxs[MHAMDP_STATEID2IND] == -1) {
         // overallocate search state for appropriate heuristic information
         const size_t state_size =
                 sizeof(MHASearchState) +
