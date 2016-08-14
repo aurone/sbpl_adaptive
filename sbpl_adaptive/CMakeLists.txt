@@ -4,7 +4,9 @@ project(sbpl_adaptive)
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
-find_package(catkin REQUIRED COMPONENTS roscpp)
+find_package(catkin REQUIRED COMPONENTS
+    roscpp
+)
 
 find_package(PkgConfig REQUIRED)
 #find_package(sbpl REQUIRED)
@@ -38,6 +40,7 @@ add_library(
     src/common.cpp
     src/discrete_space_information/multirep_adaptive_environment.cpp
     src/planners/AdaptivePlanner/araplanner_ad.cpp
+    src/planners/AdaptivePlanner/mhaplanner_ad.cpp
     src/planners/AdaptivePlanner/adaptive_planner.cpp)
 
 target_link_libraries(${PROJECT_NAME} sbpl)
