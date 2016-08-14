@@ -40,9 +40,13 @@ AdaptivePlanner::AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, 
 
 	SBPL_INFO("Initializing planners...");
 
-	planner.reset(new ARAPlanner(adaptive_environment_, bSearchForward));
+	plan_heur_ = new EmbeddedHeuristic(adaptive_environment_);
+	track_heur_ = new EmbeddedHeuristic(adaptive_environment_);
+	num_heur_ = 1;
+
+	planner.reset(new MHAPlanner_AD(adaptive_environment_, plan_heur_, &plan_heur_, num_heur_));
 	planner->set_search_mode(false);
-	tracker.reset(new ARAPlanner_AD(adaptive_environment_, bSearchForward));
+	tracker.reset(new MHAPlanner_AD(adaptive_environment_, track_heur_, &track_heur_, num_heur_));
 	tracker->set_search_mode(false);
 	SBPL_INFO("done!");
 }

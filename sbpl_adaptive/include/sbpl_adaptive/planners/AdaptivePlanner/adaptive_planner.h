@@ -165,6 +165,12 @@ private:
 	bool bsearchuntilfirstsolution; //if true, then search until first solution only (see planner.h for search modes)
 
 	unsigned int searchexpands;
+
+	//MHA*
+	Heuristic* plan_heur_;
+	Heuristic* track_heur_;
+	int num_heur_;
+	
 	//member functions
 };
 
