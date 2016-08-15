@@ -64,7 +64,8 @@ MHAPlanner_AD::MHAPlanner_AD(
     m_start_state(NULL),
     m_goal_state(NULL),
     m_search_states(),
-    m_open(NULL)
+    m_open(NULL),
+    created_states_()
 {
     environment_ = environment;
 
@@ -430,8 +431,14 @@ MHASearchState* MHAPlanner_AD::get_state(int state_id)
     assert(state_id >= 0 && state_id < environment_->StateID2IndexMapping.size());
     
     int* idxs = environment_->StateID2IndexMapping[state_id];
-    
-    if (idxs[MHAMDP_STATEID2IND] == -1) {
+
+    /* Finding if state already created. This
+       is needed since planner and tracker 
+       lookup into the same StateID2IndexMapping
+       hence we have a different if condition */ 
+    std::vector<int>::iterator it = find(created_states_.begin(), created_states_.end(), state_id);
+
+    if (it == created_states_.end()){
         // overallocate search state for appropriate heuristic information
         const size_t state_size =
                 sizeof(MHASearchState) +
@@ -444,6 +451,9 @@ MHASearchState* MHAPlanner_AD::get_state(int state_id)
         idxs[MHAMDP_STATEID2IND] = mha_state_idx;
         m_search_states.push_back(s);
 
+        // Pushing back newly created state
+        created_states_.push_back(state_id);
+        
         return s;
     }
     else {

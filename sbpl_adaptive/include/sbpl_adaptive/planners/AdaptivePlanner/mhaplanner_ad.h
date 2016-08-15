@@ -186,6 +186,8 @@ private:
 
     CHeap* m_open; ///< sequence of (m_hcount + 1) open lists
 
+    std::vector<int> created_states_;
+
     bool check_params(const ReplanParams& params);
 
     bool time_limit_reached() const;
