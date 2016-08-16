@@ -151,6 +151,21 @@ public:
 
 	}
 
+    // MHA - return anchor
+    virtual Heuristic* getAnchorHeur(){
+        SBPL_ERROR("Not implemented");
+    }
+
+    // MHA - return other heurs
+    virtual Heuristic** getHeurs(){
+        SBPL_ERROR("Not implemented");    
+    }
+
+    // MHA - return number of heurs
+    virtual int getNumHeur(){
+        SBPL_ERROR("Not implemented");    
+    }
+
 	/* useful to have for debugging */
 	void pause(){
   		printf("Enter to continue...");
@@ -182,6 +197,7 @@ public:
 	int StartStateID;
 	int GoalStateID;
 
+
 protected:
 	/** NOTES:
 	the environment is always in tracking or planning mode. use setTrackMode and setPlanMode to change the mode of the environment
@@ -194,6 +210,9 @@ protected:
 	double getPredTime; //time spent generating predecessors - for debugging purposes
 
 	std::vector<int> lastAdaptivePath_;
+
+    // Number of heuristics MHA
+    int num_heur_;
 
 	/** \brief gets successors for tracking mode -- this should be specified by the user when creating their adaptive_environment file
 	*/
