@@ -40,17 +40,21 @@ AdaptivePlanner::AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, 
 
 	SBPL_INFO("Initializing planners...");
 
-	plan_heur_ = new EmbeddedHeuristic(adaptive_environment_);
-	track_heur_ = new EmbeddedHeuristic(adaptive_environment_);
-	num_heur_ = 1;
+	plan_anc_heur_ = adaptive_environment_->getAnchorHeur();
+	plan_heurs_ = adaptive_environment_->getHeurs();
+	
+	track_anc_heur_ = adaptive_environment_->getAnchorHeur();
+	track_heurs_ = adaptive_environment_->getHeurs();
 
-	planner.reset(new MHAPlanner_AD(adaptive_environment_, plan_heur_, &plan_heur_, num_heur_));
+	num_heur_ = adaptive_environment_->getNumHeur(); 
+
+	planner.reset(new MHAPlanner_AD(adaptive_environment_, plan_anc_heur_, plan_heurs_, num_heur_));
 	planner->set_search_mode(false);
-	tracker.reset(new MHAPlanner_AD(adaptive_environment_, track_heur_, &track_heur_, num_heur_));
+	tracker.reset(new MHAPlanner_AD(adaptive_environment_, track_anc_heur_, track_heurs_, num_heur_));
 	tracker->set_search_mode(false);
+
 	SBPL_INFO("done!");
 }
-
 
 AdaptivePlanner::~AdaptivePlanner()
 {

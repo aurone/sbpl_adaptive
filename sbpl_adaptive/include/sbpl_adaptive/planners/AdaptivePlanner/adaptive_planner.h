@@ -167,10 +167,12 @@ private:
 	unsigned int searchexpands;
 
 	//MHA*
-	Heuristic* plan_heur_;
-	Heuristic* track_heur_;
+	Heuristic* plan_anc_heur_;
+	Heuristic** plan_heurs_;
+	Heuristic* track_anc_heur_;
+	Heuristic** track_heurs_;
 	int num_heur_;
-	
+
 	//member functions
 };
 
