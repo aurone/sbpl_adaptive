@@ -35,9 +35,8 @@
 #include <vector>
 #include <ros/ros.h>
 #include <sbpl_adaptive_collision_checking/sbpl_collision_model.h>
-#include <sbpl_geometry_utils/Interpolator.h>
-#include <sbpl_geometry_utils/Voxelizer.h>
-#include <sbpl_geometry_utils/SphereEncloser.h>
+#include <sbpl_geometry_utils/voxelize.h>
+#include <sbpl_geometry_utils/bounding_spheres.h>
 
 #include <tf_conversions/tf_kdl.h>
 #include <angles/angles.h>
@@ -47,7 +46,7 @@
 #include <geometry_msgs/Point.h>
 #include <angles/angles.h>
 
-#include <sbpl_geometry_utils/interpolation.h>
+#include <sbpl_geometry_utils/interpolate.h>
 #include <sbpl_geometry_utils/utils.h>
 #include <sbpl_adaptive_collision_checking/occupancy_grid.h>
 #include <sbpl_adaptive_collision_checking/bresenham.h>

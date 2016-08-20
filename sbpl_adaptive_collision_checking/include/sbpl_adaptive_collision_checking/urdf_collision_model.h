@@ -366,6 +366,11 @@ protected:
     bool attachObject(
         const std::string &link_name,
         const AttachedObject_t &obj);
+
+    bool computeShapeBoundingSpheres(
+        const shapes::Shape& shape,
+        double res,
+        std::vector<Sphere>& spheres);
 };
 
 //////////////////////////////////////
@@ -517,7 +522,7 @@ void URDFCollisionModel::addContactSphere(
     const std::string &link_name,
     Sphere s)
 {
-    std::map<std::string, std::vector<Sphere>>::iterator it = contact_spheres_.find(link_name);
+    auto it = contact_spheres_.find(link_name);
     if (it == contact_spheres_.end()) {
         s.link_name_ = link_name;
         s.name_ = link_name + "_0";
@@ -536,7 +541,7 @@ void URDFCollisionModel::addContactSphere(
 inline
 void URDFCollisionModel::addCollisionSphere(const std::string &link_name, Sphere s)
 {
-    std::map<std::string, std::vector<Sphere>>::iterator it = collision_spheres_.find(link_name);
+    auto it = collision_spheres_.find(link_name);
     if (it == collision_spheres_.end()) {
         s.link_name_ = link_name;
         s.name_ = link_name + "_0";

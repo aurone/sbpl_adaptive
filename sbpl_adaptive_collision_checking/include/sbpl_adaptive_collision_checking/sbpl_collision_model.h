@@ -65,7 +65,7 @@
 #include <visualization_msgs/MarkerArray.h>
 
 #include <sbpl/sbpl_exception.h>
-#include <sbpl_geometry_utils/SphereEncloser.h>
+#include <sbpl_geometry_utils/bounding_spheres.h>
 
 namespace sbpl_adaptive_collision_checking {
 

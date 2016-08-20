@@ -31,6 +31,8 @@
 
 #include <sbpl_adaptive_collision_checking/urdf_collision_model.h>
 
+#include <sbpl_geometry_utils/voxelize.h>
+
 namespace sbpl_adaptive_collision_checking {
 
 URDFCollisionModel::URDFCollisionModel() :
@@ -207,127 +209,67 @@ bool URDFCollisionModel::computeSpheresFromURDFModel(
     const std::vector<std::string> &ignore_collision_links,
     const std::vector<std::string> &contact_links)
 {
-    const std::vector<robot_model::LinkModel*> links =
-            robot_model_->getLinkModels();
+    const std::vector<robot_model::LinkModel*> links = robot_model_->getLinkModels();
 
     for (const robot_model::LinkModel* link : links) {
         std::string link_name = link->getName();
-        bool bIgnoreCollision = false;
-        bool bIsContact = false;
-        for (const std::string &ignore : ignore_collision_links) {
-            if (ignore == link_name) {
-                bIgnoreCollision = true;
-                break;
-            }
-        }
-        for (const std::string &contact : contact_links) {
-            if (contact == link_name) {
-                bIsContact = true;
-                break;
-            }
-        }
-        if (bIgnoreCollision && !bIsContact)
-            continue;
+        bool bIgnoreCollision = std::find(
+                ignore_collision_links.begin(),
+                ignore_collision_links.end(),
+                link_name) != ignore_collision_links.end();
+        bool bIsContact = std::find(
+                contact_links.begin(),
+                contact_links.end(),
+                link_name) != contact_links.end();
 
-        std::vector<std::vector<double>> obj_spheres;
+        if (bIgnoreCollision && !bIsContact) {
+            continue;
+        }
+
+        std::vector<Sphere> link_spheres;
+
 #ifdef __ROS_DISTRO_groovy__
+        // one shape during and before groovy
         shapes::ShapeConstPtr object = link->getShape();
 #else
+        // multiple shapes after than groovy
         std::vector<shapes::ShapeConstPtr> objects = link->getShapes();
-        for (shapes::ShapeConstPtr object : objects) {
+        for (shapes::ShapeConstPtr object : objects)
 #endif
-            if (!object)
+        {
+            if (!object) {
                 continue;
+            }
             Eigen::Affine3d pose = Eigen::Affine3d::Identity(); //link->getJointOriginTransform();
-            switch (object->type) {
-            case shapes::BOX: {
-                const shapes::Box* obj =
-                        dynamic_cast<const shapes::Box*>(object.get());
-                geometry_msgs::Pose p;
-                tf::poseEigenToMsg(pose, p);
-                sbpl::SphereEncloser::encloseBox(obj->size[0], obj->size[1],
-                        obj->size[2], p, res, obj_spheres);
-                break;
+
+            size_t prev_size = link_spheres.size();
+
+            computeShapeBoundingSpheres(*object, res, link_spheres);
+
+            // transform the spheres by the pose
+            for (size_t i = prev_size; i < link_spheres.size(); ++i) {
+                link_spheres[i].v = pose * link_spheres[i].v;
             }
-            case shapes::CYLINDER: {
-                const shapes::Cylinder* obj =
-                        dynamic_cast<const shapes::Cylinder*>(object.get());
-                geometry_msgs::Pose p;
-                tf::poseEigenToMsg(pose, p);
-                sbpl::SphereEncloser::encloseCylinder(obj->radius, obj->length,
-                        p, res, obj_spheres);
-                break;
-            }
-            case shapes::SPHERE: {
-                const shapes::Sphere* obj =
-                        dynamic_cast<const shapes::Sphere*>(object.get());
-                std::vector<double> sphere(4, 0);
-                KDL::Frame p;
-                tf::transformEigenToKDL(pose, p);
-                KDL::Vector pos = p.p;
-                sphere[0] = pos.x();
-                sphere[1] = pos.y();
-                sphere[2] = pos.z();
-                sphere[3] = obj->radius;
-                obj_spheres.push_back(sphere);
-                break;
-            }
-            case shapes::MESH: {
-                const shapes::Mesh* obj =
-                        dynamic_cast<const shapes::Mesh*>(object.get());
-                geometry_msgs::Pose p;
-                tf::poseEigenToMsg(pose, p);
-                std::vector<int> tri;
-                std::vector<geometry_msgs::Point> vert;
-                for (int t = 0; t < obj->triangle_count; t++) {
-                    tri.push_back(obj->triangles[3 * t]);
-                    tri.push_back(obj->triangles[3 * t + 1]);
-                    tri.push_back(obj->triangles[3 * t + 2]);
-                }
-                for (int v = 0; v < obj->vertex_count; v++) {
-                    geometry_msgs::Point p;
-                    p.x = obj->vertices[3 * v];
-                    p.y = obj->vertices[3 * v + 1];
-                    p.z = obj->vertices[3 * v + 2];
-                    vert.push_back(p);
-                }
-                sbpl::SphereEncloser::encloseMesh(vert, tri, res, obj_spheres,
-                        false, 100);
-                break;
-            }
-            default:
-                ROS_ERROR("Shape type %d not supported", object->type);
-                return false;
-            }
-            //process the spheres
-            std::vector<Sphere> link_spheres;
-            int i = 0;
-            for (auto sphere : obj_spheres) {
-                Sphere s;
+
+            // give unique names to the spheres and reference the attached link
+            for (size_t i = 0; i < link_spheres.size(); ++i) {
+                Sphere& s = link_spheres[i];
                 s.name_ = link->getName() + "_" + std::to_string(i);
                 s.link_name_ = link->getName();
-                s.radius = sphere[3];
-                s.v[0] = sphere[0];
-                s.v[1] = sphere[1];
-                s.v[2] = sphere[2];
-                link_spheres.push_back(s);
             }
+
             if (!bIgnoreCollision) {
                 collision_spheres_[link->getName()] = link_spheres;
                 links_with_collision_spheres_.push_back(link->getName());
-                ROS_INFO("Adding %d collision spheres for link %s",
-                        (int )link_spheres.size(), link->getName().c_str());
+                ROS_INFO("Adding %d collision spheres for link %s", (int )link_spheres.size(), link->getName().c_str());
             }
+
             if (bIsContact) {
                 contact_spheres_[link->getName()] = link_spheres;
                 links_with_contact_spheres_.push_back(link->getName());
-                ROS_INFO("Adding %d contact spheres for link %s",
-                        (int )link_spheres.size(), link->getName().c_str());
+                ROS_INFO("Adding %d contact spheres for link %s", (int )link_spheres.size(), link->getName().c_str());
             }
-#ifdef __ROS_DISTRO_groovy__
-#else
         }
-#endif
     }
     return true;
 }
@@ -362,14 +304,8 @@ bool URDFCollisionModel::initFromParam(const std::string &robot_desc_param_name)
         return false;
     }
 
-    const robot_model::JointModel* root = robot_model_->getJointModel(
-            robot_model_->getRootJointName());
-    if (root->getType() != robot_model::JointModel::FIXED) {
-        bFixedRoot = false;
-    }
-    else {
-        bFixedRoot = true;
-    }
+    const robot_model::JointModel* root = robot_model_->getJointModel(robot_model_->getRootJointName());
+    bFixedRoot = (root->getType() == robot_model::JointModel::FIXED);
 
     if (!loadKDLModel()) {
         ROS_WARN("Could not load KDL model!");
@@ -414,12 +350,7 @@ bool URDFCollisionModel::initRobotModelFromURDF(
 
     const robot_model::JointModel* root = robot_model_->getJointModel(
             robot_model_->getRootJointName());
-    if (root->getType() != robot_model::JointModel::FIXED) {
-        bFixedRoot = false;
-    }
-    else {
-        bFixedRoot = true;
-    }
+    bFixedRoot = (root->getType() == robot_model::JointModel::FIXED);
 
     return true;
 }
@@ -1532,7 +1463,6 @@ bool URDFCollisionModel::attachObjectToLink(
     const std::string &object_name,
     double res)
 {
-
     if (hasAttachedObject(link_name, object_name)) {
         ROS_ERROR("Object with name %s already attached to joint %s",
                 object_name.c_str(), link_name.c_str());
@@ -1544,63 +1474,104 @@ bool URDFCollisionModel::attachObjectToLink(
         ROS_ERROR("Could not find link %s", link_name.c_str());
         return false;
     }
-    std::vector<std::vector<double>> obj_spheres;
-    switch (object.type) {
-    case shapes::BOX: {
-        const shapes::Box &obj = dynamic_cast<const shapes::Box&>(object);
-        geometry_msgs::Pose p;
-        tf::poseEigenToMsg(pose, p);
-        ROS_INFO("Computing attached box collision spheres...");
-        sbpl::SphereEncloser::encloseBox(obj.size[0], obj.size[1], obj.size[2],
-                p, res, obj_spheres);
-        break;
-    }
-    case shapes::CYLINDER: {
-        const shapes::Cylinder &obj =
-                dynamic_cast<const shapes::Cylinder&>(object);
-        geometry_msgs::Pose p;
-        tf::poseEigenToMsg(pose, p);
-        ROS_INFO("Computing attached cylinder collision spheres...");
-        sbpl::SphereEncloser::encloseCylinder(obj.radius, obj.length, p, res,
-                obj_spheres);
-        break;
-    }
-    case shapes::SPHERE: {
-        ROS_INFO("Computing attached sphere collision spheres...");
-        const shapes::Sphere &obj = dynamic_cast<const shapes::Sphere&>(object);
-        std::vector<double> sphere(4, 0);
-        KDL::Frame p;
-        tf::transformEigenToKDL(pose, p);
-        KDL::Vector pos = p.p;
-        sphere[0] = pos.x();
-        sphere[1] = pos.y();
-        sphere[2] = pos.z();
-        sphere[3] = obj.radius;
-        obj_spheres.push_back(sphere);
-        break;
-    }
-    default:
-        ROS_ERROR("Shape type %d not supported", object.type);
+
+    AttachedObject_t obj;
+
+    if (!computeShapeBoundingSpheres(object, res, obj.spheres)) {
         return false;
     }
 
-    ROS_INFO("Got %d spheres for attached object!", (int )obj_spheres.size());
+    // transform spheres
+    for (auto& sphere : obj.spheres) {
+        sphere.v = pose * sphere.v;
+    }
 
-    //process obj_spheres
-    AttachedObject_t obj;
+    ROS_INFO("Got %zu spheres for attached object!", obj.spheres.size());
+
+    // process obj.spheres
     obj.name = object_name;
-    int i = 0;
-    for (auto sphere : obj_spheres) {
-        Sphere s;
+
+    for (size_t i = 0; i < obj.spheres.size(); ++i) {
+        Sphere& s = obj.spheres[i];
         s.name_ = obj.name + "_" + std::to_string(i);
         s.link_name_ = link_name;
-        s.radius = sphere[3];
-        s.v[0] = sphere[0];
-        s.v[1] = sphere[1];
-        s.v[2] = sphere[2];
-        obj.spheres.push_back(s);
     }
+
     return attachObject(link_name, obj);
+}
+
+bool URDFCollisionModel::computeShapeBoundingSpheres(
+    const shapes::Shape& shape,
+    double res,
+    std::vector<Sphere>& spheres)
+{
+    switch (shape.type) {
+    case shapes::BOX: {
+        const shapes::Box& obj = dynamic_cast<const shapes::Box&>(shape);
+        std::vector<Eigen::Vector3d> centers;
+        sbpl::ComputeBoxBoundingSpheres(obj.size[0], obj.size[1], obj.size[2], res, centers);
+        spheres.reserve(spheres.size() + centers.size());
+        for (const auto& center : centers) {
+            spheres.push_back(Sphere());
+            spheres.back().v = center;
+            spheres.back().radius = res;
+        }
+    }   break;
+    case shapes::CYLINDER: {
+        const shapes::Cylinder& obj = dynamic_cast<const shapes::Cylinder&>(shape);
+        std::vector<Eigen::Vector3d> centers;
+        sbpl::ComputeCylinderBoundingSpheres(obj.radius, obj.length, res, centers);
+        spheres.reserve(spheres.size() + centers.size());
+        for (const auto& center : centers) {
+            spheres.push_back(Sphere());
+            spheres.back().v = center;
+            spheres.back().radius = res;
+        }
+    }   break;
+    case shapes::SPHERE: {
+        const shapes::Sphere& obj = dynamic_cast<const shapes::Sphere&>(shape);
+        spheres.push_back(Sphere());
+        spheres.back().v = Eigen::Vector3d::Zero();
+        spheres.back().radius = obj.radius;
+    }   break;
+    case shapes::MESH: {
+        const shapes::Mesh& obj = dynamic_cast<const shapes::Mesh&>(shape);
+
+        std::vector<Eigen::Vector3d> vert;
+        std::vector<int> tri;
+
+        for (int v = 0; v < obj.vertex_count; v++) {
+            double x = obj.vertices[3 * v];
+            double y = obj.vertices[3 * v + 1];
+            double z = obj.vertices[3 * v + 2];
+            vert.push_back(Eigen::Vector3d(x, y, z));
+        }
+
+        for (int t = 0; t < obj.triangle_count; t++) {
+            tri.push_back(obj.triangles[3 * t]);
+            tri.push_back(obj.triangles[3 * t + 1]);
+            tri.push_back(obj.triangles[3 * t + 2]);
+        }
+
+        /// bounding sphere strategy copy-pasted from old
+        /// SphereEncloser.h since it's being removed from
+        /// sbpl_geometry_utils
+        double radius = sqrt(2.0) * res;
+        std::vector<Eigen::Vector3d> centers;
+        sbpl::VoxelizeMesh(vert, tri, radius, centers, false);
+        spheres.reserve(spheres.size() + centers.size());
+        for (const auto& center : centers) {
+            spheres.push_back(Sphere());
+            spheres.back().v = center;
+            spheres.back().radius = res;
+        }
+    }   break;
+    default:
+        ROS_ERROR("Shape type %d not supported", shape.type);
+        return false;
+    }
+
+    return true;
 }
 
 bool URDFCollisionModel::hasAttachedObjects(const std::string &link_name) const
