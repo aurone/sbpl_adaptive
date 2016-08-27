@@ -21,7 +21,7 @@ AdaptivePlanner::AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, 
 	final_eps_planning_time = -1.0;
 	final_eps = -1.0;
 
-	timePerRetryPlan_ = 5.0;
+	timePerRetryPlan_ = 90.0;
 	timePerRetryTrack_ = 5.0;
 
 	planningEPS = -1.0;
@@ -47,6 +47,54 @@ AdaptivePlanner::AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, 
 	track_heurs_ = adaptive_environment_->getHeurs();
 
 	num_heur_ = adaptive_environment_->getNumHeur(); 
+
+	planner.reset(new MHAPlanner_AD(adaptive_environment_, plan_anc_heur_, plan_heurs_, num_heur_));
+	planner->set_search_mode(false);
+	tracker.reset(new MHAPlanner_AD(adaptive_environment_, track_anc_heur_, track_heurs_, num_heur_));
+	tracker->set_search_mode(false);
+
+	SBPL_INFO("done!");
+}
+
+AdaptivePlanner::AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, bool bforwardsearch, Heuristic* anc_heur, Heuristic** heurs, int num_heur)
+{
+	logstream_ = stdout;
+	SBPL_INFO("Creating adaptive planner...");
+	// bforwardsearch = bSearchForward;
+	adaptive_environment_ = environment;
+
+	StartStateID = environment->StartStateID;
+	GoalStateID = environment->GoalStateID;
+
+	final_eps_planning_time = -1.0;
+	final_eps = -1.0;
+
+	timePerRetryPlan_ = 5.0;
+	timePerRetryTrack_ = 5.0;
+
+	planningEPS = -1.0;
+	trackingEPS = -1.0;
+	targetEPS = -1.0;
+
+	nIterations = 0;
+	plan_time_total_s = 0;
+	track_time_total_s = 0;
+	bsearchuntilfirstsolution = true;
+	repair_time = 0;
+	searchexpands = 0;
+
+	stat_.reset(new AdaptivePlannerCSVStat_c());
+	//adaptive_environment_->setStat(stat_.get());
+
+	SBPL_INFO("Initializing planners...");
+
+	plan_anc_heur_ = anc_heur;
+	plan_heurs_ = heurs;
+	
+	track_anc_heur_ = anc_heur;
+	track_heurs_ = heurs;
+
+	num_heur_ = num_heur; 
 
 	planner.reset(new MHAPlanner_AD(adaptive_environment_, plan_anc_heur_, plan_heurs_, num_heur_));
 	planner->set_search_mode(false);

@@ -98,6 +98,9 @@ public:
 	/** \brief constructor
 	*/
 	AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, bool bforwardsearch);
+	/** \brief overload constructor for MHA
+	*/
+	AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, bool bforwardsearch, Heuristic* anc_heur, Heuristic** heurs, int num_heur);
 	/** \brief destructor
 	*/
 	~AdaptivePlanner();
