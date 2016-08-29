@@ -40,27 +40,19 @@ AdaptivePlanner::AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, 
 
 	SBPL_INFO("Initializing planners...");
 
-	plan_anc_heur_ = adaptive_environment_->getAnchorHeur();
-	plan_heurs_ = adaptive_environment_->getHeurs();
-	
-	track_anc_heur_ = adaptive_environment_->getAnchorHeur();
-	track_heurs_ = adaptive_environment_->getHeurs();
-
-	num_heur_ = adaptive_environment_->getNumHeur(); 
-
-	planner.reset(new MHAPlanner_AD(adaptive_environment_, plan_anc_heur_, plan_heurs_, num_heur_));
+	planner.reset(new ARAPlanner(adaptive_environment_, bforwardsearch));
 	planner->set_search_mode(false);
-	tracker.reset(new MHAPlanner_AD(adaptive_environment_, track_anc_heur_, track_heurs_, num_heur_));
+	tracker.reset(new ARAPlanner_AD(adaptive_environment_, bforwardsearch));
 	tracker->set_search_mode(false);
 
 	SBPL_INFO("done!");
 }
 
-AdaptivePlanner::AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, bool bforwardsearch, Heuristic* anc_heur, Heuristic** heurs, int num_heur)
+AdaptivePlanner::AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, bool bSearchForward, Heuristic* anc_heur, Heuristic** heurs, int num_heur)
 {
 	logstream_ = stdout;
 	SBPL_INFO("Creating adaptive planner...");
-	// bforwardsearch = bSearchForward;
+	bforwardsearch = bSearchForward;
 	adaptive_environment_ = environment;
 
 	StartStateID = environment->StartStateID;
@@ -214,7 +206,6 @@ int AdaptivePlanner::replan(double allocated_time_secs, double allocated_time_pe
 		SBPL_INFO("\t=======================================");
 
 		planner->force_planning_from_scratch();
-		planner->set_initialsolution_eps(planningEPS);
 		planner->set_search_mode(false);
 
 		adaptive_environment_->setPlanMode();
@@ -286,7 +277,6 @@ int AdaptivePlanner::replan(double allocated_time_secs, double allocated_time_pe
 		track_start = MY_TIME_NOW;
 		adaptive_environment_->setTrackMode(planning_stateV, p_Cost, &TrkModifiedStates);
 		tracker->force_planning_from_scratch();
-		tracker->set_initialsolution_eps(targetEPS / planner->get_final_epsilon());
 		tracker->set_search_mode(true);
 		tracking_stateV.clear();
 		tracking_bRet = 0;
