@@ -239,7 +239,7 @@ public:
     void addIgnoreSelfCollisionLinkPairs(
         const std::vector<std::pair<std::string, std::string>> pairs);
 
-    /// \name Reimplemented Public Functions
+    /// \name Required Public Functions from SBPLCollisionModel
     ///@{
     bool checkLimits(const ModelCoords_t &coord) const override;
 
@@ -497,6 +497,7 @@ double URDFModelCoords_t::getMaxJointDistance(
 // URDFCollisionModel Implementation //
 ///////////////////////////////////////
 
+/// \brief Add a set of contact spheres to a link
 inline
 void URDFCollisionModel::addContactSpheres(
     const std::string &link_name,
@@ -507,6 +508,7 @@ void URDFCollisionModel::addContactSpheres(
     }
 }
 
+/// \brief Add a set of collision spheres to a link
 inline
 void URDFCollisionModel::addCollisionSpheres(
     const std::string &link_name,
@@ -517,6 +519,9 @@ void URDFCollisionModel::addCollisionSpheres(
     }
 }
 
+/// \brief Add a contact sphere to a link
+///
+/// There sphere position relative to the link is specified in the link frame.
 inline
 void URDFCollisionModel::addContactSphere(
     const std::string &link_name,
@@ -538,6 +543,9 @@ void URDFCollisionModel::addContactSphere(
     }
 }
 
+/// \brief Add a collision sphere to a link
+///
+/// The sphere position relative to the link is specified in the link frame.
 inline
 void URDFCollisionModel::addCollisionSphere(const std::string &link_name, Sphere s)
 {

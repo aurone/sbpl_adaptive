@@ -417,6 +417,7 @@ bool URDFCollisionModel::getLinkContactSpheres(
     return getLinkContactSpheres_CurrentState(link_name, spheres);
 }
 
+/// \brief Return the contact spheres for a link in the current state
 bool URDFCollisionModel::getLinkContactSpheres_CurrentState(
     std::string link_name,
     std::vector<Sphere> &spheres) const
@@ -682,12 +683,18 @@ bool URDFCollisionModel::updateFK(const URDFModelCoords_t &coords) const
     return true;
 }
 
+/// \brief Get the contact spheres for a state
+///
+/// If the input state specifies a set of contact links, this method returns
+/// the contact spheres for that set of links; otherwise, this method returns
+/// returns the contact spheres for all links in the model.
 bool URDFCollisionModel::getModelContactSpheres(
     const URDFModelCoords_t &coords,
     std::vector<Sphere> &spheres) const
 {
-    if (!updateFK(coords))
+    if (!updateFK(coords)) {
         return false;
+    }
     if (coords.contact_links.empty()) {
         for (std::string link_name : links_with_contact_spheres_) {
             if (!getLinkContactSpheres_CurrentState(link_name, spheres)) {
@@ -975,11 +982,13 @@ bool URDFCollisionModel::getModelPathContactSpheres(
     std::vector<Sphere> &spheres) const
 {
     std::vector<URDFModelCoords_t> path;
-    if (!getInterpolatedPath(coords0, coords1, steps, path))
+    if (!getInterpolatedPath(coords0, coords1, steps, path)) {
         return false;
+    }
     for (int i = 0; i < path.size(); i++) {
-        if (!getModelContactSpheres(path[i], spheres))
+        if (!getModelContactSpheres(path[i], spheres)) {
             return false;
+        }
     }
     return true;
 }
