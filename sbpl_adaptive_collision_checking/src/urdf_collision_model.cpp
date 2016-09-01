@@ -725,20 +725,15 @@ bool URDFCollisionModel::getInterpolatedPath(
         std::vector<Sphere> s0;
         std::vector<Sphere> s1;
         if (!getLinkCollisionSpheres(coords0, link, s0)) {
-            ROS_ERROR(
-                    "URDFCollisionModel::getInterpolatedPath - Failed to get link %s collision spheres",
-                    link.c_str());
+            ROS_ERROR("URDFCollisionModel::getInterpolatedPath - Failed to get link %s collision spheres", link.c_str());
             return false;
         }
         if (!getLinkCollisionSpheres(coords1, link, s1)) {
-            ROS_ERROR(
-                    "URDFCollisionModel::getInterpolatedPath - Failed to get link %s collision spheres",
-                    link.c_str());
+            ROS_ERROR("URDFCollisionModel::getInterpolatedPath - Failed to get link %s collision spheres", link.c_str());
             return false;
         }
         if (s0.size() != s1.size()) {
-            ROS_ERROR(
-                    "URDFCollisionModel::getInterpolatedPath - Different number of spheres found between coords0 and coords1!");
+            ROS_ERROR("URDFCollisionModel::getInterpolatedPath - Different number of spheres found between coords0 and coords1!");
             return false;
         }
         for (int s = 0; s < s0.size(); s++) {
@@ -759,13 +754,12 @@ bool URDFCollisionModel::getInterpolatedPath(
             break;
         }
     }
-    //if max_dist is more than resolution, we need to subdivide path between c0 and c1
+    // if max_dist is more than resolution, we need to subdivide path between c0 and c1
     if (max_dist > resolution) {
         //ROS_WARN("Sphere MaxDist = %.3f", max_dist);
         URDFModelCoords_t coords_half;
         if (!getInterpolatedCoordinates(coords0, coords1, 0.5, coords_half)) {
-            ROS_ERROR(
-                    "URDFCollisionModel::getInterpolatedPath - failed to get interpolation to midpoint!");
+            ROS_ERROR("URDFCollisionModel::getInterpolatedPath - failed to get interpolation to midpoint!");
             return false;
         }
 
@@ -779,13 +773,11 @@ bool URDFCollisionModel::getInterpolatedPath(
         std::vector<URDFModelCoords_t> sub_path0;
         std::vector<URDFModelCoords_t> sub_path1;
         if (!getInterpolatedPath(coords0, coords_half, resolution, sub_path0)) {
-            ROS_ERROR(
-                    "URDFCollisionModel::getInterpolatedPath - failed to get interpolated sub-path 1");
+            ROS_ERROR("URDFCollisionModel::getInterpolatedPath - failed to get interpolated sub-path 1");
             return false;
         }
         if (!getInterpolatedPath(coords_half, coords1, resolution, sub_path1)) {
-            ROS_ERROR(
-                    "URDFCollisionModel::getInterpolatedPath - failed to get interpolated sub-path 2");
+            ROS_ERROR("URDFCollisionModel::getInterpolatedPath - failed to get interpolated sub-path 2");
             return false;
         }
 
@@ -873,18 +865,15 @@ bool URDFCollisionModel::getInterpolatedCoordinates(
         jm->interpolate(&j0_pos[0], &j1_pos[0], t, &jt_pos[0]);
         for (int j = 0; j < jt_pos.size(); j++) {
             if (bounds[j].position_bounded_) {
-                if (bounds[j].min_position_ > jt_pos[j]
-                        || jt_pos[j] > bounds[j].max_position_) {
-                    ROS_ERROR("Interpolation out of bounds! %.3f [%.3f, %.3f]",
-                            jt_pos[j], bounds[j].min_position_,
-                            bounds[j].max_position_);
+                if (bounds[j].min_position_ > jt_pos[j] ||
+                    jt_pos[j] > bounds[j].max_position_)
+                {
+                    ROS_ERROR("Interpolation out of bounds! %.3f [%.3f, %.3f]", jt_pos[j], bounds[j].min_position_, bounds[j].max_position_);
                     jt_pos[j] = ALERP(j0_pos[j], j1_pos[j], t);
-                    if (bounds[j].min_position_ > jt_pos[j]
-                            || jt_pos[j] > bounds[j].max_position_) {
-                        ROS_ERROR(
-                                "Interpolation still out of bounds! %.3f [%.3f, %.3f]",
-                                jt_pos[j], bounds[j].min_position_,
-                                bounds[j].max_position_);
+                    if (bounds[j].min_position_ > jt_pos[j] ||
+                        jt_pos[j] > bounds[j].max_position_)
+                    {
+                        ROS_ERROR("Interpolation still out of bounds! %.3f [%.3f, %.3f]", jt_pos[j], bounds[j].min_position_, bounds[j].max_position_);
                         throw SBPL_Exception();
                     }
                 }
