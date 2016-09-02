@@ -116,11 +116,12 @@ bool URDFCollisionModel::initFromURDF(
     const std::string& urdf_string,
     const std::string& srdf_string)
 {
-    urdf_ = boost::shared_ptr<urdf::Model>(new urdf::Model());
-    if (!urdf_->initString(urdf_string)) {
+    urdf::Model* urdf_model = new urdf::Model;
+    if (!urdf_model->initString(urdf_string)) {
         ROS_WARN("Failed to parse the URDF");
         return false;
     }
+    urdf_.reset(urdf_model);
     if (!initRobotModelFromURDF(urdf_string, srdf_string)) {
         ROS_WARN("Failed to load robot model from URDF/SRDF");
         return false;
@@ -301,6 +302,9 @@ bool URDFCollisionModel::initFromParam(const std::string &robot_desc_param_name)
         return false;
     }
 
+    urdf_ = robot_model_->getURDF();
+    srdf_ = robot_model_->getSRDF();
+
     robot_state_.reset(new robot_state::RobotState(robot_model_));
     if (!robot_state_) {
         ROS_ERROR("Failed to instantiate Robot State");
@@ -344,6 +348,8 @@ bool URDFCollisionModel::initRobotModelFromURDF(
         ROS_ERROR("Failed to retrieve valid Robot Model");
         return false;
     }
+
+    srdf_ = robot_model_->getSRDF();
 
     robot_state_.reset(new robot_state::RobotState(robot_model_));
     if (!robot_state_) {
@@ -1160,7 +1166,6 @@ bool URDFCollisionModel::computeCOMRecurs(
     double& m,
     KDL::Vector& com) const
 {
-
     std::vector<double> jnt_p;
 
     if (current_seg->second.segment.getJoint().getType() != KDL::Joint::None) {

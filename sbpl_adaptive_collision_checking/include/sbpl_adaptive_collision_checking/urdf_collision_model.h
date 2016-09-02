@@ -249,7 +249,8 @@ public:
     void addIgnoreSelfCollisionLinkPairs(
         const std::vector<std::pair<std::string, std::string>> pairs);
 
-    boost::shared_ptr<const urdf::Model> getURDF() const;
+    boost::shared_ptr<const urdf::ModelInterface> getURDF() const;
+    boost::shared_ptr<const srdf::Model> getSRDF() const;
 
     /// \name Required Public Functions from SBPLCollisionModel
     ///@{
@@ -292,7 +293,8 @@ protected:
 
     ros::AsyncSpinner* spinner;
 
-    boost::shared_ptr<urdf::Model> urdf_;
+    boost::shared_ptr<const urdf::ModelInterface> urdf_;
+    boost::shared_ptr<const srdf::Model> srdf_;
 
     int num_active_joints_;
     int num_coords_;
@@ -646,9 +648,17 @@ bool URDFCollisionModel::getModelPathContactSpheres(
 }
 
 inline
-boost::shared_ptr<const urdf::Model> URDFCollisionModel::getURDF() const
+boost::shared_ptr<const urdf::ModelInterface>
+URDFCollisionModel::getURDF() const
 {
     return urdf_;
+}
+
+inline
+boost::shared_ptr<const srdf::Model>
+URDFCollisionModel::getSRDF() const
+{
+    return srdf_;
 }
 
 inline
