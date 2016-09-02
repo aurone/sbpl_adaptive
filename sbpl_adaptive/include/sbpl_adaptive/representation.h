@@ -116,6 +116,10 @@ public:
 
     virtual bool ProjectToFullD(const void* ld_state_data, std::vector<int> &hd_projStateIDs, int adPathIdx=0) = 0;
 
+    virtual bool ProjectFootprintToStairs(const void* ld_state_data, std::vector<int> &hd_projStateIDs, int adPathIdx=0){
+        SBPL_ERROR("[ProjectFootprintToStairs] Not implemented. Check your reps!!");
+    }
+
     virtual bool ProjectFromFullD(const void* hd_state_data, std::vector<int> &ld_projStateIDs, int adPathIdx=0) = 0;
 
     void getParentIDs(int stateID, std::vector<int> &IDs) const {
