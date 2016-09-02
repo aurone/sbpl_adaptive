@@ -10,6 +10,7 @@
 
 #include <leatherman/utils.h>
 #include <ros/ros.h>
+#include <sbpl_arm_planner/occupancy_grid.h>
 #include <sbpl_adaptive_collision_checking/occupancy_grid.h>
 #include <tf/tf.h>
 #include <visualization_msgs/Marker.h>
@@ -23,9 +24,7 @@ class AdaptiveGrid3D_t : public AdaptiveGrid_t
 {
 public:
 
-    AdaptiveGrid3D_t(
-        std::shared_ptr<sbpl_adaptive_collision_checking::OccupancyGrid> grid,
-        int ldID);
+    AdaptiveGrid3D_t(const sbpl::OccupancyGridPtr& grid, int ldID);
 
     ~AdaptiveGrid3D_t();
 
@@ -189,7 +188,7 @@ private:
     int max_dimID_;
     unsigned int max_costToGoal_;
 
-    std::shared_ptr<sbpl_adaptive_collision_checking::OccupancyGrid> oc_grid_;
+    sbpl::OccupancyGridPtr oc_grid_;
 
     ros::NodeHandle nh_;
     ros::NodeHandle ph_;

@@ -83,67 +83,6 @@ void OccupancyGrid::getOrigin(double &wx, double &wy, double &wz) const
     grid_->gridToWorld(0, 0, 0, wx, wy, wz);
 }
 
-/*void OccupancyGrid::updateFromCollisionMap(const moveit_msgs::CollisionMap &collision_map)
-{
-    if (collision_map.boxes.empty()) {
-        ROS_DEBUG("[grid] collision map received is empty.");
-        return;
-    }
-    reference_frame_ = collision_map.header.frame_id;
-    //grid_->addCollisionMapToField(collision_map);
-}*/
-
-void OccupancyGrid::addCube(
-    double origin_x,
-    double origin_y,
-    double origin_z,
-    double size_x,
-    double size_y,
-    double size_z)
-{
-    int num_points = 0;
-    EigenSTL::vector_Vector3d pts;
-    printf("Adding cube of size %.3f, %.3f, %.3f...\n", size_x, size_y, size_z);
-    for (double x = origin_x - size_x / 2.0; x <= origin_x + size_x / 2.0; x += grid_->getResolution()) {
-        for (double y = origin_y - size_y / 2.0; y <= origin_y + size_y / 2.0; y += grid_->getResolution()) {
-            for (double z = origin_z - size_z / 2.0; z <= origin_z + size_z / 2.0; z += grid_->getResolution()) {
-                Eigen::Vector3d p(x, y, z);
-                pts.push_back(p);
-                ++num_points;
-            }
-        }
-    }
-    printf("Adding %d points to field!\n", num_points);
-    grid_->addPointsToField(pts);
-    //grid_->addPointsToField(pts);
-}
-
-void OccupancyGrid::addCube(
-    Eigen::Affine3d pose,
-    double size_x,
-    double size_y,
-    double size_z)
-{
-    int num_points = 0;
-    EigenSTL::vector_Vector3d pts;
-    printf("Adding cube of size %.3f, %.3f, %.3f...\n", size_x, size_y, size_z);
-
-    for (double x = -size_x / 2.0; x <= size_x / 2.0; x += 0.5*grid_->getResolution()) {
-        for (double y = -size_y / 2.0; y <= size_y / 2.0; y += 0.5*grid_->getResolution()) {
-            for (double z = -size_z / 2.0; z <= size_z / 2.0; z += 0.5*grid_->getResolution()) {
-                Eigen::Vector3d p;
-                p[0] = x; p[1] = y; p[2] = z;
-                Eigen::Vector3d pt = pose * p;
-                pts.push_back(pt);
-                ++num_points;
-            }
-        }
-    }
-    printf("Adding %d points to field!\n", num_points);
-    grid_->addPointsToField(pts);
-    //grid_->addPointsToField(pts);
-}
-
 void OccupancyGrid::getOccupiedVoxels(
     const geometry_msgs::Pose &pose,
     const std::vector<double> &dim,
@@ -278,28 +217,6 @@ void OccupancyGrid::addPointsToField(const std::vector<Eigen::Vector3d> &points)
         pts[i] = Eigen::Vector3d(points[i].x(), points[i].y(), points[i].z());
 
     grid_->addPointsToField(pts);
-}
-
-void OccupancyGrid::updateFromOctree(const octomap::OcTree* octomap){
-    EigenSTL::vector_Vector3d pts;
-    for(octomap::OcTree::leaf_iterator it = octomap->begin_leafs(); it != octomap->end_leafs(); it++){
-        if(it->getOccupancy() > 0.5){
-            octomap::point3d pt = it.getCoordinate();
-            pts.push_back(Eigen::Vector3d(pt.x(), pt.y(), pt.z()));
-        }
-    }
-    grid_->addPointsToField(pts);
-}
-
-void OccupancyGrid::updateFromCollisionMap(const octomap_msgs::OctomapWithPose &octomap_map){
-    octomap::AbstractOcTree* abstract_octree = octomap_msgs::binaryMsgToMap(octomap_map.octomap);
-    octomap::OcTree* octree = dynamic_cast<octomap::OcTree*>(abstract_octree);
-    if (octree) {
-        updateFromOctree(octree);
-    }
-    else {
-        ROS_ERROR("AbstractOcTree must be an OcTree to update Occupancy Grid");
-    }
 }
 
 void OccupancyGrid::updatePointsInField(const std::vector<Eigen::Vector3d> &points, bool iterative)

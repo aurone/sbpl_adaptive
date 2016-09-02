@@ -31,6 +31,9 @@
 
 #include <sbpl_adaptive_collision_checking/urdf_collision_model.h>
 
+// system includes
+#include <leatherman/utils.h>
+#include <sbpl_geometry_utils/bounding_spheres.h>
 #include <sbpl_geometry_utils/voxelize.h>
 
 namespace sbpl_adaptive_collision_checking {
@@ -1043,8 +1046,7 @@ visualization_msgs::MarkerArray URDFCollisionModel::getModelBasicVisualizationBy
     int i = 0;
     for (std::string link : links_with_collision_spheres_) {
         std::vector<Sphere> spheres;
-        col = fromHSV(240 * i / (double)links_with_collision_spheres_.size(), 1,
-                1);
+        leatherman::msgHSVToRGB(240.0 * i / (double)links_with_collision_spheres_.size(), 1, 1, col);
         if (getLinkCollisionSpheres(coords, link, spheres)) {
             for (Sphere s : spheres) {
                 visualization_msgs::Marker marker = getSphereMarker(s,
@@ -1059,8 +1061,7 @@ visualization_msgs::MarkerArray URDFCollisionModel::getModelBasicVisualizationBy
     i = 0;
     for (std::string link : links_with_contact_spheres_) {
         std::vector<Sphere> contact_spheres;
-        col = fromHSV(240 * i / (double)links_with_contact_spheres_.size(), 1,
-                1);
+        leatherman::msgHSVToRGB(240 * i / (double)links_with_contact_spheres_.size(), 1, 1, col);
         col.a = 0.5;
         if (getLinkContactSpheres(coords, link, contact_spheres)) {
             int id = 0;

@@ -29,8 +29,18 @@
 
 /** \author Kalin Gochev */
 
+// standard includes
+#include <map>
+#include <memory>
+#include <utility>
+
+// system includes
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <boost/shared_ptr.hpp>
+#include <ros/ros.h>
+#include <sbpl/sbpl_exception.h>
+#include <urdf/model.h>
 
 #include <sbpl_adaptive_collision_checking/sbpl_collision_model.h>
 
@@ -238,6 +248,8 @@ public:
         const std::pair<std::string, std::string> pair);
     void addIgnoreSelfCollisionLinkPairs(
         const std::vector<std::pair<std::string, std::string>> pairs);
+
+    boost::shared_ptr<const urdf::Model> getURDF() const;
 
     /// \name Required Public Functions from SBPLCollisionModel
     ///@{
@@ -631,6 +643,12 @@ bool URDFCollisionModel::getModelPathContactSpheres(
     const URDFModelCoords_t &c0 = dynamic_cast<const URDFModelCoords_t&>(coords0);
     const URDFModelCoords_t &c1 = dynamic_cast<const URDFModelCoords_t&>(coords1);
     return getModelPathContactSpheres(c0, c1, steps, spheres);
+}
+
+inline
+boost::shared_ptr<const urdf::Model> URDFCollisionModel::getURDF() const
+{
+    return urdf_;
 }
 
 inline

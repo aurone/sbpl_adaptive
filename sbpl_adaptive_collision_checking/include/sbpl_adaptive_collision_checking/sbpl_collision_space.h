@@ -12,6 +12,7 @@
 #include <moveit_msgs/PlanningScene.h>
 #include <moveit_msgs/RobotState.h>
 #include <ros/ros.h>
+#include <sbpl_arm_planner/occupancy_grid.h>
 #include <sbpl_geometry_utils/bounding_spheres.h>
 #include <sbpl_geometry_utils/interpolate.h>
 #include <sbpl_geometry_utils/utils.h>
@@ -31,7 +32,7 @@ public:
 
     SBPLCollisionSpace(
         std::shared_ptr<SBPLCollisionModel> model,
-        std::shared_ptr<OccupancyGrid> grid);
+        const sbpl::OccupancyGridPtr& grid);
 
     ~SBPLCollisionSpace();
 
@@ -82,7 +83,7 @@ public:
 private:
 
     std::shared_ptr<SBPLCollisionModel> model_;
-    std::shared_ptr<OccupancyGrid> grid_;
+    sbpl::OccupancyGridPtr grid_;
 
     double padding_;
     double contact_padding_;

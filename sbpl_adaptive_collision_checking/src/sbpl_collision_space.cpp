@@ -4,7 +4,7 @@ namespace sbpl_adaptive_collision_checking {
 
 SBPLCollisionSpace::SBPLCollisionSpace(
     std::shared_ptr<sbpl_adaptive_collision_checking::SBPLCollisionModel> model,
-    std::shared_ptr<sbpl_adaptive_collision_checking::OccupancyGrid> grid)
+    const sbpl::OccupancyGridPtr& grid)
 :
     model_(model),
     grid_(grid),

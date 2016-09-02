@@ -31,13 +31,6 @@
 #ifndef _SBPL_COLLISION_MODEL_
 #define _SBPL_COLLISION_MODEL_
 
-#include <ros/ros.h>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <vector>
-#include <boost/shared_ptr.hpp>
-#include <urdf/model.h>
 #include <kdl/kdl.hpp>
 #include <kdl/segment.hpp>
 #include <kdl/joint.hpp>
@@ -53,27 +46,28 @@
 #endif
 #include <moveit_msgs/RobotState.h>
 
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-
 #include <eigen_conversions/eigen_kdl.h>
 #include <eigen_conversions/eigen_msg.h>
 #include <tf_conversions/tf_kdl.h>
-#include <sbpl_adaptive_collision_checking/common.h>
 #include <sbpl_adaptive_collision_checking/interpolation.h>
 
+// standard includes
+#include <vector>
+#include <string>
+
+// system includes
+#include <std_msgs/ColorRGBA.h>
+#include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 
-#include <sbpl/sbpl_exception.h>
-#include <sbpl_geometry_utils/bounding_spheres.h>
+// project includes
+#include <sbpl_adaptive_collision_checking/common.h>
 
 namespace sbpl_adaptive_collision_checking {
 
 struct ModelCoords_t
 {
-    virtual ~ModelCoords_t()
-    {
-    }
+    virtual ~ModelCoords_t() { }
 };
 
 /// \brief Represents the collision model of the robot used for planning.

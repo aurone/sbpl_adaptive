@@ -7,6 +7,8 @@
 
 #include <sbpl_adaptive_components/sbpl_adaptive_grid3D.h>
 
+#include <leatherman/utils.h>
+
 #include <sbpl_adaptive_components/common.h>
 
 namespace sbpl_adaptive_components {
@@ -108,7 +110,7 @@ void AdaptiveGrid3D_t::init(){
     }
 }
 
-AdaptiveGrid3D_t::AdaptiveGrid3D_t(std::shared_ptr<sbpl_adaptive_collision_checking::OccupancyGrid> grid, int ldID) : ph_("~"), AdaptiveGrid_t(ldID) {
+AdaptiveGrid3D_t::AdaptiveGrid3D_t(const sbpl::OccupancyGridPtr& grid, int ldID) : ph_("~"), AdaptiveGrid_t(ldID) {
 	oc_grid_ = grid;
 	grid_sizes_.resize(3);
 	oc_grid_->getGridSize(grid_sizes_[0], grid_sizes_[1], grid_sizes_[2]);
@@ -349,7 +351,8 @@ visualization_msgs::Marker AdaptiveGrid3D_t::getAdaptiveGridVisualization(std::s
 				p.x = wx;
 				p.y = wy;
 				p.z = wz;
-				std_msgs::ColorRGBA col = fromHSV(hue, 1.0, 1.0);
+				std_msgs::ColorRGBA col;
+				leatherman::msgHSVToRGB(hue, 1, 1, col);
 				if(dimID != ldID_){
 				    marker.points.push_back(p);
 				    marker.colors.push_back(col);

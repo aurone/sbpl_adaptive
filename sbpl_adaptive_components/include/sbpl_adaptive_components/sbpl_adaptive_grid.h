@@ -18,8 +18,7 @@
 #include <vector>
 #include <sbpl_adaptive/headers.h>
 
-namespace sbpl_adaptive_components
-{
+namespace sbpl_adaptive_components {
 
 struct AdaptiveGridCell_t {
     int pDefaultDimID;

@@ -46,8 +46,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <sbpl_adaptive_collision_checking/common.h>
 
-namespace sbpl_adaptive_collision_checking
-{
+namespace sbpl_adaptive_collision_checking {
 
 /**
  * @brief At this point, this is a very lightweight layer on top of the
@@ -184,22 +183,6 @@ public:
 
     /** @name Modifiers */
     /**@{*/
-
-    /** @brief Update the distance field from a CollisionMap. */
-    void updateFromCollisionMap(const octomap_msgs::OctomapWithPose &octomap_map);
-    void updateFromOctree(const octomap::OcTree* octomap);
-
-    /**
-     * @brief Manually add a cuboid to the collision map.
-     * @param origin_x X_origin_of_cuboid
-     * @param origin_y Y_origin_of_cuboid
-     * @param origin_z Z_origin_of_cuboid
-     * @param size_x along the X dimension (meters)
-     * @param size_y along the Y dimension (meters)
-     * @param size_z along the Z dimension (meters)
-    */
-    void addCube(double origin_x, double origin_y, double origin_z, double size_x, double size_y, double size_z);
-    void addCube(Eigen::Affine3d p, double size_x, double size_y, double size_z);
 
     void addPointsToField(const std::vector<Eigen::Vector3d> &points);
     void updatePointsInField(const std::vector<Eigen::Vector3d> &points, bool iterative = false);

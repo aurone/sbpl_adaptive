@@ -34,10 +34,12 @@ include_directories(${OROCOS_KDL_INCLUDE_DIRS})
 
 find_package(catkin REQUIRED COMPONENTS
     roscpp
+    leatherman
     moveit_core
     moveit_msgs
     moveit_ros_planning
     octomap_msgs
+    sbpl_arm_planner
     sbpl_geometry_utils
     tf
     tf_conversions)
@@ -49,7 +51,7 @@ catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
     #DEPENDS sbpl
-    CATKIN_DEPENDS roscpp sbpl_geometry_utils)
+    CATKIN_DEPENDS roscpp leatherman sbpl_arm_planner sbpl_geometry_utils)
 
 include_directories(${catkin_INCLUDE_DIRS})
 include_directories(include)
