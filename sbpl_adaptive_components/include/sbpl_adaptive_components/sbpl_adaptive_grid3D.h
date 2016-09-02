@@ -11,7 +11,6 @@
 #include <leatherman/utils.h>
 #include <ros/ros.h>
 #include <sbpl_arm_planner/occupancy_grid.h>
-#include <sbpl_adaptive_collision_checking/occupancy_grid.h>
 #include <tf/tf.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>

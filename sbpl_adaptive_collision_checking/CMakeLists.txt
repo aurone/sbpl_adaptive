@@ -59,7 +59,6 @@ include_directories(include)
 add_library(
     sbpl_adaptive_collision_checking
     src/sbpl_collision_model.cpp
-    src/occupancy_grid.cpp
     src/bresenham.cpp
     src/sbpl_collision_space.cpp
     src/urdf_collision_model.cpp)
