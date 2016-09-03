@@ -59,6 +59,7 @@
 #include <sbpl_adaptive/planners/TRAStar/traplanner.h>
 #include <sbpl_adaptive/planners/AdaptivePlanner/araplanner_ad.h>
 #include <sbpl_adaptive/planners/AdaptivePlanner/mhaplanner_ad.h>
+#include <sbpl_adaptive/planners/AdaptivePlanner/improved_mhaplanner_ad.h>
 #include <sbpl_adaptive/planners/AdaptivePlanner/adaptive_planner.h>
 
 #endif

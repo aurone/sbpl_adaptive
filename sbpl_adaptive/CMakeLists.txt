@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(PkgConfig REQUIRED)
 #find_package(sbpl REQUIRED)
 
+pkg_check_modules( gsl REQUIRED gsl )
+
 find_package(sbpl REQUIRED)
 
 MESSAGE("SBPL:")
@@ -41,9 +43,10 @@ add_library(
     src/discrete_space_information/multirep_adaptive_environment.cpp
     src/planners/AdaptivePlanner/araplanner_ad.cpp
     src/planners/AdaptivePlanner/mhaplanner_ad.cpp
+    src/planners/AdaptivePlanner/improved_mhaplanner_ad.cpp
     src/planners/AdaptivePlanner/adaptive_planner.cpp)
 
-target_link_libraries(${PROJECT_NAME} sbpl)
+target_link_libraries(${PROJECT_NAME} sbpl ${gsl_LIBRARIES})
 
 install(
     TARGETS sbpl_adaptive
