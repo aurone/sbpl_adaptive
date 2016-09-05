@@ -68,8 +68,8 @@ class MHAReplanParams: public ReplanParams
   public:
     MHAReplanParams(double allocated_time): ReplanParams(allocated_time)
   {
-    inflation_eps = 1.0;
-    anchor_eps = 1.0;
+    inflation_eps = 50.0;
+    anchor_eps = 50.0;
     use_anchor = true;
     use_lazy = false;
     meta_search_type = imp_mhaplanner_ad::MetaSearchType::ROUND_ROBIN;
@@ -128,8 +128,10 @@ class Imp_MHAPlanner_AD : public SBPLPlanner{
       return -1;
     };
     virtual int replan(double allocated_time_sec, std::vector<int>* solution_stateIDs_V, int* solcost){
-      printf("Not supported. Use MHAReplanParams");
-      return -1;
+      // printf("Not supported. Use MHAReplanParams");
+      // return -1;
+      MHAReplanParams params(allocated_time_sec);
+      return replan(solution_stateIDs_V, params, solcost); 
     };
 
     virtual int replan(int start, int goal, std::vector<int>* solution_stateIDs_V, ReplanParams params, int* solcost)

@@ -624,7 +624,7 @@ int Imp_MHAPlanner_AD::ImprovePath() {
   CKey min_key = heaps[0].getminkeyheap();
 
 
-  int anchor_val = min_key.key[0];
+  long int anchor_val = min_key.key[0];
 
   // MHA*++ and Unconstrained-MHA*
   // while (!heaps[0].emptyheap() &&
@@ -644,9 +644,8 @@ int Imp_MHAPlanner_AD::ImprovePath() {
     switch (mha_type) {
     case imp_mhaplanner_ad::MHAType::ORIGINAL: {
 
-      if ((goal_state->g > int(anchor_eps * inflation_eps * anchor_val) ||
-           !goal_state->isTrueCost) &&
-          (goal_state->v > anchor_eps * inflation_eps * anchor_val)) {
+      if ((goal_state->g > (long int)(anchor_eps * anchor_val) ||
+           !goal_state->isTrueCost)) {
         terminate = false;
       }
 
@@ -713,18 +712,18 @@ int Imp_MHAPlanner_AD::ImprovePath() {
     switch (mha_type) {
     case imp_mhaplanner_ad::MHAType::ORIGINAL: {
       // MHA - original
-      anchor_val = max(anchor_val, int(anchor_min_key.key[0]));
+      anchor_val = max(anchor_val, anchor_min_key.key[0]);
 
       // Note: The alternative would be to find a q_id whose min_key is within the suboptimality bound.
       if (best_q_min_key.key[0] > anchor_eps * anchor_val) {
-        ROS_WARN("Anchors aweigh! chosen queue (%d) has min key %ld and anchor has min key %d",
+        ROS_WARN("Anchors aweigh! chosen queue (%d) has min key %ld and anchor has min key %ld",
                  q_id, best_q_min_key.key[0], anchor_val);
         //std::cin.get();
         q_id = 0;
       } else if (q_id != 0) {
         state = (MHAState *)heaps[q_id].getminheap();
       }
-
+      printf("Chose state %d, anchor_val %d\n", state->id, anchor_val);
       break;
     }
 
@@ -732,14 +731,14 @@ int Imp_MHAPlanner_AD::ImprovePath() {
       // Improved MHA* - MHA*++ (g+h < g_anchor + w*h_anchor)
       state = (MHAState *)heaps[q_id].getminheap();
       MHAState *anchor_state = GetState(0, state->id);
-      anchor_val = max(anchor_val, int(anchor_min_key.key[0]));
+      anchor_val = max(anchor_val, anchor_min_key.key[0]);
       int uhs_val = anchor_state->g + anchor_state->h;
       bool mha_lite_anchor = uhs_val > anchor_val;
 
       if (mha_lite_anchor) {
         ROS_WARN("Anchor state ID:%d   G:%d    H:%d\n", anchor_state->id,
                  anchor_state->g, anchor_state->h);
-        ROS_WARN("Anchors aweigh! chosen queue (%d) has f-val %d, anchor-h %d, minkey %ld, and anchor has min key %d",
+        ROS_WARN("Anchors aweigh! chosen queue (%d) has f-val %d, anchor-h %d, minkey %ld, and anchor has min key %ld",
                  q_id, anchor_state->g + anchor_state->h,
                  int(inflation_eps * anchor_state->h), best_q_min_key.key[0],
                  anchor_val);
@@ -782,16 +781,16 @@ int Imp_MHAPlanner_AD::ImprovePath() {
       // Improved MHA* - Focal-MHA* (g+h < w*(g_anchor + h_anchor))
       state = (MHAState *)heaps[q_id].getminheap();
       MHAState *anchor_state = GetState(0, state->id);
-      anchor_val = max(anchor_val, int(anchor_min_key.key[0]));
-      int uhs_val = anchor_state->g + anchor_state->h;
+      anchor_val = max(anchor_val, anchor_min_key.key[0]);
+      long int uhs_val = anchor_state->g + anchor_state->h;
       bool mha_lite_anchor = uhs_val > inflation_eps * anchor_val;
 
       if (mha_lite_anchor) {
         ROS_WARN("Anchor state ID:%d   G:%d    H:%d\n", anchor_state->id,
                  anchor_state->g, anchor_state->h);
-        ROS_WARN("Anchors aweigh! chosen queue (%d) has f-val %d, anchor-h %d, minkey %ld, and anchor has min key %d",
+        ROS_WARN("Anchors aweigh! chosen queue (%d) has f-val %d, anchor-h %ld, minkey %ld, and anchor has min key %ld",
                  q_id, anchor_state->g + anchor_state->h,
-                 int(inflation_eps * anchor_state->h), best_q_min_key.key[0],
+                 (long int)(inflation_eps * anchor_state->h), best_q_min_key.key[0],
                  anchor_val);
         //std::cin.get();
 
@@ -803,7 +802,7 @@ int Imp_MHAPlanner_AD::ImprovePath() {
         for (int kk = 1; kk <= heaps[0].currentsize; ++kk) {
           MHAState *sa = (MHAState *)heaps[0].heap[kk].heapstate;
 
-          int uhs_val = int(sa->g + sa->h);
+          long int uhs_val = sa->g + sa->h;
 
           if (uhs_val > inflation_eps * anchor_val) {
             continue;  // Not in EPS-FOCAL
@@ -843,7 +842,7 @@ int Imp_MHAPlanner_AD::ImprovePath() {
         heaps[q_id].insertheap(goal_state_q_id, goal_q_min_key);
       }
 
-      anchor_val = max(anchor_val, int(anchor_min_key.key[0]));
+      anchor_val = max(anchor_val, anchor_min_key.key[0]);
       break;
     }
 
@@ -948,9 +947,9 @@ int Imp_MHAPlanner_AD::ImprovePath() {
 
     //get the min key for the next iteration
     min_key = heaps[0].getminkeyheap();
-    anchor_val = max(anchor_val, int(min_key.key[0]));
-    // printf("min_key =%d\n",min_key.key[0]);
-    // printf("anchor_val =%d\n",anchor_val);
+    anchor_val = max(anchor_val, min_key.key[0]);
+    printf("min_key =%d\n",min_key.key[0]);
+    printf("anchor_val =%d\n",anchor_val);
   }
 
   search_expands += expands;
