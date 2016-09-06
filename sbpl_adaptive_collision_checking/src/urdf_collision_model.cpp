@@ -385,6 +385,7 @@ bool URDFCollisionModel::getLinkCollisionSpheres_CurrentState(
 
         Sphere s_;
         s_.name_ = s.name_;
+        s_.link_name_ = s.link_name_;
         s_.v = tfm * s.v;
         s_.radius = s.radius;
         //Sphere::print(s_);
@@ -469,6 +470,7 @@ void URDFCollisionModel::autoIgnoreSelfCollisions(
         for (auto colliding_pair : colliding_links) {
             if (!hasIgnoreSelfPair(colliding_pair.first, colliding_pair.second)) {
                 addIgnoreSelfCollisionLinkPair(colliding_pair);
+                ROS_WARN("Adding ignored self collision pair (%s, %s)", colliding_pair.first.c_str(), colliding_pair.second.c_str());
             }
         }
     }
