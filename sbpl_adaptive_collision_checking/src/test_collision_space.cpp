@@ -48,7 +48,7 @@ int main(int argc, char **argv)
                     dims[2], 0.02, origin[0], origin[1], origin[2], 0.4);
     df->reset();
 
-    sbpl_arm_planner::OccupancyGrid* grid = new sbpl_arm_planner::OccupancyGrid(
+    sbpl::OccupancyGrid* grid = new sbpl::OccupancyGrid(
             df);
     grid->setReferenceFrame(world_frame);
 

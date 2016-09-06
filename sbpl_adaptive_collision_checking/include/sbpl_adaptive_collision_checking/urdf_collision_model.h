@@ -29,8 +29,18 @@
 
 /** \author Kalin Gochev */
 
+// standard includes
+#include <map>
+#include <memory>
+#include <utility>
+
+// system includes
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <boost/shared_ptr.hpp>
+#include <ros/ros.h>
+#include <sbpl/sbpl_exception.h>
+#include <urdf/model.h>
 
 #include <sbpl_adaptive_collision_checking/sbpl_collision_model.h>
 
@@ -239,7 +249,10 @@ public:
     void addIgnoreSelfCollisionLinkPairs(
         const std::vector<std::pair<std::string, std::string>> pairs);
 
-    /// \name Reimplemented Public Functions
+    boost::shared_ptr<const urdf::ModelInterface> getURDF() const;
+    boost::shared_ptr<const srdf::Model> getSRDF() const;
+
+    /// \name Required Public Functions from SBPLCollisionModel
     ///@{
     bool checkLimits(const ModelCoords_t &coord) const override;
 
@@ -280,7 +293,8 @@ protected:
 
     ros::AsyncSpinner* spinner;
 
-    boost::shared_ptr<urdf::Model> urdf_;
+    boost::shared_ptr<const urdf::ModelInterface> urdf_;
+    boost::shared_ptr<const srdf::Model> srdf_;
 
     int num_active_joints_;
     int num_coords_;
@@ -366,6 +380,11 @@ protected:
     bool attachObject(
         const std::string &link_name,
         const AttachedObject_t &obj);
+
+    bool computeShapeBoundingSpheres(
+        const shapes::Shape& shape,
+        double res,
+        std::vector<Sphere>& spheres);
 };
 
 //////////////////////////////////////
@@ -492,6 +511,7 @@ double URDFModelCoords_t::getMaxJointDistance(
 // URDFCollisionModel Implementation //
 ///////////////////////////////////////
 
+/// \brief Add a set of contact spheres to a link
 inline
 void URDFCollisionModel::addContactSpheres(
     const std::string &link_name,
@@ -502,6 +522,7 @@ void URDFCollisionModel::addContactSpheres(
     }
 }
 
+/// \brief Add a set of collision spheres to a link
 inline
 void URDFCollisionModel::addCollisionSpheres(
     const std::string &link_name,
@@ -512,12 +533,15 @@ void URDFCollisionModel::addCollisionSpheres(
     }
 }
 
+/// \brief Add a contact sphere to a link
+///
+/// There sphere position relative to the link is specified in the link frame.
 inline
 void URDFCollisionModel::addContactSphere(
     const std::string &link_name,
     Sphere s)
 {
-    std::map<std::string, std::vector<Sphere>>::iterator it = contact_spheres_.find(link_name);
+    auto it = contact_spheres_.find(link_name);
     if (it == contact_spheres_.end()) {
         s.link_name_ = link_name;
         s.name_ = link_name + "_0";
@@ -533,10 +557,13 @@ void URDFCollisionModel::addContactSphere(
     }
 }
 
+/// \brief Add a collision sphere to a link
+///
+/// The sphere position relative to the link is specified in the link frame.
 inline
 void URDFCollisionModel::addCollisionSphere(const std::string &link_name, Sphere s)
 {
-    std::map<std::string, std::vector<Sphere>>::iterator it = collision_spheres_.find(link_name);
+    auto it = collision_spheres_.find(link_name);
     if (it == collision_spheres_.end()) {
         s.link_name_ = link_name;
         s.name_ = link_name + "_0";
@@ -618,6 +645,20 @@ bool URDFCollisionModel::getModelPathContactSpheres(
     const URDFModelCoords_t &c0 = dynamic_cast<const URDFModelCoords_t&>(coords0);
     const URDFModelCoords_t &c1 = dynamic_cast<const URDFModelCoords_t&>(coords1);
     return getModelPathContactSpheres(c0, c1, steps, spheres);
+}
+
+inline
+boost::shared_ptr<const urdf::ModelInterface>
+URDFCollisionModel::getURDF() const
+{
+    return urdf_;
+}
+
+inline
+boost::shared_ptr<const srdf::Model>
+URDFCollisionModel::getSRDF() const
+{
+    return srdf_;
 }
 
 inline

@@ -36,10 +36,10 @@ int main(int argc, char** argv)
     nh.param<std::string>("robot_description_semantic", robot_desc_sem, "");
 
     std::shared_ptr<URDFCollisionModel> urdf_model;
-    std::shared_ptr<OccupancyGrid> grid;
+    sbpl::OccupancyGridPtr grid;
     std::shared_ptr<SBPLCollisionSpace> cspace;
 
-    grid.reset(new OccupancyGrid(0, 0, 0, 0.05, 5.0, 5.0, 5.0, 0.3));
+    grid.reset(new sbpl::OccupancyGrid(0, 0, 0, 0.05, 5.0, 5.0, 5.0, 0.3));
     if (!grid) {
         ROS_ERROR("Failed to init grid!");
         exit(0);

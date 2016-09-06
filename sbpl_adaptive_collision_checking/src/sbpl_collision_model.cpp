@@ -51,8 +51,8 @@ visualization_msgs::MarkerArray SBPLCollisionModel::getModelBasicVisualization(
     std::vector<Sphere> contact_spheres;
     if (getModelContactSpheres(coords, contact_spheres)) {
         for (Sphere s : contact_spheres) {
-            visualization_msgs::Marker marker = getSphereMarker(s,
-                    ns + "_contact_spheres", frame_id, col, idx);
+            visualization_msgs::Marker marker = getSphereMarker(
+                    s, ns + "_contact_spheres", frame_id, col, idx);
         }
     }
     return markers;
