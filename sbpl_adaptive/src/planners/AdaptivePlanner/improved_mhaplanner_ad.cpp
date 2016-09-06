@@ -33,7 +33,7 @@ using namespace std;
 using namespace imp_mhaplanner_ad;
 
 Imp_MHAPlanner_AD::Imp_MHAPlanner_AD(
-    DiscreteSpaceInformation* environment,
+    EnvironmentMHA* environment,
     Heuristic* hanchor,
     Heuristic** heurs,
     int num_heurs, 
@@ -44,7 +44,7 @@ Imp_MHAPlanner_AD::Imp_MHAPlanner_AD(
     m_heurs(heurs) 
 {
   bforwardsearch = bSearchForward;
-  environment_ = environment;
+  env_ = environment;
   replan_number = 0;
 
   num_heuristics = num_heurs;
@@ -112,9 +112,9 @@ MHAState *Imp_MHAPlanner_AD::GetState(int q_id, int id) {
 
     //compute heuristics
     if (bforwardsearch) {
-      s->h = compute_heuristic(s->id, q_id); // environment_->GetGoalHeuristic(q_id, s->id);
+      s->h = env_->GetGoalHeuristic(q_id, s->id);
     } else {
-      s->h = compute_heuristic(s->id, q_id); // environment_->GetStartHeuristic(q_id, s->id);
+      s->h = env_->GetStartHeuristic(q_id, s->id);
     }
 
   }
@@ -130,9 +130,9 @@ int Imp_MHAPlanner_AD::compute_heuristic(int state_id, int q_id)
         return anc;
     }
     else {
-        int stair = m_heurs[q_id - 1]->GetGoalHeuristic(state_id);
-        ROS_INFO("%d heur is %d", q_id, stair);
-        return stair;
+        int inad = m_heurs[q_id - 1]->GetGoalHeuristic(state_id);
+        ROS_INFO("%d heur is %d", q_id, inad);
+        return inad;
     }   
 }
 
@@ -170,16 +170,16 @@ void Imp_MHAPlanner_AD::ExpandState(int q_id, MHAState *parent) {
 
   if (params.use_lazy) {
     if (bforwardsearch) {
-      environment_->GetLazySuccs(parent->id, &children, &costs, &isTrueCost);
+      env_->GetLazySuccs(parent->id, &children, &costs, &isTrueCost);
     } else {
-      environment_->GetLazyPreds(parent->id, &children, &costs, &isTrueCost);
+      env_->GetLazyPreds(parent->id, &children, &costs, &isTrueCost);
     }
 
   } else {
     if (bforwardsearch) {
-      environment_->GetSuccs(parent->id, &children, &costs);
+      env_->GetSuccs(parent->id, &children, &costs);
     } else {
-      environment_->GetPreds(parent->id, &children, &costs);
+      env_->GetPreds(parent->id, &children, &costs);
     }
     isTrueCost.resize(costs.size(), true);
   }
@@ -342,9 +342,9 @@ void Imp_MHAPlanner_AD::EvaluateState(int q_id, MHAState *state) {
   int trueCost;
 
   if (bforwardsearch) {
-    trueCost = environment_->GetTrueCost(parent->id, state->id);
+    trueCost = env_->GetTrueCost(parent->id, state->id);
   } else {
-    trueCost = environment_->GetTrueCost(state->id, parent->id);
+    trueCost = env_->GetTrueCost(state->id, parent->id);
   }
 
   //DTS
@@ -1078,17 +1078,17 @@ vector<int> Imp_MHAPlanner_AD::GetSearchPath(int &solcost) {
 
     if (params.use_lazy) {
       if (bforwardsearch) {
-        environment_->GetLazySuccs(state->expanded_best_parent->id, &SuccIDV, &CostV,
+        env_->GetLazySuccs(state->expanded_best_parent->id, &SuccIDV, &CostV,
                            &isTrueCost);
       } else {
-        environment_->GetLazyPreds(state->expanded_best_parent->id, &SuccIDV, &CostV,
+        env_->GetLazyPreds(state->expanded_best_parent->id, &SuccIDV, &CostV,
                            &isTrueCost);
       }
     } else {
       if (bforwardsearch) {
-        environment_->GetSuccs(state->expanded_best_parent->id, &SuccIDV, &CostV);
+        env_->GetSuccs(state->expanded_best_parent->id, &SuccIDV, &CostV);
       } else {
-        environment_->GetPreds(state->expanded_best_parent->id, &SuccIDV, &CostV);
+        env_->GetPreds(state->expanded_best_parent->id, &SuccIDV, &CostV);
       }
 
     }
@@ -1260,7 +1260,7 @@ void Imp_MHAPlanner_AD::initializeSearch() {
   start_state = GetState(0, start_state_id);
 
   //ensure heuristics are up-to-date
-  environment_->EnsureHeuristicsUpdated((bforwardsearch == true));
+  env_->EnsureHeuristicsUpdated((bforwardsearch == true));
 }
 
 bool Imp_MHAPlanner_AD::Search(vector<int> &pathIds, int &PathCost) {

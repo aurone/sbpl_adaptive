@@ -2,6 +2,7 @@
 #define __ADAPTIVE_ENVIRONMENT_H_
 
 #include <sbpl/headers.h>
+#include <sbpl_adaptive/discrete_space_information/environment_mha.h>
 
 /** \brief base class for environments defining planning graphs
 It is independent of the graph search used
@@ -15,7 +16,7 @@ enum AdaptiveStateType_t : unsigned char { LD=0, NearHD=1, HD=2 };
 
 namespace sbpl_adaptive {
 
-class AdaptiveDiscreteSpaceInformation : virtual public DiscreteSpaceInformation
+class AdaptiveDiscreteSpaceInformation : virtual public EnvironmentMHA //DiscreteSpaceInformation
 {
 
 public:

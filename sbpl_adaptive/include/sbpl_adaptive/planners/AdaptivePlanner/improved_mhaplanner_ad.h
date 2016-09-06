@@ -174,7 +174,7 @@ class Imp_MHAPlanner_AD : public SBPLPlanner{
       printf("Not supported. Use MHAReplanParams");
     };
 
-    Imp_MHAPlanner_AD(DiscreteSpaceInformation* environment, Heuristic* hanchor, Heuristic** heurs, int num_heurs, bool bSearchForward);
+    Imp_MHAPlanner_AD(EnvironmentMHA* environment, Heuristic* hanchor, Heuristic** heurs, int num_heurs, bool bSearchForward);
     ~Imp_MHAPlanner_AD();
 
     virtual void get_search_stats(std::vector<PlannerStats>* s);
@@ -200,7 +200,7 @@ class Imp_MHAPlanner_AD : public SBPLPlanner{
     int start_state_id;
 
     //mha params
-    // EnvironmentMHA* env_;
+    EnvironmentMHA* env_;
     int num_heuristics;
     double inflation_eps, anchor_eps;
     bool use_anchor;
