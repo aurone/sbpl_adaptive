@@ -428,7 +428,7 @@ visualization_msgs::Marker AdaptiveGrid3D_t::getAdaptiveGridVisualization(
     marker.header.frame_id = frame_;
     marker.ns = ns_prefix + "_AdaptiveGrid3D";
     marker.id = 0;
-    marker.type = visualization_msgs::Marker::POINTS;
+    marker.type = visualization_msgs::Marker::CUBE_LIST;
     marker.action = visualization_msgs::Marker::ADD;
     marker.pose.position.x = 0;
     marker.pose.position.y = 0;
@@ -509,7 +509,7 @@ visualization_msgs::Marker AdaptiveGrid3D_t::getCostToGoalGridVisualization(
     marker.header.frame_id = frame_;
     marker.ns = ns_prefix + "_AdaptiveGrid3D_indeces";
     marker.id = 0;
-    marker.type = visualization_msgs::Marker::POINTS;
+    marker.type = visualization_msgs::Marker::CUBE_LIST;
     marker.action = visualization_msgs::Marker::ADD;
     marker.pose.position.x = 0;
     marker.pose.position.y = 0;
