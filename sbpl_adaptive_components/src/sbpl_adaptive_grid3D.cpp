@@ -500,8 +500,8 @@ visualization_msgs::Marker AdaptiveGrid3D_t::getAdaptiveGridVisualization(
 
 visualization_msgs::Marker AdaptiveGrid3D_t::getCostToGoalGridVisualization(
     std::string ns_prefix,
-    int throttle /*=1*/,
-    double scale/*=-1*/)
+    int throttle,
+    double scale)
 {
     visualization_msgs::Marker marker;
     double m_scale = (scale <= 0) ? oc_grid_->getResolution() : scale;
