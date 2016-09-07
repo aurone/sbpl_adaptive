@@ -816,7 +816,7 @@ void PViz::visualizeBasicStates(const std::vector<std::vector<double> > &states,
 
   marker.ns = name;
   marker.id = 1;
-  marker.type = visualization_msgs::Marker::POINTS;
+  marker.type = visualization_msgs::Marker::CUBE_LIST;
   marker.action = visualization_msgs::Marker::ADD;
   marker.scale.x = size;
   marker.scale.y = size;

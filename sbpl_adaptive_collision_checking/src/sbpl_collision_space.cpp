@@ -35,16 +35,14 @@ bool SBPLCollisionSpace::checkCollision(
     const ModelCoords_t &coords,
     double &dist)
 {
-    int x, y, z;
-    double sum = 0, dist_temp = 100;
     std::vector<Sphere> collision_spheres;
-
     if (!model_->getModelCollisionSpheres(coords, collision_spheres)) {
         ROS_ERROR("[cspace] Failed to get model spheres");
         return false;
     }
 
     for (Sphere s : collision_spheres) {
+        int x, y, z;
         grid_->worldToGrid(s.v.x(), s.v.y(), s.v.z(), x, y, z);
         if (!grid_->isInBounds(x, y, z)) {
             ROS_DEBUG("Sphere %s out of bounds!", s.name_.c_str());
@@ -52,7 +50,7 @@ bool SBPLCollisionSpace::checkCollision(
             return false;
         }
         double dist_bounds = grid_->getDistanceToBorder(x, y, z);
-        dist_temp = std::min(grid_->getDistance(x, y, z), dist_bounds);
+        double dist_temp = std::min(grid_->getDistance(x, y, z), dist_bounds);
         if (dist_temp < dist) {
             dist = dist_temp;
         }

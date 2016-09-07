@@ -385,6 +385,7 @@ bool URDFCollisionModel::getLinkCollisionSpheres_CurrentState(
 
         Sphere s_;
         s_.name_ = s.name_;
+        s_.link_name_ = s.link_name_;
         s_.v = tfm * s.v;
         s_.radius = s.radius;
         //Sphere::print(s_);
@@ -469,6 +470,7 @@ void URDFCollisionModel::autoIgnoreSelfCollisions(
         for (auto colliding_pair : colliding_links) {
             if (!hasIgnoreSelfPair(colliding_pair.first, colliding_pair.second)) {
                 addIgnoreSelfCollisionLinkPair(colliding_pair);
+                ROS_WARN("Adding ignored self collision pair (%s, %s)", colliding_pair.first.c_str(), colliding_pair.second.c_str());
             }
         }
     }
@@ -523,24 +525,28 @@ std::vector<std::pair<std::string, std::string>> URDFCollisionModel::getSelfColl
 bool URDFCollisionModel::checkSelfCollisions(
     const URDFModelCoords_t &coords) const
 {
-    if (!updateFK(coords))
+    if (!updateFK(coords)) {
         return false;
+    }
 
     for (int i = 0; i < links_with_collision_spheres_.size(); i++) {
         for (int j = i + 1; j < links_with_collision_spheres_.size(); j++) {
             std::string link1 = links_with_collision_spheres_[i];
             std::string link2 = links_with_collision_spheres_[j];
 
-            if (hasIgnoreSelfPair(link1, link2))
+            if (hasIgnoreSelfPair(link1, link2)) {
                 continue;
+            }
 
             std::vector<Sphere> l1;
             std::vector<Sphere> l2;
 
-            if (!getLinkCollisionSpheres_CurrentState(link1, l1))
+            if (!getLinkCollisionSpheres_CurrentState(link1, l1)) {
                 return false;
-            if (!getLinkCollisionSpheres_CurrentState(link2, l2))
+            }
+            if (!getLinkCollisionSpheres_CurrentState(link2, l2)) {
                 return false;
+            }
             for (Sphere s1 : l1) {
                 for (Sphere s2 : l2) {
                     Eigen::Vector3d d = s1.v - s2.v; //distance between sphere centers
@@ -577,15 +583,13 @@ bool URDFCollisionModel::checkLimits(const URDFModelCoords_t &coords) const
         ROS_ERROR("robot_model_ not initialized!");
         throw SBPL_Exception();
     }
-    for (std::map<std::string, std::vector<double>>::const_iterator it =
-            coords.coordmap.begin(); it != coords.coordmap.end(); it++) {
+    for (auto it = coords.coordmap.begin(); it != coords.coordmap.end(); it++) {
         std::string joint_name = it->first;
-        const robot_model::JointModel* jm = robot_model_->getJointModel(
-                joint_name);
+        const robot_model::JointModel* jm =
+                robot_model_->getJointModel(joint_name);
 
         if (jm == NULL) {
-            ROS_ERROR("Could not get joint model for joint %s",
-                    joint_name.c_str());
+            ROS_ERROR("Could not get joint model for joint %s", joint_name.c_str());
             throw SBPL_Exception();
         }
 
@@ -593,9 +597,7 @@ bool URDFCollisionModel::checkLimits(const URDFModelCoords_t &coords) const
         robot_model::JointModel::Bounds bounds = jm->getVariableBounds();
 
         if (var_count != it->second.size()) {
-            ROS_ERROR(
-                    "URDFCollisionModel::getModelCollisionSpheres -- coords.size() (%d) != joint #vars (%d) for joint %s!",
-                    (int )it->second.size(), var_count, joint_name.c_str());
+            ROS_ERROR("URDFCollisionModel::getModelCollisionSpheres -- coords.size() (%zu) != joint #vars (%d) for joint %s!", it->second.size(), var_count, joint_name.c_str());
             throw SBPL_Exception();
             return false;
         }
@@ -603,19 +605,16 @@ bool URDFCollisionModel::checkLimits(const URDFModelCoords_t &coords) const
 #ifdef __ROS_DISTRO_groovy__
             if(bounds[j].first < bounds[j].second) {
                 if(it->second[j] < bounds[j].first || it->second[j] > bounds[j].second) {
-                    ROS_WARN("Joint %s var %d [%.3f] outside limits [%.3f to %.3f]",
-                            joint_name.c_str(), j, it->second[j], bounds[j].first, bounds[j].second);
+                    ROS_WARN("Joint %s var %d [%.3f] outside limits [%.3f to %.3f]", joint_name.c_str(), j, it->second[j], bounds[j].first, bounds[j].second);
                     return false;
                 }
             }
 #else
             if (bounds[j].position_bounded_) {
-                if (it->second[j] < bounds[j].min_position_
-                        || it->second[j] > bounds[j].max_position_) {
-                    ROS_WARN(
-                            "Joint %s var %d [%.3f] outside limits [%.3f to %.3f]",
-                            joint_name.c_str(), j, it->second[j],
-                            bounds[j].min_position_, bounds[j].max_position_);
+                if (it->second[j] < bounds[j].min_position_ ||
+                    it->second[j] > bounds[j].max_position_)
+                {
+                    ROS_WARN("Joint %s var %d [%.3f] outside limits [%.3f to %.3f]", joint_name.c_str(), j, it->second[j], bounds[j].min_position_, bounds[j].max_position_);
                     return false;
                 }
             }
@@ -629,8 +628,9 @@ bool URDFCollisionModel::getModelCollisionSpheres(
     const URDFModelCoords_t &coords,
     std::vector<Sphere> &spheres) const
 {
-    if (!updateFK(coords))
+    if (!updateFK(coords)) {
         return false;
+    }
     if (coords.collision_links.empty()) {
         for (std::string link_name : links_with_collision_spheres_) {
             if (!getLinkCollisionSpheres_CurrentState(link_name, spheres)) {
@@ -1580,18 +1580,17 @@ bool URDFCollisionModel::computeShapeBoundingSpheres(
 
 bool URDFCollisionModel::hasAttachedObjects(const std::string &link_name) const
 {
-    std::map<std::string, std::vector<AttachedObject_t>>::const_iterator it =
-            attached_objects_.find(link_name);
+    auto it = attached_objects_.find(link_name);
     return (it != attached_objects_.end());
 }
 
 const std::vector<AttachedObject_t> URDFCollisionModel::getAttachedObjects(
     const std::string &link_name) const
 {
-    std::map<std::string, std::vector<AttachedObject_t>>::const_iterator it =
-            attached_objects_.find(link_name);
-    if (it == attached_objects_.end())
+    auto it = attached_objects_.find(link_name);
+    if (it == attached_objects_.end()) {
         return {};
+    }
     return it->second;
 }
 
@@ -1604,12 +1603,10 @@ bool URDFCollisionModel::getLinkAttachedObjectsSpheres(
         return true;
     const std::vector<AttachedObject_t> objs = getAttachedObjects(link_name);
 
-    ROS_INFO("Got %d attached objects for link %s", (int )objs.size(),
-            link_name.c_str());
+    ROS_INFO("Got %d attached objects for link %s", (int )objs.size(), link_name.c_str());
 
     for (const AttachedObject_t &o : objs) {
-        ROS_INFO("Object %s has %d spheres!", o.name.c_str(),
-                (int )o.spheres.size());
+        ROS_INFO("Object %s has %zu spheres!", o.name.c_str(), o.spheres.size());
         for (const Sphere &s : o.spheres) {
             Sphere s_;
             s_.name_ = s.name_;
@@ -1625,8 +1622,7 @@ bool URDFCollisionModel::hasAttachedObject(
     const std::string &link_name,
     const std::string &object_name) const
 {
-    std::map<std::string, std::vector<AttachedObject_t>>::const_iterator it =
-            attached_objects_.find(link_name);
+    auto it = attached_objects_.find(link_name);
     if (it == attached_objects_.end()) {
         return false;
     }
@@ -1642,8 +1638,7 @@ bool URDFCollisionModel::attachObject(
     const std::string &link_name,
     const AttachedObject_t &obj)
 {
-    std::map<std::string, std::vector<AttachedObject_t>>::iterator it =
-            attached_objects_.find(link_name);
+    auto it = attached_objects_.find(link_name);
     if (it == attached_objects_.end()) {
         //no attached objects on this joint
         attached_objects_[link_name] = {obj};
