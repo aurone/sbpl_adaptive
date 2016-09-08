@@ -112,9 +112,9 @@ MHAState *Imp_MHAPlanner_AD::GetState(int q_id, int id) {
 
     //compute heuristics
     if (bforwardsearch) {
-      s->h = env_->GetGoalHeuristic(q_id, s->id);
+      s->h = compute_heuristic(s->id, q_id);
     } else {
-      s->h = env_->GetStartHeuristic(q_id, s->id);
+      s->h = compute_heuristic(s->id, q_id);
     }
 
   }
@@ -1401,8 +1401,7 @@ int Imp_MHAPlanner_AD::GetBestHeuristicID() {
       }
 
       if (print) {
-        printf("                      qid=%d g=%d\n", ii,
-               queue_expands[ii]);
+        printf("qid=%d g=%d\n", ii, queue_expands[ii]);
       }
     }
 

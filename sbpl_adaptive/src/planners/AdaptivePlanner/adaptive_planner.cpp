@@ -89,8 +89,10 @@ AdaptivePlanner::AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, 
 	num_heur_ = num_heur; 
 
 	planner.reset(new Imp_MHAPlanner_AD(adaptive_environment_, plan_anc_heur_, plan_heurs_, num_heur_, bforwardsearch));
+	// planner.reset(new MHAPlanner_AD(adaptive_environment_, plan_anc_heur_, plan_heurs_, num_heur_));
 	planner->set_search_mode(false);
 	tracker.reset(new Imp_MHAPlanner_AD(adaptive_environment_, track_anc_heur_, track_heurs_, num_heur_, bforwardsearch));
+	// tracker.reset(new MHAPlanner_AD(adaptive_environment_, track_anc_heur_, track_heurs_, num_heur_));
 	tracker->set_search_mode(false);
 
 	SBPL_INFO("done!");

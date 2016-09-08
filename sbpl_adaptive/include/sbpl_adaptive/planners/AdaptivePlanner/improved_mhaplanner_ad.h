@@ -74,7 +74,7 @@ class MHAReplanParams: public ReplanParams
     use_lazy = false;
     meta_search_type = imp_mhaplanner_ad::MetaSearchType::ROUND_ROBIN;
     planner_type = imp_mhaplanner_ad::PlannerType::SMHA;
-    mha_type = imp_mhaplanner_ad::MHAType::PLUS;
+    mha_type = imp_mhaplanner_ad::MHAType::ORIGINAL;
   };
     double inflation_eps, anchor_eps;
     bool use_anchor;
