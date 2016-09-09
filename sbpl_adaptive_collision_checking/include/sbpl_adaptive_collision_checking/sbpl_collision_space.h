@@ -23,7 +23,7 @@
 #include <sbpl_adaptive_collision_checking/sbpl_collision_model.h>
 #include <sbpl_adaptive_collision_checking/bresenham.h>
 
-namespace sbpl_adaptive_collision_checking {
+namespace adim {
 
 class SBPLCollisionSpace
 {

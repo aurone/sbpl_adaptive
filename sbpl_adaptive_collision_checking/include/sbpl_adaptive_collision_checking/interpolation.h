@@ -11,7 +11,7 @@
 #include <math.h>
 #include <angles/angles.h>
 
-namespace sbpl_adaptive_collision_checking {
+namespace adim {
 
 inline static double LERP(double v0, double v1, double t)
 {

@@ -44,7 +44,7 @@
 
 #include <sbpl_adaptive_collision_checking/sbpl_collision_model.h>
 
-namespace sbpl_adaptive_collision_checking {
+namespace adim {
 
 struct URDFModelCoords_t : ModelCoords_t
 {

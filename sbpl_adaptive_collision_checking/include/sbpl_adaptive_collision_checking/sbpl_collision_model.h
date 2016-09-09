@@ -63,7 +63,7 @@
 // project includes
 #include <sbpl_adaptive_collision_checking/common.h>
 
-namespace sbpl_adaptive_collision_checking {
+namespace adim {
 
 struct ModelCoords_t
 {

@@ -36,7 +36,7 @@
 #include <sbpl_geometry_utils/bounding_spheres.h>
 #include <sbpl_geometry_utils/voxelize.h>
 
-namespace sbpl_adaptive_collision_checking {
+namespace adim {
 
 URDFCollisionModel::URDFCollisionModel() :
 #ifndef __ROS_DISTRO_groovy__

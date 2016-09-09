@@ -3,7 +3,7 @@
 #include <eigen_conversions/eigen_kdl.h>
 #include <eigen_conversions/eigen_msg.h>
 
-namespace sbpl_adaptive_collision_checking {
+namespace adim {
 
 CollisionModelImpl::CollisionModelImpl() :
             nh_(),
@@ -73,9 +73,9 @@ bool CollisionModelImpl::readGroups()
             return false;
         }
         std::string gname = all_groups[i]["name"];
-        sbpl_adaptive_collision_checking::Group* gc =
-                new sbpl_adaptive_collision_checking::Group(gname);
-        std::map<std::string, sbpl_adaptive_collision_checking::Group*>::iterator group_iterator =
+        adim::Group* gc =
+                new adim::Group(gname);
+        std::map<std::string, adim::Group*>::iterator group_iterator =
                 group_config_map_.find(gname);
         if (group_iterator != group_config_map_.end()) {
             ROS_WARN_STREAM("Already have group name " << gname);
@@ -94,7 +94,7 @@ bool CollisionModelImpl::readGroups()
 
 void CollisionModelImpl::getGroupNames(std::vector<std::string> &names)
 {
-    for (std::map<std::string, sbpl_adaptive_collision_checking::Group*>::const_iterator iter =
+    for (std::map<std::string, adim::Group*>::const_iterator iter =
             group_config_map_.begin(); iter != group_config_map_.end();
             ++iter) {
         names.push_back(iter->first);
@@ -166,7 +166,7 @@ bool CollisionModelImpl::computeDefaultGroupFK(
 
 bool CollisionModelImpl::computeGroupFK(
     const std::vector<double> &angles,
-    sbpl_adaptive_collision_checking::Group *group,
+    adim::Group *group,
     std::vector<std::vector<KDL::Frame>> &frames)
 {
     return group->computeFK(angles, frames);
@@ -190,13 +190,13 @@ void CollisionModelImpl::setJointPosition(
 
 void CollisionModelImpl::printDebugInfo(const std::string &group_name)
 {
-    sbpl_adaptive_collision_checking::Group* group =
+    adim::Group* group =
             group_config_map_[group_name];
     group->printDebugInfo();
 }
 
 void CollisionModelImpl::getDefaultGroupSpheres(
-    std::vector<sbpl_adaptive_collision_checking::Sphere*> &spheres)
+    std::vector<adim::Sphere*> &spheres)
 {
     dgroup_->getSpheres(spheres);
 }
@@ -228,23 +228,23 @@ std::string CollisionModelImpl::getReferenceFrame(const std::string &group_name)
     return group_config_map_[group_name]->getReferenceFrame();
 }
 
-sbpl_adaptive_collision_checking::Group* CollisionModelImpl::getGroup(
+adim::Group* CollisionModelImpl::getGroup(
     const std::string &name)
 {
-    sbpl_adaptive_collision_checking::Group* r = NULL;
+    adim::Group* r = NULL;
     if (group_config_map_.find(name) == group_config_map_.end())
         return r;
     return group_config_map_[name];
 }
 
 void CollisionModelImpl::getVoxelGroups(
-    std::vector<sbpl_adaptive_collision_checking::Group*> &vg)
+    std::vector<adim::Group*> &vg)
 {
     vg.clear();
     for (auto iter = group_config_map_.begin(); iter != group_config_map_.end();
             ++iter) {
         if (iter->second->type_
-                == sbpl_adaptive_collision_checking::Group::VOXELS)
+                == adim::Group::VOXELS)
             vg.push_back(iter->second);
     }
 }

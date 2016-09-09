@@ -11,7 +11,7 @@
 
 namespace sbpl_adaptive_components {
 
-ExpansionGrid3D::ExpansionGrid3D(sbpl_adaptive_collision_checking::SBPLCollisionSpace* cspace) {
+ExpansionGrid3D::ExpansionGrid3D(adim::SBPLCollisionSpace* cspace) {
 	if(cspace == NULL){
 		SBPL_ERROR("Can't initialize ExpansionGrid3D with NULL collision space!");
 		throw SBPL_Exception();
@@ -50,7 +50,7 @@ void ExpansionGrid3D::reset(){
 	}
 };
 
-void ExpansionGrid3D::setExpansionStep(const sbpl_adaptive_collision_checking::ModelCoords_t &model_coords, unsigned int exp_step){
+void ExpansionGrid3D::setExpansionStep(const adim::ModelCoords_t &model_coords, unsigned int exp_step){
 	std::vector<Eigen::Vector3i> voxels;
 	if(!cspace_->getModelVoxelsInGrid(model_coords, voxels)) return;
 	for(Eigen::Vector3i voxel : voxels){
@@ -69,7 +69,7 @@ unsigned int ExpansionGrid3D::getEarliestExpansionStep(std::vector<Cell3D_t> vox
 	return min_;
 }
 
-visualization_msgs::MarkerArray ExpansionGrid3D::getVoxelVisualization(const sbpl_adaptive_collision_checking::ModelCoords_t &model_coords, std::string ns, Color_t color){
+visualization_msgs::MarkerArray ExpansionGrid3D::getVoxelVisualization(const adim::ModelCoords_t &model_coords, std::string ns, Color_t color){
 	visualization_msgs::MarkerArray markers;
 
 	visualization_msgs::Marker marker;

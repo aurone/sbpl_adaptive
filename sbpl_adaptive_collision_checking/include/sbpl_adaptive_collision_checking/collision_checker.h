@@ -5,7 +5,7 @@
 #include <vector>
 #include <visualization_msgs/MarkerArray.h>
 
-namespace sbpl_adaptive_collision_checking {
+namespace adim {
 
 class CollisionChecker
 {

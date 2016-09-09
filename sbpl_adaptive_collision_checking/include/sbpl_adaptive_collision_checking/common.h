@@ -8,7 +8,7 @@
 #ifndef SBPL_COLLISION_CHECKING_INCLUDE_SBPL_COLLISION_CHECKING_COMMON_H_
 #define SBPL_COLLISION_CHECKING_INCLUDE_SBPL_COLLISION_CHECKING_COMMON_H_
 
-namespace sbpl_adaptive_collision_checking {
+namespace adim {
 
 struct Sphere
 {

@@ -1,6 +1,6 @@
 #include <sbpl_adaptive_collision_checking/sbpl_collision_model.h>
 
-namespace sbpl_adaptive_collision_checking {
+namespace adim {
 
 visualization_msgs::Marker SBPLCollisionModel::getSphereMarker(
     const Sphere &s,
