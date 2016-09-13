@@ -230,8 +230,7 @@ int MHAPlanner_AD::replan(
                 else {
                     MHASearchState* s =
                             state_from_open_state(m_open[hidx].getminheap());
-                    SBPL_INFO("Expanding state %d  from search %d g : %d h : %d", s->state_id, hidx, s->g, s->od[hidx].h);
-                    // getchar();
+                    // SBPL_INFO("Expanding state %d  from search %d g : %d h : %d", s->state_id, hidx, s->g, s->od[hidx].h);
                     expand(s, hidx);
                 }
             }
@@ -614,12 +613,10 @@ int MHAPlanner_AD::compute_heuristic(int state_id, int hidx)
 {
     if (hidx == 0) {
         int anc = m_hanchor->GetGoalHeuristic(state_id);
-        ROS_INFO("Anchor is %d", anc);
         return anc;
     }
     else {
         int stair = m_heurs[hidx - 1]->GetGoalHeuristic(state_id);
-        ROS_INFO("Stair heur is %d", stair);
         return stair;
     }   
 }

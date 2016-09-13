@@ -40,6 +40,7 @@ class SimpleViz
     bool hasNamespace(std::string ns);
 
     inline void waitForSubscribers(){
+        return;
         ROS_INFO("Waiting for subscribers...");
         while(marker_publisher_.getNumSubscribers() + marker_array_publisher_.getNumSubscribers() == 0){
             ros::spinOnce();

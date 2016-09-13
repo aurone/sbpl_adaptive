@@ -61,8 +61,8 @@ AdaptivePlanner::AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, 
 	final_eps_planning_time = -1.0;
 	final_eps = -1.0;
 
-	timePerRetryPlan_ = 5.0;
-	timePerRetryTrack_ = 5.0;
+	timePerRetryPlan_ = 10.0;
+	timePerRetryTrack_ = 10.0;
 
 	planningEPS = -1.0;
 	trackingEPS = -1.0;
@@ -88,11 +88,11 @@ AdaptivePlanner::AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, 
 
 	num_heur_ = num_heur; 
 
-	planner.reset(new Imp_MHAPlanner_AD(adaptive_environment_, plan_anc_heur_, plan_heurs_, num_heur_, bforwardsearch));
-	// planner.reset(new MHAPlanner_AD(adaptive_environment_, plan_anc_heur_, plan_heurs_, num_heur_));
+	// planner.reset(new Imp_MHAPlanner_AD(adaptive_environment_, plan_anc_heur_, plan_heurs_, num_heur_, bforwardsearch));
+	planner.reset(new MHAPlanner_AD(adaptive_environment_, plan_anc_heur_, plan_heurs_, num_heur_));
 	planner->set_search_mode(false);
-	tracker.reset(new Imp_MHAPlanner_AD(adaptive_environment_, track_anc_heur_, track_heurs_, num_heur_, bforwardsearch));
-	// tracker.reset(new MHAPlanner_AD(adaptive_environment_, track_anc_heur_, track_heurs_, num_heur_));
+	// tracker.reset(new Imp_MHAPlanner_AD(adaptive_environment_, track_anc_heur_, track_heurs_, num_heur_, bforwardsearch));
+	tracker.reset(new MHAPlanner_AD(adaptive_environment_, track_anc_heur_, track_heurs_, num_heur_));
 	tracker->set_search_mode(false);
 
 	SBPL_INFO("done!");
@@ -238,6 +238,19 @@ int AdaptivePlanner::replan(double allocated_time_secs, double allocated_time_pe
 		plan_time_total_s += plan_time_s;
 		stat_->addPlanningPhaseTime(plan_time_s);
 
+	  	FILE * f = fopen("/home/karthik/mhi_ws/src/sbpl_mobility/stats/result.txt", "a");
+
+	    if (f == NULL)
+	    {
+	        printf("Error opening stats file\n");
+	        exit(1);
+	    }
+	    else{
+
+	        fprintf(f, "%0.3f ", plan_time_s);
+	    }
+	    fclose(f);
+
 		SBPL_INFO("Planner done in %.3fs...", plan_time_s);
 
 		if(!planning_bRet || planning_stateV.size() == 0){
@@ -317,6 +330,19 @@ int AdaptivePlanner::replan(double allocated_time_secs, double allocated_time_pe
 		track_time_s = MY_TIME_DIFF_S(MY_TIME_NOW, track_start);
 		track_time_total_s += track_time_s;
 		stat_->addTrackingPhaseTime(track_time_s);
+
+		f = fopen("/home/karthik/mhi_ws/src/sbpl_mobility/stats/result.txt", "a");
+
+	    if (f == NULL)
+	    {
+	        printf("Error opening stats file\n");
+	        exit(1);
+	    }
+	    else{
+
+	        fprintf(f, "%0.3f ", track_time_s);
+	    }
+	    fclose(f);
 
 		LastTrackPath.clear();
 		for(unsigned int i = 0; i < tracking_stateV.size(); i++){
