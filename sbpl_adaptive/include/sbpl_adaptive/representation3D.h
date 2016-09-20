@@ -8,11 +8,11 @@
 #ifndef _ADAPTIVE_REPRESENTATION3D_H_
 #define _ADAPTIVE_REPRESENTATION3D_H_
 
-namespace sbpl_adaptive {
+namespace adim {
 
 class MultiRepAdaptiveDiscreteSpaceInformation3D;
 
-class AdaptiveStateRepresentation3D_t : public sbpl_adaptive::AdaptiveStateRepresentation_t {
+class AdaptiveStateRepresentation3D_t : public adim::AdaptiveStateRepresentation_t {
 public:
     inline AdaptiveStateRepresentation3D_t(std::shared_ptr<MultiRepAdaptiveDiscreteSpaceInformation3D> env, bool executable, std::string description) :
         AdaptiveStateRepresentation_t(std::shared_ptr<MultiRepAdaptiveDiscreteSpaceInformation>(env.get()), executable, description),

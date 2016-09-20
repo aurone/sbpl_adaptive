@@ -10,7 +10,7 @@
 
 #include <tf/tf.h>
 
-namespace sbpl_adaptive {
+namespace adim {
 
 typedef struct {
     size_t stateID;         //the state ID

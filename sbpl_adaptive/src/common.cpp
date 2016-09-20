@@ -6,7 +6,7 @@
 
 #define SBPL_ADAPTIVE_PROFILING 0
 
-namespace sbpl_adaptive {
+namespace adim {
 
 StopWatch_t::StopWatch_t()
 {

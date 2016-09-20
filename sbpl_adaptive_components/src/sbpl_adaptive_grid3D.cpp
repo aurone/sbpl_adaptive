@@ -210,8 +210,8 @@ void AdaptiveGrid3D_t::setPlanningMode()
 }
 
 void AdaptiveGrid3D_t::setTrackingMode(
-    const std::vector<sbpl_adaptive::AdaptiveSphere3D_t> &tunnel,
-    std::vector<sbpl_adaptive::Position3D_t> &modCells)
+    const std::vector<adim::AdaptiveSphere3D_t> &tunnel,
+    std::vector<adim::Position3D_t> &modCells)
 {
     trackMode_ = true;
     for (size_t i = 0; i < tunnel.size(); i++) {
@@ -222,7 +222,7 @@ void AdaptiveGrid3D_t::setTrackingMode(
 void AdaptiveGrid3D_t::setTrackingMode(
     const std::vector<std::vector<int>> &tunnel,
     const std::vector<int> &costsToGoal,
-    std::vector<sbpl_adaptive::Position3D_t> &modCells)
+    std::vector<adim::Position3D_t> &modCells)
 {
     trackMode_ = true;
     int min_val = -1;
@@ -332,7 +332,7 @@ void AdaptiveGrid3D_t::addSphere(
     int near_rad,
     int dimID,
     unsigned int costToGoal,
-    std::vector<sbpl_adaptive::Position3D_t> &modCells)
+    std::vector<adim::Position3D_t> &modCells)
 {
     int min_x = 0;
     int max_x = grid_sizes_[0] - 1;
@@ -377,7 +377,7 @@ void AdaptiveGrid3D_t::addSphere(
                 if (dist2 <= rad * rad) {
                     //in sphere
                     if (setCellDim(bTrackMode, i, j, k, dimID)) {
-                        sbpl_adaptive::Position3D_t modp;
+                        adim::Position3D_t modp;
                         grid2world(i, j, k, modp.x, modp.y, modp.z);
                         modCells.push_back(modp);
                     }
@@ -386,7 +386,7 @@ void AdaptiveGrid3D_t::addSphere(
                 else if (dist2 <= (rad + near_rad) * (rad + near_rad)) {
                     //near sphere
                     if (setCellNearDim(bTrackMode, i, j, k, dimID)) {
-                        sbpl_adaptive::Position3D_t modp;
+                        adim::Position3D_t modp;
                         grid2world(i, j, k, modp.x, modp.y, modp.z);
                         modCells.push_back(modp);
                     }

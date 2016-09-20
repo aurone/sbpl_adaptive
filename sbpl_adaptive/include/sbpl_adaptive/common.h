@@ -25,7 +25,7 @@
 
 #define MY_TIME_ELAPSED_S(since) (MY_TIME_DIFF_S(MY_TIME_NOW, since))
 
-namespace sbpl_adaptive {
+namespace adim {
 
 struct StopWatch_t
 {

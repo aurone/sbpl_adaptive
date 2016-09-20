@@ -10,7 +10,7 @@
 
 #include <sbpl_adaptive/headers.h>
 
-namespace sbpl_adaptive {
+namespace adim {
 
 struct EnvStateData_t
 {

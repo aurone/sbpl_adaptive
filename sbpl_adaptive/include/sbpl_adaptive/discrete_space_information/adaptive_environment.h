@@ -13,7 +13,7 @@ using namespace std;
 
 enum AdaptiveStateType_t : unsigned char { LD=0, NearHD=1, HD=2 };
 
-namespace sbpl_adaptive {
+namespace adim {
 
 class AdaptiveDiscreteSpaceInformation : virtual public DiscreteSpaceInformation
 {

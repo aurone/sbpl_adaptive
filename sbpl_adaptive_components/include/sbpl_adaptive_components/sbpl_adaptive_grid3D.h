@@ -49,18 +49,18 @@ public:
         const std::vector<std::vector<int>> &tunnel_centers,
         const std::vector<int> &costsToGoal)
     {
-        std::vector<sbpl_adaptive::Position3D_t> modCells;
+        std::vector<adim::Position3D_t> modCells;
         setTrackingMode(tunnel_centers, costsToGoal, modCells);
     }
 
     void setTrackingMode(
         const std::vector<std::vector<int>> &tunnel_centers,
         const std::vector<int> &costsToGoal,
-        std::vector<sbpl_adaptive::Position3D_t> &modCells);
+        std::vector<adim::Position3D_t> &modCells);
 
     void setTrackingMode(
-        const std::vector<sbpl_adaptive::AdaptiveSphere3D_t> &tunnel,
-        std::vector<sbpl_adaptive::Position3D_t> &modCells);
+        const std::vector<adim::AdaptiveSphere3D_t> &tunnel,
+        std::vector<adim::Position3D_t> &modCells);
 
     void addPlanningSphere(
         const std::vector<int> &coord,
@@ -68,7 +68,7 @@ public:
         int rad,
         int near_rad)
     {
-        std::vector<sbpl_adaptive::Position3D_t> modCells;
+        std::vector<adim::Position3D_t> modCells;
         addSphere(false, coord[0], coord[1], coord[2], rad, near_rad, dimID, INFINITECOST, modCells);
     }
 
@@ -77,7 +77,7 @@ public:
         int dimID,
         int rad,
         int near_rad,
-        std::vector<sbpl_adaptive::Position3D_t> &modCells)
+        std::vector<adim::Position3D_t> &modCells)
     {
         addSphere(false, coord[0], coord[1], coord[2], rad, near_rad, dimID, INFINITECOST, modCells);
     }
@@ -98,8 +98,8 @@ public:
     /* end pure virtual functions from AdaptiveGrid_t */
 
     void addPlanningSphere(
-        sbpl_adaptive::AdaptiveSphere3D_t sphere,
-        std::vector<sbpl_adaptive::Position3D_t> &modCells)
+        adim::AdaptiveSphere3D_t sphere,
+        std::vector<adim::Position3D_t> &modCells)
     {
         size_t gx, gy, gz;
         world2grid(sphere.x,sphere.y,sphere.z,gx,gy,gz);
@@ -198,7 +198,7 @@ private:
 
     static double getDist(int x1, int y1, int z1, int x2, int y2, int z2);
 
-    void addSphere(bool bTrackMode, size_t x, size_t y, size_t z, int rad, int near_rad, int dimID, unsigned int costToGoal, std::vector<sbpl_adaptive::Position3D_t> &modCells);
+    void addSphere(bool bTrackMode, size_t x, size_t y, size_t z, int rad, int near_rad, int dimID, unsigned int costToGoal, std::vector<adim::Position3D_t> &modCells);
 
     bool setCellDim(bool bTrackMode, size_t x, size_t y, size_t z, int dimID);
 
@@ -209,15 +209,15 @@ private:
     void resetTrackingGrid();
 
     void addTrackingSphere(const std::vector<int> &coords, int dimID, int rad, int near_rad, int costToGoal){
-        std::vector<sbpl_adaptive::Position3D_t> modCells;
+        std::vector<adim::Position3D_t> modCells;
         addSphere(true, coords[0], coords[1], coords[2], rad, near_rad, dimID, costToGoal, modCells);
     }
 
-    void addTrackingSphere(const std::vector<int> &coords, int dimID, int rad, int near_rad, int costToGoal, std::vector<sbpl_adaptive::Position3D_t> &modCells){
+    void addTrackingSphere(const std::vector<int> &coords, int dimID, int rad, int near_rad, int costToGoal, std::vector<adim::Position3D_t> &modCells){
         addSphere(true, coords[0], coords[1], coords[2], rad, near_rad, dimID, costToGoal, modCells);
     }
 
-    void addTrackingSphere(sbpl_adaptive::AdaptiveSphere3D_t sphere, std::vector<sbpl_adaptive::Position3D_t> &modCells){
+    void addTrackingSphere(adim::AdaptiveSphere3D_t sphere, std::vector<adim::Position3D_t> &modCells){
         size_t gx, gy, gz;
         world2grid(sphere.x,sphere.y,sphere.z,gx,gy,gz);
         int r = round(sphere.rad / oc_grid_->getResolution());

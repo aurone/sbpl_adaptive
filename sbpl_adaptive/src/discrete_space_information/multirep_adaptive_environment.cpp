@@ -7,7 +7,7 @@
 
 #include <sbpl_adaptive/headers.h>
 
-namespace sbpl_adaptive {
+namespace adim {
 
 bool MultiRepAdaptiveDiscreteSpaceInformation::ProjectToFullD(const void* local_state_data, int fromID, std::vector<int> &proj_stateIDs, int adPathIdx){
     if(fromID >= representations_.size() ){
@@ -182,7 +182,7 @@ MultiRepAdaptiveDiscreteSpaceInformation::MultiRepAdaptiveDiscreteSpaceInformati
 MultiRepAdaptiveDiscreteSpaceInformation::~MultiRepAdaptiveDiscreteSpaceInformation() {
     for(size_t i = 0; i < data_.StateID2HashEntry.size(); i++)
     {
-      sbpl_adaptive::AdaptiveHashEntry_t* entry = data_.StateID2HashEntry[i];
+      adim::AdaptiveHashEntry_t* entry = data_.StateID2HashEntry[i];
       representations_[entry->dimID]->deleteStateData(entry->stateID); //tell the representation to delete its state data (the void*)
       delete entry;
       data_.StateID2HashEntry[i] = NULL;

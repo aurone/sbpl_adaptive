@@ -8,7 +8,7 @@
 #ifndef _ADAPTIVE_REPRESENTATION_H_
 #define _ADAPTIVE_REPRESENTATION_H_
 
-namespace sbpl_adaptive {
+namespace adim {
 
 class MultiRepAdaptiveDiscreteSpaceInformation;
 
@@ -104,7 +104,7 @@ public:
         }
     }
 
-    void GetExecutableParents(std::vector<const sbpl_adaptive::AdaptiveStateRepresentation_t*> &executableParents) const {
+    void GetExecutableParents(std::vector<const adim::AdaptiveStateRepresentation_t*> &executableParents) const {
         if(isExecutable()){
             executableParents.push_back(this);
         } else {

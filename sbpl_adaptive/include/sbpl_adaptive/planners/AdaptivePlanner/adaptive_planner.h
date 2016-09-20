@@ -29,7 +29,7 @@
 	#define LOG_ERROR(a,...) SBPL_ERROR("[ADP] " a, ##__VA_ARGS__)
 #endif*/
 
-namespace sbpl_adaptive {
+namespace adim {
 
 class AdaptivePlanner : public SBPLPlanner
 {
