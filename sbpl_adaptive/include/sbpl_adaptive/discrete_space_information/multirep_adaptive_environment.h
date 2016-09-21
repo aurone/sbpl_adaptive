@@ -114,12 +114,18 @@ public:
 
     int GetFullDRepresentationID() { return fulld_representation_->getID(); }
 
-    template <typename T>
-    const T *GetFullDRepresentation() { return (const T *)fulld_representation_.get(); }
+    AdaptiveStateRepresentation *GetFullDRepresentation();
+    const AdaptiveStateRepresentation *GetFullDRepresentation() const;
 
-    const AdaptiveStateRepresentation *GetFullDRepresentation();
+    AdaptiveStateRepresentation *GetRepresentation(int dimID);
+    const AdaptiveStateRepresentation *GetRepresentation(int dimID) const;
 
-    const AdaptiveStateRepresentation *GetRepresentation(int dimID);
+    // convenient wrappers that (unsafely) downwcast to a specified type for the
+    // representation
+    template <typename T> T *GetFullDRepresentation();
+    template <typename T> const T *GetFullDRepresentation() const;
+    template <typename T> T *GetRepresentation(int dimID);
+    template <typename T> const T *GetRepresentation(int dimID) const;
 
     int SetStartCoords(int dimID, const void *representation_specific_data);
     int SetStartConfig(int dimID, const void *representation_specific_data);
@@ -146,7 +152,7 @@ public:
 };
 
 inline
-const AdaptiveStateRepresentation *
+AdaptiveStateRepresentation *
 MultiRepAdaptiveDiscreteSpaceInformation::GetFullDRepresentation()
 {
     return fulld_representation_.get();
@@ -154,12 +160,59 @@ MultiRepAdaptiveDiscreteSpaceInformation::GetFullDRepresentation()
 
 inline
 const AdaptiveStateRepresentation *
+MultiRepAdaptiveDiscreteSpaceInformation::GetFullDRepresentation() const
+{
+    return fulld_representation_.get();
+}
+
+inline
+AdaptiveStateRepresentation *
 MultiRepAdaptiveDiscreteSpaceInformation::GetRepresentation(int dimID)
 {
     if (dimID < 0 || dimID >= representations_.size()) {
         return NULL;
     }
     return representations_[dimID].get();
+}
+
+inline
+const AdaptiveStateRepresentation *
+MultiRepAdaptiveDiscreteSpaceInformation::GetRepresentation(int dimID) const
+{
+    if (dimID < 0 || dimID >= representations_.size()) {
+        return NULL;
+    }
+    return representations_[dimID].get();
+}
+
+template <typename T> T *
+MultiRepAdaptiveDiscreteSpaceInformation::GetFullDRepresentation()
+{
+    return (T *)fulld_representation_.get();
+}
+
+template <typename T> const T *
+MultiRepAdaptiveDiscreteSpaceInformation::GetFullDRepresentation() const
+{
+    return (const T *)fulld_representation_.get();
+}
+
+template <typename T> T *
+MultiRepAdaptiveDiscreteSpaceInformation::GetRepresentation(int dimID)
+{
+    if (dimID < 0 || dimID >= representations_.size()) {
+        return nullptr;
+    }
+    return (T *)representations_[dimID].get();
+}
+
+template <typename T> const T *
+MultiRepAdaptiveDiscreteSpaceInformation::GetRepresentation(int dimID) const
+{
+    if (dimID < 0 || dimID >= representations_.size()) {
+        return nullptr;
+    }
+    return (const T *)representations_[dimID].get();
 }
 
 inline
