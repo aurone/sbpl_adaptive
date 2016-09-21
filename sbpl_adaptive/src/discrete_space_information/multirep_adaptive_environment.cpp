@@ -191,12 +191,12 @@ MultiRepAdaptiveDiscreteSpaceInformation::~MultiRepAdaptiveDiscreteSpaceInformat
     data_.HashTables.clear();
 }
 
-bool MultiRepAdaptiveDiscreteSpaceInformation::RegisterFullDRepresentation(std::shared_ptr<AdaptiveStateRepresentation_t> rep){
+bool MultiRepAdaptiveDiscreteSpaceInformation::RegisterFullDRepresentation(std::shared_ptr<AdaptiveStateRepresentation> rep){
     fulld_representation_ = rep;
     return RegisterRepresentation(rep);
 }
 
-bool MultiRepAdaptiveDiscreteSpaceInformation::RegisterRepresentation(std::shared_ptr<AdaptiveStateRepresentation_t> rep){
+bool MultiRepAdaptiveDiscreteSpaceInformation::RegisterRepresentation(std::shared_ptr<AdaptiveStateRepresentation> rep){
     for(int i = 0; i < representations_.size(); i++){
         if(representations_[i]->getID() == rep->getID()){
             SBPL_ERROR("Failed to register new representation (%s) with ID (%d) -- duplicate ID registered already", rep->getDescription().c_str(), rep->getID());
@@ -206,7 +206,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::RegisterRepresentation(std::share
     }
 
     rep->setID(representations_.size());
-    representations_.push_back(std::shared_ptr<AdaptiveStateRepresentation_t>(rep));
+    representations_.push_back(std::shared_ptr<AdaptiveStateRepresentation>(rep));
 
     //make room in hash table
     std::vector<std::vector<AdaptiveHashEntry*>> HashTable(data_.HashTableSize+1);

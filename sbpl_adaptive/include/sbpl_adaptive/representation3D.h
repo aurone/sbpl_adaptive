@@ -12,10 +12,10 @@ namespace adim {
 
 class MultiRepAdaptiveDiscreteSpaceInformation3D;
 
-class AdaptiveStateRepresentation3D_t : public adim::AdaptiveStateRepresentation_t {
+class AdaptiveStateRepresentation3D_t : public adim::AdaptiveStateRepresentation {
 public:
     inline AdaptiveStateRepresentation3D_t(std::shared_ptr<MultiRepAdaptiveDiscreteSpaceInformation3D> env, bool executable, std::string description) :
-        AdaptiveStateRepresentation_t(std::shared_ptr<MultiRepAdaptiveDiscreteSpaceInformation>(env.get()), executable, description),
+        AdaptiveStateRepresentation(std::shared_ptr<MultiRepAdaptiveDiscreteSpaceInformation>(env.get()), executable, description),
         env3d_(env)
     {
 
