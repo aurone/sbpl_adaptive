@@ -13,13 +13,13 @@
 
 namespace sbpl_adaptive_components {
 
-void AdaptiveGrid3D_t::reset()
+void AdaptiveGrid3D::reset()
 {
     clearAllSpheres();
     setPlanningMode();
 }
 
-void AdaptiveGrid3D_t::world2grid(
+void AdaptiveGrid3D::world2grid(
     double wx, double wy, double wz,
     size_t& gx, size_t& gy, size_t& gz) const
 {
@@ -34,7 +34,7 @@ void AdaptiveGrid3D_t::world2grid(
     gz = (size_t)cz;
 }
 
-void AdaptiveGrid3D_t::grid2world(
+void AdaptiveGrid3D::grid2world(
     size_t gx, size_t gy, size_t gz,
     double& wx, double& wy, double& wz) const
 {
@@ -45,7 +45,7 @@ void AdaptiveGrid3D_t::grid2world(
     wz = wz_;
 }
 
-double AdaptiveGrid3D_t::getDist2(
+double AdaptiveGrid3D::getDist2(
     int x1,
     int y1,
     int z1,
@@ -56,12 +56,12 @@ double AdaptiveGrid3D_t::getDist2(
     return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) + (z1 - z2) * (z1 - z2);
 }
 
-double AdaptiveGrid3D_t::getDist(int x1, int y1, int z1, int x2, int y2, int z2)
+double AdaptiveGrid3D::getDist(int x1, int y1, int z1, int x2, int y2, int z2)
 {
     return sqrt(getDist2(x1, y1, z1, x2, y2, z2));
 }
 
-void AdaptiveGrid3D_t::resetTrackingGrid()
+void AdaptiveGrid3D::resetTrackingGrid()
 {
     //reset the tracking grid
     for (int i = 0; i < grid_sizes_[0]; i++) {
@@ -75,7 +75,7 @@ void AdaptiveGrid3D_t::resetTrackingGrid()
     max_costToGoal_ = 0;
 }
 
-void AdaptiveGrid3D_t::setCellCostToGoal(
+void AdaptiveGrid3D::setCellCostToGoal(
     const std::vector<int> &coord,
     unsigned int costToGoal)
 {
@@ -88,7 +88,7 @@ void AdaptiveGrid3D_t::setCellCostToGoal(
     }
 }
 
-bool AdaptiveGrid3D_t::setCellDim(
+bool AdaptiveGrid3D::setCellDim(
     bool bTrackMode,
     size_t x,
     size_t y,
@@ -110,7 +110,7 @@ bool AdaptiveGrid3D_t::setCellDim(
     return changed;
 }
 
-bool AdaptiveGrid3D_t::setCellNearDim(
+bool AdaptiveGrid3D::setCellNearDim(
     bool bTrackMode,
     size_t x,
     size_t y,
@@ -132,7 +132,7 @@ bool AdaptiveGrid3D_t::setCellNearDim(
     return changed;
 }
 
-void AdaptiveGrid3D_t::init()
+void AdaptiveGrid3D::init()
 {
     max_costToGoal_ = 0;
     for (size_t i = 0; i < (size_t)grid_sizes_[0]; i++) {
@@ -148,12 +148,12 @@ void AdaptiveGrid3D_t::init()
     }
 }
 
-AdaptiveGrid3D_t::AdaptiveGrid3D_t(
+AdaptiveGrid3D::AdaptiveGrid3D(
     const sbpl::OccupancyGridPtr& grid,
     int ldID)
 :
     ph_("~"),
-    AdaptiveGrid_t(ldID)
+    AdaptiveGrid(ldID)
 {
     oc_grid_ = grid;
     grid_sizes_.resize(3);
@@ -182,13 +182,13 @@ AdaptiveGrid3D_t::AdaptiveGrid3D_t(
     max_costToGoal_ = 0;
 }
 
-AdaptiveGrid3D_t::~AdaptiveGrid3D_t()
+AdaptiveGrid3D::~AdaptiveGrid3D()
 {
     grid_.clear();
     spheres_.clear();
 }
 
-void AdaptiveGrid3D_t::clearAllSpheres()
+void AdaptiveGrid3D::clearAllSpheres()
 {
     //clears all HD regions from the grid
     for (size_t i = 0; i < (size_t)grid_sizes_[0]; i++) {
@@ -203,15 +203,15 @@ void AdaptiveGrid3D_t::clearAllSpheres()
     max_costToGoal_ = 0;
 }
 
-void AdaptiveGrid3D_t::setPlanningMode()
+void AdaptiveGrid3D::setPlanningMode()
 {
     trackMode_ = false;
     resetTrackingGrid();
 }
 
-void AdaptiveGrid3D_t::setTrackingMode(
+void AdaptiveGrid3D::setTrackingMode(
     const std::vector<adim::AdaptiveSphere3D_t> &tunnel,
-    std::vector<adim::Position3D_t> &modCells)
+    std::vector<adim::Position3D> &modCells)
 {
     trackMode_ = true;
     for (size_t i = 0; i < tunnel.size(); i++) {
@@ -219,10 +219,10 @@ void AdaptiveGrid3D_t::setTrackingMode(
     }
 }
 
-void AdaptiveGrid3D_t::setTrackingMode(
+void AdaptiveGrid3D::setTrackingMode(
     const std::vector<std::vector<int>> &tunnel,
     const std::vector<int> &costsToGoal,
-    std::vector<adim::Position3D_t> &modCells)
+    std::vector<adim::Position3D> &modCells)
 {
     trackMode_ = true;
     int min_val = -1;
@@ -235,7 +235,7 @@ void AdaptiveGrid3D_t::setTrackingMode(
     }
 }
 
-unsigned int AdaptiveGrid3D_t::getCellCostToGoal(
+unsigned int AdaptiveGrid3D::getCellCostToGoal(
     const std::vector<int> &coord) const
 {
     if (!trackMode_) {
@@ -247,7 +247,7 @@ unsigned int AdaptiveGrid3D_t::getCellCostToGoal(
     return grid_[coord[0]][coord[1]][coord[2]].costToGoal;
 }
 
-AdaptiveGridCell_t AdaptiveGrid3D_t::getCell(
+AdaptiveGridCell_t AdaptiveGrid3D::getCell(
     const std::vector<int> &coord) const
 {
     if (!isInBounds( { coord[0], coord[1], coord[2] })) {
@@ -257,12 +257,12 @@ AdaptiveGridCell_t AdaptiveGrid3D_t::getCell(
     return grid_[coord[0]][coord[1]][coord[2]];
 }
 
-int AdaptiveGrid3D_t::getCellPlanningDim(const std::vector<int> &coord) const
+int AdaptiveGrid3D::getCellPlanningDim(const std::vector<int> &coord) const
 {
     return grid_[coord[0]][coord[1]][coord[2]].pDimID;
 }
 
-void AdaptiveGrid3D_t::setCellPlanningDim(
+void AdaptiveGrid3D::setCellPlanningDim(
     const std::vector<int> &coord,
     int dimID)
 {
@@ -273,7 +273,7 @@ void AdaptiveGrid3D_t::setCellPlanningDim(
     grid_[coord[0]][coord[1]][coord[2]].tDimID = dimID;
 }
 
-int AdaptiveGrid3D_t::getCellTrackingDim(const std::vector<int> &coord) const
+int AdaptiveGrid3D::getCellTrackingDim(const std::vector<int> &coord) const
 {
     if (!isInBounds( { coord[0], coord[1], coord[2] })) {
         SBPL_ERROR("Coordinates out of bounds %d, %d, %d", coord[0], coord[1], coord[2]);
@@ -282,7 +282,7 @@ int AdaptiveGrid3D_t::getCellTrackingDim(const std::vector<int> &coord) const
     return grid_[coord[0]][coord[1]][coord[2]].tDimID;
 }
 
-void AdaptiveGrid3D_t::setCellTrackingDim(
+void AdaptiveGrid3D::setCellTrackingDim(
     const std::vector<int> &coord,
     int dimID)
 {
@@ -292,7 +292,7 @@ void AdaptiveGrid3D_t::setCellTrackingDim(
     grid_[coord[0]][coord[1]][coord[2]].tDimID = dimID;
 }
 
-int AdaptiveGrid3D_t::getCellDim(
+int AdaptiveGrid3D::getCellDim(
     bool bTrackMode,
     size_t x,
     size_t y,
@@ -301,12 +301,12 @@ int AdaptiveGrid3D_t::getCellDim(
     return bTrackMode ? grid_[x][y][z].tDimID : grid_[x][y][z].pDimID;
 }
 
-void AdaptiveGrid3D_t::setVisualizationReferenceFrame(std::string frm)
+void AdaptiveGrid3D::setVisualizationReferenceFrame(std::string frm)
 {
     frame_ = frm;
 }
 
-void AdaptiveGrid3D_t::getOverlappingSpheres(
+void AdaptiveGrid3D::getOverlappingSpheres(
     size_t x,
     size_t y,
     size_t z,
@@ -323,7 +323,7 @@ void AdaptiveGrid3D_t::getOverlappingSpheres(
     }
 }
 
-void AdaptiveGrid3D_t::addSphere(
+void AdaptiveGrid3D::addSphere(
     bool bTrackMode,
     size_t x,
     size_t y,
@@ -332,7 +332,7 @@ void AdaptiveGrid3D_t::addSphere(
     int near_rad,
     int dimID,
     unsigned int costToGoal,
-    std::vector<adim::Position3D_t> &modCells)
+    std::vector<adim::Position3D> &modCells)
 {
     int min_x = 0;
     int max_x = grid_sizes_[0] - 1;
@@ -377,7 +377,7 @@ void AdaptiveGrid3D_t::addSphere(
                 if (dist2 <= rad * rad) {
                     //in sphere
                     if (setCellDim(bTrackMode, i, j, k, dimID)) {
-                        adim::Position3D_t modp;
+                        adim::Position3D modp;
                         grid2world(i, j, k, modp.x, modp.y, modp.z);
                         modCells.push_back(modp);
                     }
@@ -386,7 +386,7 @@ void AdaptiveGrid3D_t::addSphere(
                 else if (dist2 <= (rad + near_rad) * (rad + near_rad)) {
                     //near sphere
                     if (setCellNearDim(bTrackMode, i, j, k, dimID)) {
-                        adim::Position3D_t modp;
+                        adim::Position3D modp;
                         grid2world(i, j, k, modp.x, modp.y, modp.z);
                         modCells.push_back(modp);
                     }
@@ -405,7 +405,7 @@ void AdaptiveGrid3D_t::addSphere(
     }
 }
 
-visualization_msgs::MarkerArray AdaptiveGrid3D_t::getVisualizations(
+visualization_msgs::MarkerArray AdaptiveGrid3D::getVisualizations(
     std::string ns_prefix,
     int throttle/*=1*/,
     double scale/*=-1*/)
@@ -417,7 +417,7 @@ visualization_msgs::MarkerArray AdaptiveGrid3D_t::getVisualizations(
     return marker;
 }
 
-visualization_msgs::Marker AdaptiveGrid3D_t::getAdaptiveGridVisualization(
+visualization_msgs::Marker AdaptiveGrid3D::getAdaptiveGridVisualization(
     std::string ns_prefix,
     int throttle/*=1*/,
     double scale/*=-1*/)
@@ -498,7 +498,7 @@ visualization_msgs::Marker AdaptiveGrid3D_t::getAdaptiveGridVisualization(
     return marker;
 }
 
-visualization_msgs::Marker AdaptiveGrid3D_t::getCostToGoalGridVisualization(
+visualization_msgs::Marker AdaptiveGrid3D::getCostToGoalGridVisualization(
     std::string ns_prefix,
     int throttle,
     double scale)

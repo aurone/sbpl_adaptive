@@ -16,9 +16,9 @@ class MultiRepAdaptiveDiscreteSpaceInformation3D : public MultiRepAdaptiveDiscre
 {
   public:
 
-    virtual int GetDimIDForPosition(Position3D_t p) = 0;
+    virtual int GetDimIDForPosition(Position3D p) = 0;
 
-    virtual int GetTrackingCostToGoalForPosition(Position3D_t p) = 0;
+    virtual int GetTrackingCostToGoalForPosition(Position3D p) = 0;
 
     virtual void addSphere(const AdaptiveSphere3D_t &sphere) = 0;
 

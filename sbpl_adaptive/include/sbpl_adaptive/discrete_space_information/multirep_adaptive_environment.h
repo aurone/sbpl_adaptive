@@ -23,13 +23,13 @@ struct EnvStateData_t
 
   AbstractGoal_t* goaldata;
   //start and goal entries
-  AdaptiveHashEntry_t* goalHashEntry;
-  AdaptiveHashEntry_t* startHashEntry;
+  AdaptiveHashEntry* goalHashEntry;
+  AdaptiveHashEntry* startHashEntry;
   //hash tables
   size_t HashTableSize;
-  std::vector<std::vector<std::vector<AdaptiveHashEntry_t*>>> HashTables;
+  std::vector<std::vector<std::vector<AdaptiveHashEntry*>>> HashTables;
   //vector that maps from stateID to coords
-  std::vector<AdaptiveHashEntry_t*> StateID2HashEntry;
+  std::vector<AdaptiveHashEntry*> StateID2HashEntry;
 };
 
 class MultiRepAdaptiveDiscreteSpaceInformation : public AdaptiveDiscreteSpaceInformation
@@ -44,8 +44,8 @@ class MultiRepAdaptiveDiscreteSpaceInformation : public AdaptiveDiscreteSpaceInf
      * returns the stateID
      */
 
-    size_t InsertHashEntry(AdaptiveHashEntry_t* entry, size_t binID);
-    AdaptiveHashEntry_t* GetState(size_t stateID);
+    size_t InsertHashEntry(AdaptiveHashEntry* entry, size_t binID);
+    AdaptiveHashEntry* GetState(size_t stateID);
 
     inline const EnvStateData_t* getEnvStateDataPtr() { return &data_; }
 
@@ -101,7 +101,7 @@ class MultiRepAdaptiveDiscreteSpaceInformation : public AdaptiveDiscreteSpaceInf
     int BestTracked_StateID;
     int BestTracked_Cost;
 
-    void InsertMetaGoalHashEntry(AdaptiveHashEntry_t* entry);
+    void InsertMetaGoalHashEntry(AdaptiveHashEntry* entry);
 
     std::shared_ptr<AdaptiveStateRepresentation_t> fulld_representation_;
     std::vector<std::shared_ptr<AdaptiveStateRepresentation_t>> representations_;

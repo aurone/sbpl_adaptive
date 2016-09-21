@@ -58,14 +58,14 @@ class AbstractGoal_t
 };
 
 /** @brief struct that describes a basic pose constraint */
-struct Position3D_t
+struct Position3D
 {
     double x, y, z;
 
-    Position3D_t() : x(0), y(0), z(0) { }
-    Position3D_t(double x_, double y_, double z_) : x(x_), y(y_), z(z_) { }
+    Position3D() : x(0), y(0), z(0) { }
+    Position3D(double x_, double y_, double z_) : x(x_), y(y_), z(z_) { }
 
-    static double dist(const Position3D_t &ee1, const Position3D_t &ee2);
+    static double dist(const Position3D &ee1, const Position3D &ee2);
 };
 
 struct Orientation3D_t
@@ -81,19 +81,19 @@ class AbstractGoal3D_t : public AbstractGoal_t
 {
 public:
 
-    AbstractGoal3D_t(Position3D_t p, double tol) : pos(p), pos_tol(tol) { }
+    AbstractGoal3D_t(Position3D p, double tol) : pos(p), pos_tol(tol) { }
 
     virtual ~AbstractGoal3D_t() { };
 
-    virtual bool isSatisfied(Position3D_t p) const = 0;
+    virtual bool isSatisfied(Position3D p) const = 0;
 
-    const Position3D_t &getPosition() const { return pos; }
+    const Position3D &getPosition() const { return pos; }
 
     double getPositionTolerance() const { return pos_tol; }
 
 protected:
 
-    Position3D_t pos;
+    Position3D pos;
     double pos_tol;
 };
 
@@ -102,7 +102,7 @@ class AbstractGoal6D_t : public AbstractGoal3D_t
 public:
 
     AbstractGoal6D_t(
-        Position3D_t p,
+        Position3D p,
         double p_tol,
         Orientation3D_t o,
         double o_tol)
@@ -114,7 +114,7 @@ public:
 
     virtual bool isSatisfied(Orientation3D_t ori) const  = 0;
 
-    virtual bool isSatisfied(Position3D_t pos, Orientation3D_t ori) const = 0;
+    virtual bool isSatisfied(Position3D pos, Orientation3D_t ori) const = 0;
 
     const Orientation3D_t &getOrientation() const { return ori; }
 
@@ -127,7 +127,7 @@ protected:
 };
 
 inline
-double Position3D_t::dist(const Position3D_t &ee1, const Position3D_t &ee2)
+double Position3D::dist(const Position3D &ee1, const Position3D &ee2)
 {
     const double dx = ee1.x - ee2.x;
     const double dy = ee1.y - ee2.y;

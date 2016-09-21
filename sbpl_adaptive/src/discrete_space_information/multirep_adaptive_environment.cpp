@@ -64,7 +64,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(const void* state_data, i
     SBPL_INFO("Got %lu FullD projections", hd_proj_stateIDs.size());
     SBPL_INFO("Now projecting to %d [%s] (adPathIdx=%d)", toID, representations_[toID]->getDescription().c_str(), adPathIdx);
     for(int hd_stateID : hd_proj_stateIDs){
-        AdaptiveHashEntry_t* entry = GetState(hd_stateID);
+        AdaptiveHashEntry* entry = GetState(hd_stateID);
         if(entry != NULL){
             if(!representations_[toID]->ProjectFromFullD(entry->stateData, proj_stateIDs, adPathIdx)){
                 SBPL_ERROR("Failed to project HD state data to representation %d [%s]", toID, representations_[toID]->getDescription().c_str());
@@ -129,7 +129,7 @@ int MultiRepAdaptiveDiscreteSpaceInformation::SetStartConfig(int dimID, const vo
     return StartID;
 }
 
-void MultiRepAdaptiveDiscreteSpaceInformation::InsertMetaGoalHashEntry(AdaptiveHashEntry_t* entry){
+void MultiRepAdaptiveDiscreteSpaceInformation::InsertMetaGoalHashEntry(AdaptiveHashEntry* entry){
     int i;
     /* get corresponding state ID */
     entry->stateID = data_.StateID2HashEntry.size();
@@ -159,7 +159,7 @@ int MultiRepAdaptiveDiscreteSpaceInformation::SetAbstractGoal(AbstractGoal_t* go
     SBPL_INFO("Setting abstract goal...");
     data_.goaldata = goal;
     //create a fake metagoal
-    AdaptiveHashEntry_t* entry = new AdaptiveHashEntry_t;
+    AdaptiveHashEntry* entry = new AdaptiveHashEntry;
     entry->dimID = -1;
     entry->stateData = NULL;
     InsertMetaGoalHashEntry(entry);
@@ -182,7 +182,7 @@ MultiRepAdaptiveDiscreteSpaceInformation::MultiRepAdaptiveDiscreteSpaceInformati
 MultiRepAdaptiveDiscreteSpaceInformation::~MultiRepAdaptiveDiscreteSpaceInformation() {
     for(size_t i = 0; i < data_.StateID2HashEntry.size(); i++)
     {
-      adim::AdaptiveHashEntry_t* entry = data_.StateID2HashEntry[i];
+      adim::AdaptiveHashEntry* entry = data_.StateID2HashEntry[i];
       representations_[entry->dimID]->deleteStateData(entry->stateID); //tell the representation to delete its state data (the void*)
       delete entry;
       data_.StateID2HashEntry[i] = NULL;
@@ -209,7 +209,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::RegisterRepresentation(std::share
     representations_.push_back(std::shared_ptr<AdaptiveStateRepresentation_t>(rep));
 
     //make room in hash table
-    std::vector<std::vector<AdaptiveHashEntry_t*>> HashTable(data_.HashTableSize+1);
+    std::vector<std::vector<AdaptiveHashEntry*>> HashTable(data_.HashTableSize+1);
 
     data_.HashTables.push_back(HashTable);
 
@@ -218,7 +218,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::RegisterRepresentation(std::share
     return true;
 }
 
-size_t MultiRepAdaptiveDiscreteSpaceInformation::InsertHashEntry(AdaptiveHashEntry_t* entry, size_t binID){
+size_t MultiRepAdaptiveDiscreteSpaceInformation::InsertHashEntry(AdaptiveHashEntry* entry, size_t binID){
 
     int i;
 
@@ -256,7 +256,7 @@ size_t MultiRepAdaptiveDiscreteSpaceInformation::InsertHashEntry(AdaptiveHashEnt
     return entry->stateID;
 }
 
-AdaptiveHashEntry_t* MultiRepAdaptiveDiscreteSpaceInformation::GetState(size_t stateID){
+AdaptiveHashEntry* MultiRepAdaptiveDiscreteSpaceInformation::GetState(size_t stateID){
     if(stateID >= data_.StateID2HashEntry.size()){
         SBPL_ERROR("stateID [%zu] out of range [%zu]", stateID, data_.StateID2HashEntry.size());
         throw SBPL_Exception();
@@ -266,7 +266,7 @@ AdaptiveHashEntry_t* MultiRepAdaptiveDiscreteSpaceInformation::GetState(size_t s
 
 bool MultiRepAdaptiveDiscreteSpaceInformation::isExecutablePath(const std::vector<int> &stateIDV){
     for(int stateID : stateIDV){
-        AdaptiveHashEntry_t* entry = GetState(stateID);
+        AdaptiveHashEntry* entry = GetState(stateID);
         if(entry->dimID == -1){
         	SBPL_INFO("State %d is the metagoal", stateID);
         	continue;
@@ -279,7 +279,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::isExecutablePath(const std::vecto
 void MultiRepAdaptiveDiscreteSpaceInformation::GetSuccs_Track(int SourceStateID, std::vector<int>* SuccIDV, std::vector<int>* CostV){
     SuccIDV->clear();
     CostV->clear();
-    AdaptiveHashEntry_t* entry = GetState(SourceStateID);
+    AdaptiveHashEntry* entry = GetState(SourceStateID);
     //SBPL_INFO("GetSuccs_Track %d --> %d",SourceStateID, entry->dimID);
     if(!representations_[entry->dimID]->isExecutable()){
         SBPL_ERROR("stateID [%d] has representation ID %d [%s], which is not executable. Cannot get tracking successors!", SourceStateID, entry->dimID, representations_[entry->dimID]->getDescription().c_str());
@@ -297,7 +297,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::GetSuccs_Track(int SourceStateID,
 void MultiRepAdaptiveDiscreteSpaceInformation::GetSuccs_Plan(int SourceStateID, std::vector<int>* SuccIDV, std::vector<int>* CostV){
     SuccIDV->clear();
     CostV->clear();
-    AdaptiveHashEntry_t* entry = GetState(SourceStateID);
+    AdaptiveHashEntry* entry = GetState(SourceStateID);
     representations_[entry->dimID]->GetSuccs(SourceStateID, SuccIDV, CostV, env_data_.get());
     //SBPL_INFO("%d -> Got %zu [%zu] successors", SourceStateID, SuccIDV->size(), CostV->size());
 }
@@ -309,7 +309,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::GetSuccs_Plan(int SourceStateID, 
 }
 
 void MultiRepAdaptiveDiscreteSpaceInformation::GetPreds_Track(int TargetStateID, std::vector<int>* PredIDV, std::vector<int>* CostV){
-    AdaptiveHashEntry_t* entry = GetState(TargetStateID);
+    AdaptiveHashEntry* entry = GetState(TargetStateID);
     if(!representations_[entry->dimID]->isExecutable()){
         SBPL_ERROR("stateID [%d] has representation ID %d [%s], which is not executable. Cannot get tracking successors!", TargetStateID, entry->dimID, representations_[entry->dimID]->getDescription().c_str());
         throw SBPL_Exception();
@@ -323,7 +323,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::GetPreds_Track(int TargetStateID,
 }
 
 void MultiRepAdaptiveDiscreteSpaceInformation::GetPreds_Plan(int TargetStateID, std::vector<int>* PredIDV, std::vector<int>* CostV){
-    AdaptiveHashEntry_t* entry = GetState(TargetStateID);
+    AdaptiveHashEntry* entry = GetState(TargetStateID);
     representations_[entry->dimID]->GetSuccs(TargetStateID, PredIDV, CostV, env_data_.get());
 }
 

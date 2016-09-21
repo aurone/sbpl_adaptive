@@ -29,7 +29,7 @@ struct AdaptiveGridCell_t {
     unsigned int costToGoal;
 };
 
-class AdaptiveGrid_t
+class AdaptiveGrid
 {
   protected:
 
@@ -56,9 +56,9 @@ class AdaptiveGrid_t
 
   public:
 
-    inline AdaptiveGrid_t(int ldID) { ldID_ = ldID; trackMode_ = false; };
+    inline AdaptiveGrid(int ldID) { ldID_ = ldID; trackMode_ = false; };
 
-    virtual ~AdaptiveGrid_t() {};
+    virtual ~AdaptiveGrid() {};
 
     inline bool isInPlanningMode(){
         return !trackMode_;

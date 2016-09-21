@@ -27,7 +27,7 @@ public:
     virtual std::vector<AdaptiveSphere3D_t> getUpgradeSpheresForState(int StateID) = 0;
     virtual std::vector<AdaptiveSphere3D_t> getTunnelSpheresForState(int StateID, int costToGoal) = 0;
 
-    virtual std::vector<Position3D_t> getSpherePositionsForState(int StateID) = 0;
+    virtual std::vector<Position3D> getSpherePositionsForState(int StateID) = 0;
 
 protected:
     std::shared_ptr<MultiRepAdaptiveDiscreteSpaceInformation3D> env3d_;
