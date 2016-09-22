@@ -6,7 +6,7 @@
 using namespace std;
 
 //====================================== PUBLIC ====================================================
-namespace sbpl_adaptive {
+namespace adim {
 
 AdaptivePlanner::AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, bool bSearchForward)
 {

@@ -41,7 +41,7 @@ class CList;
 
 
 //-------------------------------------------------------------
-namespace sbpl_adaptive {
+namespace adim {
 
 /** \brief ARA* planner
   */

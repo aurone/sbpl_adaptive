@@ -1,9 +1,9 @@
 #include <sbpl_adaptive_collision_checking/sbpl_collision_space.h>
 
-namespace sbpl_adaptive_collision_checking {
+namespace adim {
 
 SBPLCollisionSpace::SBPLCollisionSpace(
-    std::shared_ptr<sbpl_adaptive_collision_checking::SBPLCollisionModel> model,
+    std::shared_ptr<adim::SBPLCollisionModel> model,
     const sbpl::OccupancyGridPtr& grid)
 :
     model_(model),
@@ -41,7 +41,8 @@ bool SBPLCollisionSpace::checkCollision(
         return false;
     }
 
-    for (Sphere s : collision_spheres) {
+    for (const Sphere& s : collision_spheres) {
+        ROS_DEBUG("Checking sphere '%s' with radius %0.3f at (%0.3f, %0.3f, %0.3f)", s.name_.c_str(), s.radius, s.v.x(), s.v.y(), s.v.z());
         int x, y, z;
         grid_->worldToGrid(s.v.x(), s.v.y(), s.v.z(), x, y, z);
         if (!grid_->isInBounds(x, y, z)) {
@@ -54,6 +55,7 @@ bool SBPLCollisionSpace::checkCollision(
         if (dist_temp < dist) {
             dist = dist_temp;
         }
+        ROS_DEBUG(" -> dist = %0.3f", dist_temp);
         if (dist_temp < s.radius + padding_) {
             ROS_DEBUG("Cell: [%d %d %d] [%.3f %.3f %.3f]", x, y, z, s.v.x(), s.v.y(), s.v.z());
             ROS_DEBUG("Sphere %s in collision! r=%.3f+p=%.3f > d=%.3f", s.name_.c_str(), s.radius, padding_, dist_temp);

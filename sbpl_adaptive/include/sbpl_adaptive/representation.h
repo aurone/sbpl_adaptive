@@ -5,164 +5,226 @@
  *      Author: kalin
  */
 
-#ifndef _ADAPTIVE_REPRESENTATION_H_
-#define _ADAPTIVE_REPRESENTATION_H_
+#ifndef sbpl_adim_representation_h
+#define sbpl_adim_representation_h
 
-namespace sbpl_adaptive {
+// standard includes
+#include <string>
+#include <vector>
 
-class MultiRepAdaptiveDiscreteSpaceInformation;
+// project includes
+#include <sbpl_adaptive/macros.h>
 
-class AdaptiveStateRepresentation_t {
+namespace adim {
+
+SBPL_CLASS_FORWARD(MultiRepAdaptiveDiscreteSpaceInformation);
+SBPL_CLASS_FORWARD(AdaptiveStateRepresentation);
+
+class AdaptiveStateRepresentation
+{
 public:
-    inline AdaptiveStateRepresentation_t(std::shared_ptr<MultiRepAdaptiveDiscreteSpaceInformation> env, bool executable, std::string description) :
-        env_(env),
-        dimID_(-1),
-        bExecutable_(executable),
-        sDescription_(description)
 
-    {
-        sphere_radius_ = 1.0;
-        near_radius_ = 1.0;
-        tunnel_radius_ = 1.0;
-    }
+    AdaptiveStateRepresentation(
+        MultiRepAdaptiveDiscreteSpaceInformationPtr env,
+        bool executable,
+        std::string description);
 
-    virtual inline ~AdaptiveStateRepresentation_t() { };
+    virtual ~AdaptiveStateRepresentation() { };
 
-    virtual int SetStartCoords(const void *disc_data) = 0; //returns the state ID of the created start state
+    // return the state ID of the created start state
+    virtual int SetStartCoords(const void *disc_data) = 0;
 
-    virtual int SetStartConfig(const void* cont_data) = 0;
+    virtual int SetStartConfig(const void *cont_data) = 0;
 
-    virtual int SetGoalCoords(const void *disc_data) = 0; //returns the state ID of the created start state
+    // return the state ID of the created start state
+    virtual int SetGoalCoords(const void *disc_data) = 0;
 
-    virtual int SetGoalConfig(const void* cont_data) = 0;
+    virtual int SetGoalConfig(const void *cont_data) = 0;
 
     virtual bool isGoalState(int StateID) const = 0;
 
-    virtual void GetSuccs(int stateID, std::vector<int> *SuccV, std::vector<int> *CostV, const void *env_data) = 0;
+    virtual void GetSuccs(
+        int stateID,
+        std::vector<int> *SuccV,
+        std::vector<int> *CostV,
+        const void *env_data) = 0;
 
-    virtual void GetPreds(int stateID, std::vector<int> *PredV, std::vector<int> *CostV, const void *env_data) = 0;
+    virtual void GetPreds(
+        int stateID,
+        std::vector<int> *PredV,
+        std::vector<int> *CostV,
+        const void *env_data) = 0;
 
-    virtual void PrintState(int stateID, bool bVerbose, FILE* fOut=stdout) const = 0;
+    virtual void PrintState(
+        int stateID,
+        bool bVerbose,
+        FILE* fOut = stdout) const = 0;
 
-    virtual void PrintStateData(const void* state_data, bool bVerbose, FILE* fOut=stdout) const = 0;
+    virtual void PrintStateData(
+        const void *state_data,
+        bool bVerbose,
+        FILE* fOut = stdout) const = 0;
 
-    virtual int GetGoalHeuristic(int stateID) const =0;
+    virtual int GetGoalHeuristic(int stateID) const = 0;
 
-    virtual void VisualizeState(int stateID, int hue, std::string ns, int &viz_idx) const =0;
+    virtual void VisualizeState(
+        int stateID,
+        int hue,
+        std::string ns,
+        int &viz_idx) const = 0;
 
-    virtual bool IsValidStateData(const void* disc_data) const = 0;
+    virtual bool IsValidStateData(const void *disc_data) const = 0;
 
-    virtual bool IsValidConfig(const void* cont_data) const = 0;
+    virtual bool IsValidConfig(const void *cont_data) const = 0;
 
-    inline void setFullDRepresentation(std::shared_ptr<AdaptiveStateRepresentation_t> fullD_rep){
-        fullD_rep_ = fullD_rep;
-    }
+    virtual bool ProjectToFullD(
+        const void *ld_state_data,
+        std::vector<int> &hd_projStateIDs,
+        int adPathIdx = 0) = 0;
 
-    inline bool isExecutable() const {
-        return bExecutable_;
-    }
+    virtual bool ProjectFromFullD(
+        const void *hd_state_data,
+        std::vector<int> &ld_projStateIDs,
+        int adPathIdx = 0) = 0;
 
-    inline int getID() const {
-        return dimID_;
-    }
+    // free the stateData ptr in the AdaptiveHashEntry
+    virtual void deleteStateData(int stateID) = 0;
 
-    inline void setID(int id){
-        dimID_ = id;
-    }
+    virtual void toCont(const void *disc_data, void *cont_data) const = 0;
 
-    inline const std::string getDescription() const {
-        return sDescription_;
-    }
+    virtual void toDisc(const void *cont_data, void *disc_data) const = 0;
 
-    inline void addParentRepresentation(AdaptiveStateRepresentation_t* parent){
-        bool found = false;
-        for(auto rep : parents){
-            if(rep.get() == parent){
-                found = true;
-                break;
-            }
-        }
-        if(!found){
-            SBPL_INFO("Added %s as parent representation to %s!", parent->getDescription().c_str(), this->getDescription().c_str());
-            parents.push_back(std::shared_ptr<AdaptiveStateRepresentation_t>(parent));
-            parent->addChildRepresentation(this);
-        }
-    }
+    void setFullDRepresentation(AdaptiveStateRepresentationPtr fullD_rep) { fullD_rep_ = fullD_rep; }
 
-    inline void addChildRepresentation(AdaptiveStateRepresentation_t* child){
-        bool found = false;
-        for(auto rep : children){
-            if(rep.get() == child){
-                found = true;
-                break;
-            }
-        }
-        if(!found){
-            SBPL_INFO("Added %s as child representation to %s!", child->getDescription().c_str(), this->getDescription().c_str());
-            children.push_back(std::shared_ptr<AdaptiveStateRepresentation_t>(child));
-            child->addParentRepresentation(this);
-        }
-    }
+    bool isExecutable() const { return bExecutable_; }
 
-    void GetExecutableParents(std::vector<const sbpl_adaptive::AdaptiveStateRepresentation_t*> &executableParents) const {
-        if(isExecutable()){
-            executableParents.push_back(this);
-        } else {
-            for(auto parent : parents){
-                parent->GetExecutableParents(executableParents);
-            }
-        }
-    }
+    int getID() const { return dimID_; }
 
-    virtual bool ProjectToFullD(const void* ld_state_data, std::vector<int> &hd_projStateIDs, int adPathIdx=0) = 0;
+    void setID(int id){ dimID_ = id; }
+    
+    const std::string getDescription() const { return sDescription_; }
 
-    virtual bool ProjectFootprintToStairs(const void* ld_state_data, std::vector<int> &hd_projStateIDs, int adPathIdx=0){
-        SBPL_ERROR("[ProjectFootprintToStairs] Not implemented. Check your reps!!");
-    }
+    void addParentRepresentation(AdaptiveStateRepresentation *parent);
 
-    virtual bool ProjectFromFullD(const void* hd_state_data, std::vector<int> &ld_projStateIDs, int adPathIdx=0) = 0;
+    void addChildRepresentation(AdaptiveStateRepresentation *child);
 
-    void getParentIDs(int stateID, std::vector<int> &IDs) const {
-        for(auto parent : parents){
-            IDs.push_back(parent->getID());
-        }
-    }
+    void GetExecutableParents(
+        std::vector<const AdaptiveStateRepresentation*> &executableParents) const;
 
-    void getChildIDs(int stateID, std::vector<int> &IDs) const {
-        for(auto child : children){
-            IDs.push_back(child->getID());
-        }
-    }
+    void getParentIDs(int stateID, std::vector<int> &IDs) const;
 
-    virtual void deleteStateData(int stateID) = 0; //free the stateData ptr in the AdaptiveHashEntry
+    void getChildIDs(int stateID, std::vector<int> &IDs) const;
 
-    virtual void toCont(const void* disc_data, void* cont_data) const = 0;
+    double getSphereRadius() const { return sphere_radius_; }
 
-    virtual void toDisc(const void* cont_data, void* disc_data) const = 0;
+    double getNearRadius() const { return near_radius_; }
 
-    inline double getSphereRadius() const { return sphere_radius_; }
-
-    inline double getNearRadius() const { return near_radius_; }
-
-    inline double getTunnelRadius() const { return tunnel_radius_; }
+    double getTunnelRadius() const { return tunnel_radius_; }
 
 protected:
+
     double sphere_radius_;
     double near_radius_;
     double tunnel_radius_;
 
-    std::shared_ptr<MultiRepAdaptiveDiscreteSpaceInformation> env_;
+    MultiRepAdaptiveDiscreteSpaceInformationPtr env_;
     int dimID_;
     bool bExecutable_;
     std::string sDescription_;
-    std::shared_ptr<AdaptiveStateRepresentation_t> fullD_rep_;
+    AdaptiveStateRepresentationPtr fullD_rep_;
 
-    //these form the abstraction hierarchy
-    std::vector<std::shared_ptr<AdaptiveStateRepresentation_t>> parents; //less abstract representations
-    std::vector<std::shared_ptr<AdaptiveStateRepresentation_t>> children; //more abstract representations
+    // these form the abstraction hierarchy
+    std::vector<AdaptiveStateRepresentationPtr> parents; // less abstract representations
+    std::vector<AdaptiveStateRepresentationPtr> children; // more abstract representations
 };
 
+inline
+AdaptiveStateRepresentation::AdaptiveStateRepresentation(
+    std::shared_ptr<MultiRepAdaptiveDiscreteSpaceInformation> env,
+    bool executable,
+    std::string description)
+:
+    env_(env),
+    dimID_(-1),
+    bExecutable_(executable),
+    sDescription_(description)
+
+{
+    sphere_radius_ = 1.0;
+    near_radius_ = 1.0;
+    tunnel_radius_ = 1.0;
 }
 
+inline
+void AdaptiveStateRepresentation::addParentRepresentation(
+    AdaptiveStateRepresentation *parent)
+{
+    bool found = false;
+    for (auto rep : parents) {
+        if (rep.get() == parent) {
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        SBPL_INFO("Added %s as parent representation to %s!", parent->getDescription().c_str(), this->getDescription().c_str());
+        parents.push_back(std::shared_ptr<AdaptiveStateRepresentation>(parent));
+        parent->addChildRepresentation(this);
+    }
+}
 
-#endif /* ADAPTIVE_PLANNING_SBPL_HUMANOID_PLANNER_INCLUDE_REPRESENTATION_H_ */
+inline
+void AdaptiveStateRepresentation::addChildRepresentation(
+    AdaptiveStateRepresentation *child)
+{
+    bool found = false;
+    for (auto rep : children) {
+        if (rep.get() == child) {
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        SBPL_INFO("Added %s as child representation to %s!", child->getDescription().c_str(), this->getDescription().c_str());
+        children.push_back(std::shared_ptr<AdaptiveStateRepresentation>(child));
+        child->addParentRepresentation(this);
+    }
+}
+
+inline
+void AdaptiveStateRepresentation::GetExecutableParents(
+    std::vector<const AdaptiveStateRepresentation *> &executableParents) const
+{
+    if (isExecutable()) {
+        executableParents.push_back(this);
+    }
+    else {
+        for (auto parent : parents) {
+            parent->GetExecutableParents(executableParents);
+        }
+    }
+}
+
+inline
+void AdaptiveStateRepresentation::getParentIDs(
+    int stateID,
+    std::vector<int> &IDs) const
+{
+    for (auto parent : parents) {
+        IDs.push_back(parent->getID());
+    }
+}
+
+inline
+void AdaptiveStateRepresentation::getChildIDs(
+    int stateID,
+    std::vector<int> &IDs) const
+{
+    for (auto child : children) {
+        IDs.push_back(child->getID());
+    }
+}
+
+} // namespace adim
+
+#endif

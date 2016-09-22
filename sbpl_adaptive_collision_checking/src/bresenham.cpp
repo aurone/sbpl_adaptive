@@ -31,7 +31,7 @@
 
 #include <sbpl_adaptive_collision_checking/bresenham.h>
 
-namespace sbpl_adaptive_collision_checking {
+namespace adim {
 
 void get_bresenham3d_parameters(
     int p1x, int p1y, int p1z,

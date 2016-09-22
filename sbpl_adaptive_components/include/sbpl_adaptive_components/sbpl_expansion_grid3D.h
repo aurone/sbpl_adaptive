@@ -18,7 +18,7 @@ namespace sbpl_adaptive_components {
 class ExpansionGrid3D
 {
 private:
-	std::shared_ptr<sbpl_adaptive_collision_checking::SBPLCollisionSpace> cspace_;
+	std::shared_ptr<adim::SBPLCollisionSpace> cspace_;
 
 protected:
 	Cell3D_t size_;
@@ -27,7 +27,7 @@ protected:
 public:
 
     /** @brief constructor - uses a pointer to a collision space (with a corresponding collision model used to calculate the voxels for each state) */
-	ExpansionGrid3D(sbpl_adaptive_collision_checking::SBPLCollisionSpace* cspace);
+	ExpansionGrid3D(adim::SBPLCollisionSpace* cspace);
 
     /** @brief destructor */
     ~ExpansionGrid3D();
@@ -39,12 +39,12 @@ public:
     inline void reset();
 
     /** @brief records the expansion step for the specified model coords */
-    void setExpansionStep(const sbpl_adaptive_collision_checking::ModelCoords_t &model_coords, unsigned int exp_step);
+    void setExpansionStep(const adim::ModelCoords_t &model_coords, unsigned int exp_step);
 
     /** @brief returns the earliest expansion step for a given set of voxels -- pass in all modified cells in the environment to get the earliest expansion step the changes affect */
     unsigned int getEarliestExpansionStep(std::vector<Cell3D_t> voxels);
 
-    visualization_msgs::MarkerArray getVoxelVisualization(const sbpl_adaptive_collision_checking::ModelCoords_t &model_coords, std::string ns, Color_t color);
+    visualization_msgs::MarkerArray getVoxelVisualization(const adim::ModelCoords_t &model_coords, std::string ns, Color_t color);
 
 };
 

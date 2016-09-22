@@ -12,7 +12,7 @@
 #include <tf/tf.h>
 #include <tf_conversions/tf_eigen.h>
 
-using namespace sbpl_adaptive_collision_checking;
+using namespace adim;
 
 int main(int argc, char** argv)
 {

@@ -33,7 +33,7 @@ using namespace std;
 
 //-----------------------------------------------------------------------------------------------------
 
-namespace sbpl_adaptive {
+namespace adim {
 
 ARAPlanner_AD::ARAPlanner_AD(AdaptiveDiscreteSpaceInformation* environment, bool bSearchForward)
 {

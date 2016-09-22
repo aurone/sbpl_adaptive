@@ -2,7 +2,7 @@
 
 #include <ros/console.h>
 
-namespace sbpl_adaptive_collision_checking {
+namespace adim {
 
 CollisionChecker::CollisionChecker()
 {

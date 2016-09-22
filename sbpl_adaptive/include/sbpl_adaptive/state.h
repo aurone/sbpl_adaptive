@@ -10,14 +10,14 @@
 
 #include <tf/tf.h>
 
-namespace sbpl_adaptive {
+namespace adim {
 
 typedef struct {
     size_t stateID;         //the state ID
     size_t heur;            //the heuristic value
     char dimID;             //the dimensionality ID
     void* stateData;        //the state data specific to this dimensionality
-} AdaptiveHashEntry_t;
+} AdaptiveHashEntry;
 
 inline static size_t intHash(size_t key)
 {
