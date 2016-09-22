@@ -65,6 +65,7 @@ MHAPlanner_AD::MHAPlanner_AD(
     m_goal_state(NULL),
     m_search_states(),
     m_open(NULL),
+    set_heur_(false),
     created_states_()
 {
     environment_ = environment;
@@ -611,12 +612,19 @@ MHASearchState* MHAPlanner_AD::state_from_open_state(
 
 int MHAPlanner_AD::compute_heuristic(int state_id, int hidx)
 {
+    if(set_heur_)
+        return m_hanchor->GetGoalHeuristic(state_id);
     if (hidx == 0) {
         int anc = m_hanchor->GetGoalHeuristic(state_id);
         return anc;
     }
     else {
         int stair = m_heurs[hidx - 1]->GetGoalHeuristic(state_id);
+        if(stair == 0)
+        {
+            set_heur_ = true;
+            return m_hanchor->GetGoalHeuristic(state_id);
+        }
         return stair;
     }   
 }

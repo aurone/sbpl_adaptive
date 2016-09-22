@@ -47,7 +47,7 @@ Imp_MHAPlanner_AD::Imp_MHAPlanner_AD(
   env_ = environment;
   replan_number = 0;
 
-  num_heuristics = num_heurs;
+  num_heuristics = num_heurs + 1;
   heaps.resize(num_heuristics);
   incons.resize(num_heuristics);
   states.resize(num_heuristics);
@@ -695,7 +695,7 @@ int Imp_MHAPlanner_AD::ImprovePath() {
     //   //std::cin.get();
     // }
 
-    if (!spin_again || meta_search_type != imp_mhaplanner_ad::MetaSearchType::DTS) {
+    if (!spin_again){// || meta_search_type != imp_mhaplanner_ad::MetaSearchType::DTS) {
       q_id = GetBestHeuristicID();
       // queue_expands[q_id]++;
       //printf("chose queue %d\n",q_id);
@@ -852,8 +852,6 @@ int Imp_MHAPlanner_AD::ImprovePath() {
     }
 
     }
-
-
 
     bool print = false;
 

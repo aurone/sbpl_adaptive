@@ -179,6 +179,8 @@ private:
 
     int m_call_number;
 
+    bool set_heur_;
+
     MHASearchState* m_start_state;
     MHASearchState* m_goal_state;
 
