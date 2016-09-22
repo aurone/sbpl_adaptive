@@ -170,22 +170,22 @@ int MultiRepAdaptiveDiscreteSpaceInformation::SetAbstractGoal(AbstractGoal_t* go
 
 MultiRepAdaptiveDiscreteSpaceInformation::MultiRepAdaptiveDiscreteSpaceInformation()
 {
-  data_.HashTableSize = 32*1024; //should be power of two
-  data_.StateID2HashEntry.clear();
-  data_.goalHashEntry = NULL;
-  data_.startHashEntry = NULL;
-  env_data_.reset();
-  BestTracked_StateID = -1;
-  BestTracked_Cost = INFINITECOST;
+    data_.HashTableSize = 32*1024; //should be power of two
+    data_.StateID2HashEntry.clear();
+    data_.goalHashEntry = NULL;
+    data_.startHashEntry = NULL;
+    env_data_.reset();
+    BestTracked_StateID = -1;
+    BestTracked_Cost = INFINITECOST;
 }
 
 MultiRepAdaptiveDiscreteSpaceInformation::~MultiRepAdaptiveDiscreteSpaceInformation() {
     for(size_t i = 0; i < data_.StateID2HashEntry.size(); i++)
     {
-      adim::AdaptiveHashEntry* entry = data_.StateID2HashEntry[i];
-      representations_[entry->dimID]->deleteStateData(entry->stateID); //tell the representation to delete its state data (the void*)
-      delete entry;
-      data_.StateID2HashEntry[i] = NULL;
+        adim::AdaptiveHashEntry* entry = data_.StateID2HashEntry[i];
+        representations_[entry->dimID]->deleteStateData(entry->stateID); //tell the representation to delete its state data (the void*)
+        delete entry;
+        data_.StateID2HashEntry[i] = NULL;
     }
     data_.StateID2HashEntry.clear();
     data_.HashTables.clear();
@@ -268,8 +268,8 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::isExecutablePath(const std::vecto
     for(int stateID : stateIDV){
         AdaptiveHashEntry* entry = GetState(stateID);
         if(entry->dimID == -1){
-        	SBPL_INFO("State %d is the metagoal", stateID);
-        	continue;
+            SBPL_INFO("State %d is the metagoal", stateID);
+            continue;
         }
         if(!representations_[entry->dimID]->isExecutable()) return false;
     }

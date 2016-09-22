@@ -10,6 +10,8 @@
 
 #include <sbpl_adaptive/headers.h>
 
+#include <sbpl_adaptive/macros.h>
+
 namespace adim {
 
 struct EnvStateData
@@ -35,6 +37,8 @@ struct EnvStateData
     // vector that maps from stateID to coords
     std::vector<AdaptiveHashEntry *> StateID2HashEntry;
 };
+
+SBPL_CLASS_FORWARD(MultiRepAdaptiveDiscreteSpaceInformation)
 
 class MultiRepAdaptiveDiscreteSpaceInformation :
     public AdaptiveDiscreteSpaceInformation

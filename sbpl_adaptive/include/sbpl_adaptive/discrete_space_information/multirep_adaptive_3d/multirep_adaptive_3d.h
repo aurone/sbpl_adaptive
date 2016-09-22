@@ -9,24 +9,25 @@
 #define SRC_SBPL_ADAPTIVE_INCLUDE_SBPL_ADAPTIVE_DISCRETE_SPACE_INFORMATION_MULTIREP_ADAPTIVE_3D_MULTIREP_ADAPTIVE_3D_H_
 
 #include <sbpl_adaptive/headers.h>
+#include <sbpl_adaptive/macros.h>
 
 namespace adim {
 
-class MultiRepAdaptiveDiscreteSpaceInformation3D : public MultiRepAdaptiveDiscreteSpaceInformation
+SBPL_CLASS_FORWARD(MultiRepAdaptiveDiscreteSpaceInformation3D)
+
+class MultiRepAdaptiveDiscreteSpaceInformation3D :
+    public MultiRepAdaptiveDiscreteSpaceInformation
 {
-  public:
+public:
 
     virtual int GetDimIDForPosition(Position3D p) = 0;
 
     virtual int GetTrackingCostToGoalForPosition(Position3D p) = 0;
 
     virtual void addSphere(const AdaptiveSphere3D_t &sphere) = 0;
-
-  protected:
-
 };
 
-}
+} // namespace adim
 
 
-#endif /* SRC_SBPL_ADAPTIVE_INCLUDE_SBPL_ADAPTIVE_DISCRETE_SPACE_INFORMATION_MULTIREP_ADAPTIVE_3D_MULTIREP_ADAPTIVE_3D_H_ */
+#endif
