@@ -70,6 +70,6 @@ void getLineSegment(
     const std::vector<int>& b,
     std::vector<std::vector<int> > &points);
 
-} // namespace sbpl_adaptive_collision_checking
+} // namespace adim
 
 #endif

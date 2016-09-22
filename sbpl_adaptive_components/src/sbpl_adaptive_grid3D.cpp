@@ -11,7 +11,7 @@
 
 #include <sbpl_adaptive_components/common.h>
 
-namespace sbpl_adaptive_components {
+namespace adim {
 
 void AdaptiveGrid3D::reset()
 {
@@ -555,4 +555,4 @@ visualization_msgs::Marker AdaptiveGrid3D::getCostToGoalGridVisualization(
     return marker;
 }
 
-} // namespace sbpl_adaptive_components
+} // namespace adim

@@ -13,7 +13,7 @@
 #include <sbpl_adaptive_collision_checking/sbpl_collision_space.h>
 #include <visualization_msgs/MarkerArray.h>
 
-namespace sbpl_adaptive_components {
+namespace adim {
 
 class ExpansionGrid3D
 {

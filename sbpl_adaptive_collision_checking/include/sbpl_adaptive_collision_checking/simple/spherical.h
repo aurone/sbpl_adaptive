@@ -181,6 +181,6 @@ SBPLSphericalCollisionModel::getModelVisualization(
     return getModelBasicVisualization(coords, frame_id, ns, col);
 }
 
-} // namespace sbpl_adaptive_collision_checking
+} // namespace adim
 
 #endif /* SRC_SBPL_COLLISION_CHECKING_INCLUDE_SBPL_COLLISION_CHECKING_SIMPLE_SPHERICAL_H_ */

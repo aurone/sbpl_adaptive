@@ -23,6 +23,6 @@ struct Sphere
     }
 };
 
-} // namespace sbpl_adaptive_collision_checking
+} // namespace adim
 
-#endif /* SBPL_COLLISION_CHECKING_INCLUDE_SBPL_COLLISION_CHECKING_COMMON_H_ */
+#endif

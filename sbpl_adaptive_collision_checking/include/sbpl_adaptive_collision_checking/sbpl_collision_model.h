@@ -133,6 +133,6 @@ protected:
     std::vector<Sphere> contact_spheres_;
 };
 
-} // namespace sbpl_adaptive_collision_checking
+} // namespace adim
 
 #endif

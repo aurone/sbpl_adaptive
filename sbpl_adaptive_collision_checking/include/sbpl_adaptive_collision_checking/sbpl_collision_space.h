@@ -154,7 +154,7 @@ bool SBPLCollisionSpace::isValidCell(
     return true;
 }
 
-} // namespace sbpl_adaptive_collision_checking
+} // namespace adim
 
 #endif
 

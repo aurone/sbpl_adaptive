@@ -14,7 +14,7 @@
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 
-namespace sbpl_adaptive_components {
+namespace adim {
 
 struct Point3D_t
 {

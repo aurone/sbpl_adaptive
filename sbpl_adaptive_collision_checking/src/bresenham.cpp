@@ -175,4 +175,4 @@ void getLineSegment(
     while (get_next_point3d(&params));
 }
 
-} // namespace sbpl_adaptive_collision_checking
+} // namespace adim

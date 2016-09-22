@@ -47,7 +47,7 @@ public:
 
     MultiRepAdaptiveDiscreteSpaceInformation();
 
-    ~MultiRepAdaptiveDiscreteSpaceInformation();
+    virtual ~MultiRepAdaptiveDiscreteSpaceInformation();
 
     /// inserts a new hash entry into the hash table and updates its stateID
     /// accordingly returns the stateID
@@ -58,58 +58,6 @@ public:
     const EnvStateData *getEnvStateDataPtr() { return &data_; }
 
     const void *getEnvDataPtr() { return env_data_.get(); }
-
-    /*** inherited from AdaptiveDiscreteSpaceInformation ***/
-    bool isExecutablePath(const std::vector<int> &stateIDV);
-
-    virtual void GetSuccs_Track(
-        int SourceStateID,
-        std::vector<int> *SuccIDV,
-        std::vector<int> *CostV);
-    virtual void GetSuccs_Track(
-        int SourceStateID,
-        int expansion_step,
-        std::vector<int> *SuccIDV,
-        std::vector<int> *CostV);
-    virtual void GetSuccs_Plan(
-        int SourceStateID,
-        std::vector<int> *SuccIDV,
-        std::vector<int> *CostV);
-    virtual void GetSuccs_Plan(
-        int SourceStateID,
-        int expansion_step,
-        std::vector<int> *SuccIDV,
-        std::vector<int> *CostV);
-    virtual void GetPreds_Track(
-        int TargetStateID,
-        std::vector<int> *PredIDV,
-        std::vector<int> *CostV);
-    virtual void GetPreds_Track(
-        int TargetStateID,
-        int expansion_step,
-        std::vector<int> *PredIDV,
-        std::vector<int> *CostV);
-    virtual void GetPreds_Plan(
-        int TargetStateID,
-        std::vector<int> *PredIDV,
-        std::vector<int> *CostV);
-    virtual void GetPreds_Plan(
-        int TargetStateID,
-        int expansion_step,
-        std::vector<int> *PredIDV,
-        std::vector<int> *CostV);
-
-    virtual bool ProjectToFullD(
-        const void *local_state_data,
-        int fromID,
-        std::vector<int> &proj_stateIDs,
-        int adPathIdx = 0);
-    virtual bool Project(
-        const void *hd_state_data,
-        int fromID,
-        int toID,
-        std::vector<int> &proj_stateIDs,
-        int adPathIdx = 0);
 
     bool RegisterFullDRepresentation(
         AdaptiveStateRepresentationPtr fullD_representation);
@@ -140,7 +88,72 @@ public:
 
     void updateBestTracked(int StateID, int costToGoal);
 
-  protected:
+    virtual bool ProjectToFullD(
+        const void *local_state_data,
+        int fromID,
+        std::vector<int> &proj_stateIDs,
+        int adPathIdx = 0);
+
+    virtual bool Project(
+        const void *hd_state_data,
+        int fromID,
+        int toID,
+        std::vector<int> &proj_stateIDs,
+        int adPathIdx = 0);
+
+    /// \name Required Public Functions From AdaptiveDiscreteSpaceInformation
+    ///@{
+
+    bool isExecutablePath(const std::vector<int> &stateIDV);
+
+    virtual void GetSuccs_Track(
+        int SourceStateID,
+        std::vector<int> *SuccIDV,
+        std::vector<int> *CostV);
+
+    virtual void GetSuccs_Track(
+        int SourceStateID,
+        int expansion_step,
+        std::vector<int> *SuccIDV,
+        std::vector<int> *CostV);
+
+    virtual void GetSuccs_Plan(
+        int SourceStateID,
+        std::vector<int> *SuccIDV,
+        std::vector<int> *CostV);
+
+    virtual void GetSuccs_Plan(
+        int SourceStateID,
+        int expansion_step,
+        std::vector<int> *SuccIDV,
+        std::vector<int> *CostV);
+
+    virtual void GetPreds_Track(
+        int TargetStateID,
+        std::vector<int> *PredIDV,
+        std::vector<int> *CostV);
+
+    virtual void GetPreds_Track(
+        int TargetStateID,
+        int expansion_step,
+        std::vector<int> *PredIDV,
+        std::vector<int> *CostV);
+
+    virtual void GetPreds_Plan(
+        int TargetStateID,
+        std::vector<int> *PredIDV,
+        std::vector<int> *CostV);
+
+    virtual void GetPreds_Plan(
+        int TargetStateID,
+        int expansion_step,
+        std::vector<int> *PredIDV,
+        std::vector<int> *CostV);
+
+    ///@}
+
+
+protected:
 
     int BestTracked_StateID;
     int BestTracked_Cost;

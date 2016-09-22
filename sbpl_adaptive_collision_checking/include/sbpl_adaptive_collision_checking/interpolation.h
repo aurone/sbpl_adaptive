@@ -32,6 +32,6 @@ inline static double ALERP(double a0, double a1, double t)
     return angles::normalize_angle(a0 + t * a_diff);
 }
 
-} // namespace sbpl_adaptive_collision_checking
+} // namespace adim
 
 #endif /* SRC_SBPL_COLLISION_CHECKING_INCLUDE_SBPL_COLLISION_CHECKING_INTERPOLATION_H_ */
