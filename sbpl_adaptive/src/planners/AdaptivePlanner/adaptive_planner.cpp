@@ -92,7 +92,8 @@ AdaptivePlanner::AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, 
 	planner.reset(new MHAPlanner_AD(adaptive_environment_, plan_anc_heur_, plan_heurs_, num_heur_));
 	planner->set_search_mode(false);
 	// tracker.reset(new Imp_MHAPlanner_AD(adaptive_environment_, track_anc_heur_, track_heurs_, num_heur_, bforwardsearch));
-	tracker.reset(new MHAPlanner_AD(adaptive_environment_, track_anc_heur_, track_heurs_, num_heur_));
+	// tracker.reset(new MHAPlanner_AD(adaptive_environment_, track_anc_heur_, track_heurs_, num_heur_));
+	tracker.reset(new ARAPlanner_AD(adaptive_environment_, bforwardsearch));
 	tracker->set_search_mode(false);
 
 	SBPL_INFO("done!");
@@ -292,7 +293,7 @@ int AdaptivePlanner::replan(double allocated_time_secs, double allocated_time_pe
 		track_start = MY_TIME_NOW;
 		adaptive_environment_->setTrackMode(planning_stateV, p_Cost, &TrkModifiedStates);
 		tracker->force_planning_from_scratch();
-		tracker->set_search_mode(true);
+		tracker->set_search_mode(false);
 		tracking_stateV.clear();
 		tracking_bRet = 0;
 
@@ -300,7 +301,7 @@ int AdaptivePlanner::replan(double allocated_time_secs, double allocated_time_pe
 		t_elapsed_s = MY_TIME_DIFF_S(MY_TIME_NOW, start_t);
 		int last_bestTrackedID = -1;
 		int retries = 0;
-		while(t_elapsed_s < allocated_time_secs){
+		while(t_elapsed_s < ad_track_time_alloc){//allocated_time_secs){
 			SBPL_INFO("Still have time (%.3fs)...tracking", allocated_time_secs - t_elapsed_s);
 			MY_TIME_TYPE p_start = MY_TIME_NOW;
 			tracking_bRet = tracker->replan(ad_track_time_alloc, &tracking_stateV, &t_Cost);
@@ -395,6 +396,7 @@ int AdaptivePlanner::replan(double allocated_time_secs, double allocated_time_pe
 				//get the point of failure
 				int TrackFail_StateID = tracking_stateV[tracking_stateV.size()-1];
 				new_sphere_locations.push_back(TrackFail_StateID);
+				SBPL_INFO("New spheres added at point of failure!!!");
 			} else {
 				SBPL_ERROR("No new spheres added during this planning episode!!!");
 				throw SBPL_Exception();

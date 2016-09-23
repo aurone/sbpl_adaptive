@@ -1081,11 +1081,11 @@ bool ARAPlanner_AD::Search(ARASearchStateSpace_t* pSearchStateSpace, vector<int>
 		SBPL_PRINTF("eps=%f expands=%d g(searchgoal)=%d time=%.3f\n", pSearchStateSpace->eps_satisfied, searchexpands - prevexpands,
 							((ARAState*)pSearchStateSpace->searchgoalstate->PlannerSpecificData)->g,double(clock()-loop_time)/CLOCKS_PER_SEC);
 
-                if(pSearchStateSpace->eps_satisfied == finitial_eps && pSearchStateSpace->eps == finitial_eps)
-                {
-                  finitial_eps_planning_time = double(clock()-loop_time)/CLOCKS_PER_SEC;
-                  num_of_expands_initial_solution = searchexpands - prevexpands;
-                }
+        if(pSearchStateSpace->eps_satisfied == finitial_eps && pSearchStateSpace->eps == finitial_eps)
+        {
+          finitial_eps_planning_time = double(clock()-loop_time)/CLOCKS_PER_SEC;
+          num_of_expands_initial_solution = searchexpands - prevexpands;
+        }
 
 #if DEBUG
         SBPL_FPRINTF(fDeb, "eps=%f expands=%d g(searchgoal)=%d time=%.3f\n", pSearchStateSpace->eps_satisfied, searchexpands - prevexpands,

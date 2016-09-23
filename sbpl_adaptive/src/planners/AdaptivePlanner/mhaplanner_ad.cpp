@@ -201,7 +201,6 @@ int MHAPlanner_AD::replan(
 
     while (!m_open[0].emptyheap() && !time_limit_reached()) { 
         start_time = GetTime();
-
         // special case for mha* without additional heuristics
         if (num_heuristics() == 1) { 
             if (m_goal_state->g <= get_minf(m_open[0])) {
