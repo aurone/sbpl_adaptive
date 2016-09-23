@@ -29,6 +29,8 @@
 #ifndef __ARAPLANNER_AD_H_
 #define __ARAPLANNER_AD_H_
 
+#include <sbpl_adaptive/macros.h>
+
 #define ARAMDP_STATEID2IND_AD STATEID2IND_SLOT1
 
 #define ARA_AD_INCONS_LIST_ID 1
@@ -41,6 +43,8 @@ class CList;
 
 namespace adim {
 
+SBPL_CLASS_FORWARD(ARAPlanner_AD)
+
 /** \brief ARA* planner
  */
 class ARAPlanner_AD : public SBPLPlanner
@@ -49,10 +53,10 @@ public:
 
     /** \brief replan a path within the allocated time, return the solution in the vector
      */
-    int replan(double allocated_time_secs, vector<int>* solution_stateIDs_V);
+    int replan(double allocated_time_secs, std::vector<int>* solution_stateIDs_V);
     /** \brief replan a path within the allocated time, return the solution in the vector, also returns solution cost
      */
-    int replan(double allocated_time_sec, vector<int>* solution_stateIDs_V, int* solcost);
+    int replan(double allocated_time_sec, std::vector<int>* solution_stateIDs_V, int* solcost);
 
     /** \brief set the goal state
      */
@@ -213,9 +217,9 @@ private:
     int getHeurValue(ARASearchStateSpace_t* pSearchStateSpace, int StateID);
 
     //get path
-    vector<int> GetSearchPath(ARASearchStateSpace_t* pSearchStateSpace, int& solcost, CMDPSTATE* beststate=NULL);
+    std::vector<int> GetSearchPath(ARASearchStateSpace_t* pSearchStateSpace, int& solcost, CMDPSTATE* beststate=NULL);
 
-    bool Search(ARASearchStateSpace_t* pSearchStateSpace, vector<int>& pathIds, int & PathCost, bool bFirstSolution, bool bOptimalSolution, double MaxNumofSecs);
+    bool Search(ARASearchStateSpace_t* pSearchStateSpace, std::vector<int>& pathIds, int & PathCost, bool bFirstSolution, bool bOptimalSolution, double MaxNumofSecs);
 };
 
 } // namespace adim

@@ -29,6 +29,8 @@
 #ifndef __TRAPLANNER_H_
 #define __TRAPLANNER_H_
 
+#include <sbpl_adaptive/macros.h>
+
 //---configuration----
 
 //control of EPS
@@ -131,6 +133,8 @@ typedef struct TRASEARCHSTATESPACE
     std::vector<TRAState*> seen_states;
 
 } TRASearchStateSpace_t;
+
+SBPL_CLASS_FORWARD(TRAPlanner)
 
 /** \brief Anytime D* search planner: all states are uniquely defined by stateIDs
  */

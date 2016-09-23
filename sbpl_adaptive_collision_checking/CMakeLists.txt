@@ -39,6 +39,7 @@ find_package(catkin REQUIRED COMPONENTS
     moveit_msgs
     moveit_ros_planning
     octomap_msgs
+    sbpl_adaptive
     sbpl_arm_planner
     sbpl_geometry_utils
     tf

@@ -12,6 +12,7 @@
 #include <moveit_msgs/PlanningScene.h>
 #include <moveit_msgs/RobotState.h>
 #include <ros/ros.h>
+#include <sbpl_adaptive/macros.h>
 #include <sbpl_arm_planner/occupancy_grid.h>
 #include <sbpl_geometry_utils/bounding_spheres.h>
 #include <sbpl_geometry_utils/interpolate.h>
@@ -24,6 +25,8 @@
 #include <sbpl_adaptive_collision_checking/bresenham.h>
 
 namespace adim {
+
+SBPL_CLASS_FORWARD(SBPLCollisionSpace)
 
 class SBPLCollisionSpace
 {

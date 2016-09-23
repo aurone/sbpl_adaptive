@@ -3,9 +3,11 @@
 
 #include <sbpl/headers.h>
 
-using namespace std;
+#include <sbpl_adaptive/macros.h>
 
 namespace adim {
+
+SBPL_CLASS_FORWARD(AdaptiveDiscreteSpaceInformation)
 
 /// \brief base class for environments defining planning graphs
 ///

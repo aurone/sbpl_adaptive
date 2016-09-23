@@ -8,11 +8,13 @@
 #ifndef _ADAPTIVE_REPRESENTATION3D_H_
 #define _ADAPTIVE_REPRESENTATION3D_H_
 
+#include <sbpl_adaptive/discrete_space_information/multirep_adaptive_3d/multirep_adaptive_3d.h>
+#include <sbpl_adaptive/macros.h>
 #include <sbpl_adaptive/representation.h>
 
-#include <sbpl_adaptive/discrete_space_information/multirep_adaptive_3d/multirep_adaptive_3d.h>
-
 namespace adim {
+
+SBPL_CLASS_FORWARD(AdaptiveStateRepresentation3D)
 
 class AdaptiveStateRepresentation3D : public AdaptiveStateRepresentation
 {

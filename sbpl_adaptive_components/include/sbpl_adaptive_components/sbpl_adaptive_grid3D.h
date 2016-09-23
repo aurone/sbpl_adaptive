@@ -8,13 +8,16 @@
 #ifndef _SBPL_ADAPTIVE_GRID3D_H_
 #define _SBPL_ADAPTIVE_GRID3D_H_
 
+// system includes
 #include <leatherman/utils.h>
 #include <ros/ros.h>
+#include <sbpl_adaptive/macros.h>
 #include <sbpl_arm_planner/occupancy_grid.h>
 #include <tf/tf.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 
+// project includes
 #include <sbpl_adaptive_components/sbpl_adaptive_grid.h>
 
 namespace adim {
@@ -335,4 +338,4 @@ void AdaptiveGrid3D::addTrackingSphere(
 
 } // namespace adim
 
-#endif /* SBPL_ADAPTIVE_MANIPULATION_SBPL_ADAPTIVE_ARM_PLANNER_INCLUDE_SBPL_ADAPTIVE_GRID3D_H_ */
+#endif

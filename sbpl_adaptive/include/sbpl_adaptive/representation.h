@@ -17,7 +17,9 @@
 
 namespace adim {
 
+// breaks cyclic dependency
 SBPL_CLASS_FORWARD(MultiRepAdaptiveDiscreteSpaceInformation)
+
 SBPL_CLASS_FORWARD(AdaptiveStateRepresentation)
 
 class AdaptiveStateRepresentation
