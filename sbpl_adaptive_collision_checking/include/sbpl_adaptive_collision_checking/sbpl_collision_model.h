@@ -56,6 +56,7 @@
 #include <string>
 
 // system includes
+#include <sbpl_adaptive/macros.h>
 #include <std_msgs/ColorRGBA.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -69,6 +70,8 @@ struct ModelCoords_t
 {
     virtual ~ModelCoords_t() { }
 };
+
+SBPL_CLASS_FORWARD(SBPLCollisionModel);
 
 /// \brief Represents the collision model of the robot used for planning.
 class SBPLCollisionModel
