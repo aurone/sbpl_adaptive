@@ -4,11 +4,6 @@
 #define Z_TORSO_LIFT  -0.802
 #define X_TORSO_LIFT 0.05
 
-static std::string RIGHT_FK_SERVICE_NAME = "pr2_right_arm_kinematics_sushi/get_fk";
-static std::string LEFT_FK_SERVICE_NAME = "pr2_left_arm_kinematics_sushi/get_fk";
-static std::string RIGHT_IK_SERVICE_NAME = "pr2_right_arm_kinematics_sushi/get_ik";
-static std::string LEFT_IK_SERVICE_NAME = "pr2_left_arm_kinematics_sushi/get_ik";
-
 static std::string RIGHT_CHAIN_RTIP_NAME = "r_gripper_r_finger_tip_link";
 static std::string RIGHT_CHAIN_LTIP_NAME = "r_gripper_l_finger_tip_link";
 static std::string LEFT_CHAIN_RTIP_NAME = "l_gripper_r_finger_tip_link";
@@ -70,10 +65,6 @@ PViz::PViz() : ph_("~")
   reference_frame_ = "map"; // maybe should be base_footprint?
 
   srand (time(NULL));
-
-  fk_service_name_.resize(2);
-  fk_service_name_[RIGHT] = RIGHT_FK_SERVICE_NAME;
-  fk_service_name_[LEFT] = LEFT_FK_SERVICE_NAME;
 
   arm_joint_names_.push_back("_shoulder_pan_joint");
   arm_joint_names_.push_back("_shoulder_lift_joint");

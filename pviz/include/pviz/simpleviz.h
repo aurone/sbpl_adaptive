@@ -11,26 +11,28 @@
 
 /* \author Benjamin Cohen */
 
-#include <string>
-#include <fstream>
-#include <stdlib.h>
+// standard includes
 #include <math.h>
+#include <stdlib.h>
 #include <time.h>
+#include <fstream>
+#include <string>
 
-#include <ros/ros.h>
+// system includes
+#include <boost/lexical_cast.hpp>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Vector3.h>
+#include <ros/ros.h>
+#include <sbpl_arm_planner/visualize.h>
 #include <tf/tf.h>
-
-#include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
-#include <boost/lexical_cast.hpp>
+#include <visualization_msgs/MarkerArray.h>
 
-void HSVtoRGB( double *r, double *g, double *b, double h, double s, double v );
+void HSVtoRGB(double *r, double *g, double *b, double h, double s, double v );
 
 class SimpleViz
 {
-  public:
+public:
 
     SimpleViz();
 
@@ -39,13 +41,14 @@ class SimpleViz
     int getMaxMarkerID(std::string ns);
     bool hasNamespace(std::string ns);
 
-    inline void waitForSubscribers(){
-        ROS_INFO("Waiting for subscribers...");
-        while(marker_publisher_.getNumSubscribers() + marker_array_publisher_.getNumSubscribers() == 0){
-            ros::spinOnce();
-            ros::Duration(1.0).sleep();
-        }
-        ROS_INFO("Got %d subscribers!", marker_publisher_.getNumSubscribers() + marker_array_publisher_.getNumSubscribers());
+    void waitForSubscribers()
+    {
+//        ROS_INFO("Waiting for subscribers...");
+//        while(marker_publisher_.getNumSubscribers() + marker_array_publisher_.getNumSubscribers() == 0){
+//            ros::spinOnce();
+//            ros::Duration(1.0).sleep();
+//        }
+//        ROS_INFO("Got %d subscribers!", marker_publisher_.getNumSubscribers() + marker_array_publisher_.getNumSubscribers());
     }
 
     void clearVisualization(std::string ns);
@@ -66,7 +69,7 @@ class SimpleViz
 
     void visualize3DPath(std::vector<std::vector<double> > &dpath, std::string reference_frame_);
 
-     /* \brief display a sphere */
+    /* \brief display a sphere */
     void visualizeSphere(std::vector<double> pos3, int color, std::string ns, double radius, int &id, std::string reference_frame_);
     void visualizeSphere(std::vector<double> pose, int color, std::string text, double radius, std::string reference_frame_);
 
@@ -89,27 +92,33 @@ class SimpleViz
 
     // visualize a mesh where $mesh_resource is the path to the mesh using the URI used by resource_retriever package
     void visualizeMesh(const std::string& mesh_resource, const geometry_msgs::PoseStamped& pose,
-                       int color, std::string ns, int id, std::string reference_frame_);
+        int color, std::string ns, int id, std::string reference_frame_);
 
     // visualizes a triangle list; if psychadelic is true then each triangle has one of each red, green, and blue vertices
     void visualizeMeshTriangles(const std::vector<geometry_msgs::Point>& vertices, const std::vector<int>& triangles,
-                                const geometry_msgs::PoseStamped& pose, int color, std::string ns, int id, bool psychadelic, std::string reference_frame_);
+        const geometry_msgs::PoseStamped& pose, int color, std::string ns, int id, bool psychadelic, std::string reference_frame_);
 
     void deleteVisualizations(std::string ns, int max_id, std::string reference_frame_);
 
-    inline void publish(visualization_msgs::MarkerArray markers){
-        for(visualization_msgs::Marker &m : markers.markers){
+    void publish(visualization_msgs::MarkerArray markers)
+    {
+        for (visualization_msgs::Marker &m : markers.markers){
             update(m.ns, m.id);
         }
-    	marker_array_publisher_.publish(markers);
+        SV_SHOW_INFO(markers);
     }
 
-    inline void publish(visualization_msgs::Marker marker){
+    void publish(visualization_msgs::Marker marker)
+    {
         update(marker.ns, marker.id);
-    	marker_publisher_.publish(marker);
+        marker_publisher_.publish(marker);
     }
 
-  protected:
+    void showMarker(visualization_msgs::Marker&& m);
+    void showMarker(const visualization_msgs::Marker& m);
+
+protected:
+
     void update(std::string ns, int id);
 
     ros::NodeHandle nh_;
@@ -121,9 +130,6 @@ class SimpleViz
 
     visualization_msgs::MarkerArray marker_array_;
     visualization_msgs::Marker marker_;
-
 };
-
-
 
 #endif /* ADAPTIVE_PLANNING_PVIZ_INCLUDE_PVIZ_SIMPLEVIZ_H_ */
