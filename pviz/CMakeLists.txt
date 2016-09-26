@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
     kdl_parser
     roscpp
     sensor_msgs
+    sbpl_arm_planner
     tf
     trajectory_msgs
     visualization_msgs)

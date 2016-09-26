@@ -60,6 +60,6 @@ public:
     virtual visualization_msgs::MarkerArray getVisualization(std::string type);
 };
 
-} // namespace sbpl_adaptive_collision_checking
+} // namespace adim
 
 #endif

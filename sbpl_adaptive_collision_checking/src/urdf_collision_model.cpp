@@ -1648,4 +1648,4 @@ bool URDFCollisionModel::attachObject(
     return true;
 }
 
-} // namespace sbpl_adaptive_collision_checking
+} // namespace adim

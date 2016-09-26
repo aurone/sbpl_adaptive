@@ -40,4 +40,4 @@ void AdaptiveSphere3D_t::print(const AdaptiveSphere3D_t &sphere)
     SBPL_INFO("AdaptiveSphere3D: dimID: %d, xyz(%.3f, %.3f, %.3f), rad:%.3f, nearRad: %.3f, costToGoal: %d", sphere.dimID, sphere.x, sphere.y, sphere.z, sphere.rad, sphere.near_rad, sphere.costToGoal);
 }
 
-} // namespace sbpl_adaptive
+} // namespace adim

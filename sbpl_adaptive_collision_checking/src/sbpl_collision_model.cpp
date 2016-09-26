@@ -58,4 +58,4 @@ visualization_msgs::MarkerArray SBPLCollisionModel::getModelBasicVisualization(
     return markers;
 }
 
-} // namespace sbpl_daptive_collision_checking
+} // namespace adim

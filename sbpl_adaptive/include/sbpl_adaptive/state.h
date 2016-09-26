@@ -8,18 +8,20 @@
 #ifndef ADAPTIVE_PLANNING_SBPL_HUMANOID_PLANNER_INCLUDE_SBPL_HUMANOID_PLANNER_STATE_H_
 #define ADAPTIVE_PLANNING_SBPL_HUMANOID_PLANNER_INCLUDE_SBPL_HUMANOID_PLANNER_STATE_H_
 
-#include <tf/tf.h>
+#include <stdlib.h>
 
 namespace adim {
 
-typedef struct {
+struct AdaptiveHashEntry
+{
     size_t stateID;         //the state ID
     size_t heur;            //the heuristic value
     char dimID;             //the dimensionality ID
-    void* stateData;        //the state data specific to this dimensionality
-} AdaptiveHashEntry;
+    void *stateData;        //the state data specific to this dimensionality
+};
 
-inline static size_t intHash(size_t key)
+inline
+size_t intHash(size_t key)
 {
   key += (key << 12);
   key ^= (key >> 22);
@@ -32,10 +34,12 @@ inline static size_t intHash(size_t key)
   return key;
 }
 
-inline static size_t dblHash(double d, double res){
+inline
+size_t dblHash(double d, double res)
+{
     return intHash((d / res));
 }
 
-}
+} // namespace adim
 
-#endif /* ADAPTIVE_PLANNING_SBPL_HUMANOID_PLANNER_INCLUDE_SBPL_HUMANOID_PLANNER_STATE_H_ */
+#endif

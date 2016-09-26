@@ -342,4 +342,4 @@ double SBPLCollisionSpace::isValidLineSegment(
     }
 }
 
-} // namespace sbpl_adaptive_collision_checking
+} // namespace adim

@@ -173,8 +173,6 @@ class PViz
 
     std::vector<std::string> side_;
     std::vector<std::string> side_full_;
-    std::vector<std::string> fk_service_name_;
-    std::vector<std::string> ik_service_name_;
 
     KDL::JntArray jnt_pos_in_;
     KDL::JntArray jnt_pos_out_;
@@ -200,7 +198,6 @@ class PViz
     visualization_msgs::MarkerArray getRobotMarkerMsg(std::vector<double> &jnt0_pos, std::vector<double> &jnt1_pos, BodyPose &body_pos, double hue, std::string ns, int start_id);
     
     void getPR2State(BodyPose &body_pos, std::vector<double> &rangles, std::vector<double> &langles);
-
 };
 
 #endif

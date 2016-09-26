@@ -1,7 +1,7 @@
 #include <iostream>
 #include <sbpl_adaptive_collision_checking/test_sbpl_collision_space.h>
 
-using namespace sbpl_adaptive_collision_checking;
+using namespace adim;
 
 int main(int argc, char **argv)
 {

@@ -697,4 +697,4 @@ bool URDFCollisionModel::hasIgnoreSelfPair(
     return false;
 }
 
-} // namespace sbpl_adaptive_collision_checking
+} // namespace adim

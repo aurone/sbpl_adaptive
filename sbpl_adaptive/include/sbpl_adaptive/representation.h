@@ -17,8 +17,10 @@
 
 namespace adim {
 
-SBPL_CLASS_FORWARD(MultiRepAdaptiveDiscreteSpaceInformation);
-SBPL_CLASS_FORWARD(AdaptiveStateRepresentation);
+// breaks cyclic dependency
+SBPL_CLASS_FORWARD(MultiRepAdaptiveDiscreteSpaceInformation)
+
+SBPL_CLASS_FORWARD(AdaptiveStateRepresentation)
 
 class AdaptiveStateRepresentation
 {
@@ -140,7 +142,7 @@ protected:
 
 inline
 AdaptiveStateRepresentation::AdaptiveStateRepresentation(
-    std::shared_ptr<MultiRepAdaptiveDiscreteSpaceInformation> env,
+    MultiRepAdaptiveDiscreteSpaceInformationPtr env,
     bool executable,
     std::string description)
 :
@@ -168,7 +170,7 @@ void AdaptiveStateRepresentation::addParentRepresentation(
     }
     if (!found) {
         SBPL_INFO("Added %s as parent representation to %s!", parent->getDescription().c_str(), this->getDescription().c_str());
-        parents.push_back(std::shared_ptr<AdaptiveStateRepresentation>(parent));
+        parents.push_back(AdaptiveStateRepresentationPtr(parent));
         parent->addChildRepresentation(this);
     }
 }
@@ -186,7 +188,7 @@ void AdaptiveStateRepresentation::addChildRepresentation(
     }
     if (!found) {
         SBPL_INFO("Added %s as child representation to %s!", child->getDescription().c_str(), this->getDescription().c_str());
-        children.push_back(std::shared_ptr<AdaptiveStateRepresentation>(child));
+        children.push_back(AdaptiveStateRepresentationPtr(child));
         child->addParentRepresentation(this);
     }
 }

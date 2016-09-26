@@ -1,191 +1,138 @@
 /* \author Ben Cohen */
 
 #include <pviz/simpleviz.h>
-/*
-void HSVtoRGB( double *r, double *g, double *b, double h, double s, double v )
-{
-	int i;
-	double f, p, q, t;
-	if( s == 0 ) {
-		// achromatic (grey)
-		*r = *g = *b = v;
-		return;
-	}
-	h /= 60;        // sector 0 to 5
-	i = floor(h);
-	f = h - i;			// factorial part of h
-	p = v * ( 1 - s );
-	q = v * ( 1 - s * f );
-	t = v * ( 1 - s * ( 1 - f ) );
-	switch( i ) {
-		case 0:
-			*r = v;
-			*g = t;
-			*b = p;
-			break;
-		case 1:
-			*r = q;
-			*g = v;
-			*b = p;
-			break;
-		case 2:
-			*r = p;
-			*g = v;
-			*b = t;
-			break;
-		case 3:
-			*r = p;
-			*g = q;
-			*b = v;
-			break;
-		case 4:
-			*r = t;
-			*g = p;
-			*b = v;
-			break;
-    default:
-			*r = v;
-			*g = p;
-			*b = q;
-			break;
-	}
-}
-*/
 
 SimpleViz::SimpleViz() : ph_("~"), nh_()
 {
-  srand (time(NULL));
-
-  marker_array_publisher_ = nh_.advertise<visualization_msgs::MarkerArray>("visualization_marker_array", 500);
-  marker_publisher_ = nh_.advertise<visualization_msgs::Marker>("visualization_marker", 1000);
+    srand (time(NULL));
 }
 
 SimpleViz::~SimpleViz()
 {
-  
+
 }
 
 void SimpleViz::visualizeObstacles(const std::vector<std::vector<double> > &obstacles, std::string reference_frame_)
 {
-  marker_array_.markers.clear();
-  marker_array_.markers.resize(obstacles.size());
+    marker_array_.markers.clear();
+    marker_array_.markers.resize(obstacles.size());
 
-  ROS_INFO("[SimpleViz] Displaying %d obstaclesin the %s frame", (int)obstacles.size(), reference_frame_.c_str());
+    ROS_INFO("[SimpleViz] Displaying %d obstaclesin the %s frame", (int)obstacles.size(), reference_frame_.c_str());
 
-  std::string ns = "obstacles"+boost::lexical_cast<std::string>(rand());
+    std::string ns = "obstacles"+boost::lexical_cast<std::string>(rand());
 
-  for(int i = 0; i < int(obstacles.size()); i++)
-  {
-    if(obstacles[i].size() < 6)
+    for(int i = 0; i < int(obstacles.size()); i++)
     {
-      ROS_INFO("[SimpleViz] Obstacle description doesn't have length = 6");
-      continue;
-    }
+        if(obstacles[i].size() < 6)
+        {
+            ROS_INFO("[SimpleViz] Obstacle description doesn't have length = 6");
+            continue;
+        }
 
-    //TODO: Change this to use a CUBE_LIST
-    marker_array_.markers[i].header.stamp = ros::Time::now();
-    marker_array_.markers[i].header.frame_id = reference_frame_;
-    marker_array_.markers[i].ns = ns;
-    marker_array_.markers[i].id = i;
-    marker_array_.markers[i].type = visualization_msgs::Marker::CUBE;
-    marker_array_.markers[i].action = visualization_msgs::Marker::ADD;
-    marker_array_.markers[i].pose.position.x = obstacles[i][0];
-    marker_array_.markers[i].pose.position.y = obstacles[i][1];
-    marker_array_.markers[i].pose.position.z = obstacles[i][2];
-    marker_array_.markers[i].scale.x = obstacles[i][3];
-    marker_array_.markers[i].scale.y = obstacles[i][4];
-    marker_array_.markers[i].scale.z = obstacles[i][5];
-    marker_array_.markers[i].color.r = 0.0;
-    marker_array_.markers[i].color.g = 0.0;
-    marker_array_.markers[i].color.b = 0.5;
-    marker_array_.markers[i].color.a = 0.9;
-    marker_array_.markers[i].lifetime = ros::Duration(180.0);
-  }
-  update(ns, (int)obstacles.size());
-  marker_array_publisher_.publish(marker_array_);
+        //TODO: Change this to use a CUBE_LIST
+        marker_array_.markers[i].header.stamp = ros::Time::now();
+        marker_array_.markers[i].header.frame_id = reference_frame_;
+        marker_array_.markers[i].ns = ns;
+        marker_array_.markers[i].id = i;
+        marker_array_.markers[i].type = visualization_msgs::Marker::CUBE;
+        marker_array_.markers[i].action = visualization_msgs::Marker::ADD;
+        marker_array_.markers[i].pose.position.x = obstacles[i][0];
+        marker_array_.markers[i].pose.position.y = obstacles[i][1];
+        marker_array_.markers[i].pose.position.z = obstacles[i][2];
+        marker_array_.markers[i].scale.x = obstacles[i][3];
+        marker_array_.markers[i].scale.y = obstacles[i][4];
+        marker_array_.markers[i].scale.z = obstacles[i][5];
+        marker_array_.markers[i].color.r = 0.0;
+        marker_array_.markers[i].color.g = 0.0;
+        marker_array_.markers[i].color.b = 0.5;
+        marker_array_.markers[i].color.a = 0.9;
+        marker_array_.markers[i].lifetime = ros::Duration(180.0);
+    }
+    update(ns, (int)obstacles.size());
+    SV_SHOW_INFO(marker_array_);
 }
 
 void SimpleViz::visualizePoses(const std::vector<std::vector<double> > &poses, std::string reference_frame_)
 {
-  marker_array_.markers.clear();
-  marker_array_.markers.resize(poses.size()*3);
-  tf::Quaternion pose_quaternion;
-  geometry_msgs::Quaternion quaternion_msg;
+    marker_array_.markers.clear();
+    marker_array_.markers.resize(poses.size()*3);
+    tf::Quaternion pose_quaternion;
+    geometry_msgs::Quaternion quaternion_msg;
 
-  int mind = -1;
+    int mind = -1;
 
-  ros::Time time = ros::Time::now();
+    ros::Time time = ros::Time::now();
 
-  for(int i = 0; i < (int)poses.size(); ++i)
-  {
-    pose_quaternion.setRPY(poses[i][3],poses[i][4],poses[i][5]);
-    tf::quaternionTFToMsg(pose_quaternion, quaternion_msg);
+    for(int i = 0; i < (int)poses.size(); ++i)
+    {
+        pose_quaternion.setRPY(poses[i][3],poses[i][4],poses[i][5]);
+        tf::quaternionTFToMsg(pose_quaternion, quaternion_msg);
 
-    mind++;
-    marker_array_.markers[mind].header.stamp = time;
-    marker_array_.markers[mind].header.frame_id = reference_frame_;
-    marker_array_.markers[mind].ns = "pose_arrows";
-    marker_array_.markers[mind].type = visualization_msgs::Marker::ARROW;
-    marker_array_.markers[mind].id = i;
-    marker_array_.markers[mind].action = visualization_msgs::Marker::ADD;
-    marker_array_.markers[mind].pose.position.x = poses[i][0];
-    marker_array_.markers[mind].pose.position.y = poses[i][1];
-    marker_array_.markers[mind].pose.position.z = poses[i][2];
-    marker_array_.markers[mind].pose.orientation = quaternion_msg;
-    marker_array_.markers[mind].scale.x = 0.1;
-    marker_array_.markers[mind].scale.y = 0.1;
-    marker_array_.markers[mind].scale.z = 0.1;
-    marker_array_.markers[mind].color.r = 0.0;
-    marker_array_.markers[mind].color.g = 0.7;
-    marker_array_.markers[mind].color.b = 0.6;
-    marker_array_.markers[mind].color.a = 0.7;
-    marker_array_.markers[mind].lifetime = ros::Duration(600.0);
+        mind++;
+        marker_array_.markers[mind].header.stamp = time;
+        marker_array_.markers[mind].header.frame_id = reference_frame_;
+        marker_array_.markers[mind].ns = "pose_arrows";
+        marker_array_.markers[mind].type = visualization_msgs::Marker::ARROW;
+        marker_array_.markers[mind].id = i;
+        marker_array_.markers[mind].action = visualization_msgs::Marker::ADD;
+        marker_array_.markers[mind].pose.position.x = poses[i][0];
+        marker_array_.markers[mind].pose.position.y = poses[i][1];
+        marker_array_.markers[mind].pose.position.z = poses[i][2];
+        marker_array_.markers[mind].pose.orientation = quaternion_msg;
+        marker_array_.markers[mind].scale.x = 0.1;
+        marker_array_.markers[mind].scale.y = 0.1;
+        marker_array_.markers[mind].scale.z = 0.1;
+        marker_array_.markers[mind].color.r = 0.0;
+        marker_array_.markers[mind].color.g = 0.7;
+        marker_array_.markers[mind].color.b = 0.6;
+        marker_array_.markers[mind].color.a = 0.7;
+        marker_array_.markers[mind].lifetime = ros::Duration(600.0);
 
-    mind++;
-    marker_array_.markers[mind].header.stamp = time;
-    marker_array_.markers[mind].header.frame_id = reference_frame_;
-    marker_array_.markers[mind].ns = "pose_spheres";
-    marker_array_.markers[mind].id = i;
-    marker_array_.markers[mind].type = visualization_msgs::Marker::SPHERE;
-    marker_array_.markers[mind].action = visualization_msgs::Marker::ADD;
-    marker_array_.markers[mind].pose.position.x = poses[i][0];
-    marker_array_.markers[mind].pose.position.y = poses[i][1];
-    marker_array_.markers[mind].pose.position.z = poses[i][2];
-    marker_array_.markers[mind].pose.orientation = quaternion_msg;
-    marker_array_.markers[mind].scale.x = 0.07;
-    marker_array_.markers[mind].scale.y = 0.07;
-    marker_array_.markers[mind].scale.z = 0.07;
-    marker_array_.markers[mind].color.r = 1.0;
-    marker_array_.markers[mind].color.g = 0.0;
-    marker_array_.markers[mind].color.b = 0.6;
-    marker_array_.markers[mind].color.a = 0.6;
-    marker_array_.markers[mind].lifetime = ros::Duration(600.0);
+        mind++;
+        marker_array_.markers[mind].header.stamp = time;
+        marker_array_.markers[mind].header.frame_id = reference_frame_;
+        marker_array_.markers[mind].ns = "pose_spheres";
+        marker_array_.markers[mind].id = i;
+        marker_array_.markers[mind].type = visualization_msgs::Marker::SPHERE;
+        marker_array_.markers[mind].action = visualization_msgs::Marker::ADD;
+        marker_array_.markers[mind].pose.position.x = poses[i][0];
+        marker_array_.markers[mind].pose.position.y = poses[i][1];
+        marker_array_.markers[mind].pose.position.z = poses[i][2];
+        marker_array_.markers[mind].pose.orientation = quaternion_msg;
+        marker_array_.markers[mind].scale.x = 0.07;
+        marker_array_.markers[mind].scale.y = 0.07;
+        marker_array_.markers[mind].scale.z = 0.07;
+        marker_array_.markers[mind].color.r = 1.0;
+        marker_array_.markers[mind].color.g = 0.0;
+        marker_array_.markers[mind].color.b = 0.6;
+        marker_array_.markers[mind].color.a = 0.6;
+        marker_array_.markers[mind].lifetime = ros::Duration(600.0);
 
-    mind++;
-    marker_array_.markers[mind].header.stamp = time;
-    marker_array_.markers[mind].header.frame_id = reference_frame_;
-    marker_array_.markers[mind].ns = "pose_text_blocks";
-    marker_array_.markers[mind].id = i;
-    marker_array_.markers[mind].type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-    marker_array_.markers[mind].action = visualization_msgs::Marker::ADD;
-    marker_array_.markers[mind].pose.position.x = poses[i][0];
-    marker_array_.markers[mind].pose.position.y = poses[i][1];
-    marker_array_.markers[mind].pose.position.z = poses[i][2];
-    marker_array_.markers[mind].scale.x = 0.03;
-    marker_array_.markers[mind].scale.y = 0.03;
-    marker_array_.markers[mind].scale.z = 0.03;
-    marker_array_.markers[mind].color.r = 1.0;
-    marker_array_.markers[mind].color.g = 1.0;
-    marker_array_.markers[mind].color.b = 1.0;
-    marker_array_.markers[mind].color.a = 0.9;
-    marker_array_.markers[mind].text = boost::lexical_cast<std::string>(i+1);
-    marker_array_.markers[mind].lifetime = ros::Duration(600.0);
-  }
-  update("pose_arrows", (int)poses.size());
-  update("pose_text_blocks", (int)poses.size());
-  update("pose_spheres", (int)poses.size());
-  ROS_DEBUG("[SimpleViz] %d markers in the array",(int)marker_array_.markers.size());
-  marker_array_publisher_.publish(marker_array_);
+        mind++;
+        marker_array_.markers[mind].header.stamp = time;
+        marker_array_.markers[mind].header.frame_id = reference_frame_;
+        marker_array_.markers[mind].ns = "pose_text_blocks";
+        marker_array_.markers[mind].id = i;
+        marker_array_.markers[mind].type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+        marker_array_.markers[mind].action = visualization_msgs::Marker::ADD;
+        marker_array_.markers[mind].pose.position.x = poses[i][0];
+        marker_array_.markers[mind].pose.position.y = poses[i][1];
+        marker_array_.markers[mind].pose.position.z = poses[i][2];
+        marker_array_.markers[mind].scale.x = 0.03;
+        marker_array_.markers[mind].scale.y = 0.03;
+        marker_array_.markers[mind].scale.z = 0.03;
+        marker_array_.markers[mind].color.r = 1.0;
+        marker_array_.markers[mind].color.g = 1.0;
+        marker_array_.markers[mind].color.b = 1.0;
+        marker_array_.markers[mind].color.a = 0.9;
+        marker_array_.markers[mind].text = boost::lexical_cast<std::string>(i+1);
+        marker_array_.markers[mind].lifetime = ros::Duration(600.0);
+    }
+    update("pose_arrows", (int)poses.size());
+    update("pose_text_blocks", (int)poses.size());
+    update("pose_spheres", (int)poses.size());
+    ROS_DEBUG("[SimpleViz] %d markers in the array",(int)marker_array_.markers.size());
+    SV_SHOW_INFO(marker_array_);
 }
 
 void SimpleViz::clearAllVisualizations(){
@@ -209,7 +156,8 @@ void SimpleViz::clearAllVisualizations(){
     marker.color.a = 1.0;
     marker.lifetime = ros::Duration(500.0);
     marker_ns_id_map_.clear();
-    marker_publisher_.publish(marker);
+
+    showMarker(std::move(marker));
 }
 
 void SimpleViz::update(std::string ns, int id){
@@ -258,538 +206,552 @@ void SimpleViz::clearVisualization(std::string ns){
         markers.markers.push_back(marker);
     }
     update(ns, 0);
-    marker_array_publisher_.publish(markers);
+    SV_SHOW_INFO(markers);
 }
 
 void SimpleViz::visualizePose(const std::vector<double> &pose, std::string text, std::string ns, int &id, std::string frame_id)
 {
-  tf::Quaternion pose_quaternion;
-  geometry_msgs::Pose pose_msg;
+    tf::Quaternion pose_quaternion;
+    geometry_msgs::Pose pose_msg;
 
-  pose_msg.position.x = pose[0];
-  pose_msg.position.y = pose[1];
-  pose_msg.position.z = pose[2];
+    pose_msg.position.x = pose[0];
+    pose_msg.position.y = pose[1];
+    pose_msg.position.z = pose[2];
 
-  pose_quaternion.setRPY(pose[3],pose[4],pose[5]);
-  tf::quaternionTFToMsg(pose_quaternion, pose_msg.orientation);
+    pose_quaternion.setRPY(pose[3],pose[4],pose[5]);
+    tf::quaternionTFToMsg(pose_quaternion, pose_msg.orientation);
 
-  ROS_DEBUG("[SimpleViz] [%s] position: %0.3f %0.3f %0.3f quaternion: %0.3f %0.3f %0.3f %0.3f (frame: %s)", text.c_str(), pose[0], pose[1], pose[2], pose_msg.orientation.x, pose_msg.orientation.y, pose_msg.orientation.z, pose_msg.orientation.w, frame_id.c_str());
+    ROS_DEBUG("[SimpleViz] [%s] position: %0.3f %0.3f %0.3f quaternion: %0.3f %0.3f %0.3f %0.3f (frame: %s)", text.c_str(), pose[0], pose[1], pose[2], pose_msg.orientation.x, pose_msg.orientation.y, pose_msg.orientation.z, pose_msg.orientation.w, frame_id.c_str());
 
-  visualizePose(pose_msg, text, ns, id, frame_id);
+    visualizePose(pose_msg, text, ns, id, frame_id);
 }
 
-void SimpleViz::visualizePose(const geometry_msgs::Pose &pose, std::string text, std::string ns, int &id, std::string frame_id)
+void SimpleViz::visualizePose(
+    const geometry_msgs::Pose &pose,
+    std::string text,
+    std::string ns,
+    int &id,
+    std::string frame_id)
 {
-  int mind = -1;
-  marker_array_.markers.clear();
-  marker_array_.markers.resize(3);
-  ros::Time time = ros::Time::now();
+    int mind = -1;
+    marker_array_.markers.clear();
+    marker_array_.markers.resize(3);
+    ros::Time time = ros::Time::now();
 
-  ROS_DEBUG("[SimpleViz] [%s] position: %0.3f %0.3f %0.3f quaternion: %0.3f %0.3f %0.3f %0.3f (frame: %s)", text.c_str(), pose.position.x, pose.position.y, pose.position.z, pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w, frame_id.c_str());
-  
-  mind++;
-  marker_array_.markers[mind].header.stamp = time;
-  marker_array_.markers[mind].header.frame_id = frame_id;
-  marker_array_.markers[mind].ns = ns;
-  marker_array_.markers[mind].type = visualization_msgs::Marker::ARROW;
-  marker_array_.markers[mind].id = id;
-  marker_array_.markers[mind].action = visualization_msgs::Marker::ADD;
-  marker_array_.markers[mind].pose = pose;
-  marker_array_.markers[mind].scale.x = 0.125;
-  marker_array_.markers[mind].scale.y = 0.125;
-  marker_array_.markers[mind].scale.z = 0.125;
-  marker_array_.markers[mind].color.r = 0.0;
-  marker_array_.markers[mind].color.g = 0.7;
-  marker_array_.markers[mind].color.b = 0.6;
-  marker_array_.markers[mind].color.a = 0.7;
-  marker_array_.markers[mind].lifetime = ros::Duration(0.0);
-  id++;
-  mind++;
-  marker_array_.markers[mind].header.stamp = time;
-  marker_array_.markers[mind].header.frame_id = frame_id;
-  marker_array_.markers[mind].ns = ns;
-  marker_array_.markers[mind].id = id;
-  marker_array_.markers[mind].type = visualization_msgs::Marker::SPHERE;
-  marker_array_.markers[mind].action = visualization_msgs::Marker::ADD;
-  marker_array_.markers[mind].pose = pose;
-  marker_array_.markers[mind].scale.x = 0.10;
-  marker_array_.markers[mind].scale.y = 0.10;
-  marker_array_.markers[mind].scale.z = 0.10;
-  marker_array_.markers[mind].color.r = 1.0;
-  marker_array_.markers[mind].color.g = 0.0;
-  marker_array_.markers[mind].color.b = 0.6;
-  marker_array_.markers[mind].color.a = 0.6;
-  marker_array_.markers[mind].lifetime = ros::Duration(0.0);
-  id++;
-  mind++;
-  marker_array_.markers[mind].header.stamp = time;
-  marker_array_.markers[mind].header.frame_id = frame_id;
-  marker_array_.markers[mind].ns = ns;
-  marker_array_.markers[mind].id = id;
-  marker_array_.markers[mind].type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-  marker_array_.markers[mind].action = visualization_msgs::Marker::ADD;
-  marker_array_.markers[mind].pose = pose;
-  marker_array_.markers[mind].pose.position.z += 0.05;
-  marker_array_.markers[mind].scale.x = 0.03;
-  marker_array_.markers[mind].scale.y = 0.03;
-  marker_array_.markers[mind].scale.z = 0.03;
-  marker_array_.markers[mind].color.r = 1.0;
-  marker_array_.markers[mind].color.g = 1.0;
-  marker_array_.markers[mind].color.b = 1.0;
-  marker_array_.markers[mind].color.a = 0.9;
-  marker_array_.markers[mind].text = text;
-  marker_array_.markers[mind].lifetime = ros::Duration(0.0);
-  id++;
-  update(ns, id);
-  marker_array_publisher_.publish(marker_array_);
+    ROS_DEBUG("[SimpleViz] [%s] position: %0.3f %0.3f %0.3f quaternion: %0.3f %0.3f %0.3f %0.3f (frame: %s)", text.c_str(), pose.position.x, pose.position.y, pose.position.z, pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w, frame_id.c_str());
+
+    mind++;
+    marker_array_.markers[mind].header.stamp = time;
+    marker_array_.markers[mind].header.frame_id = frame_id;
+    marker_array_.markers[mind].ns = ns;
+    marker_array_.markers[mind].type = visualization_msgs::Marker::ARROW;
+    marker_array_.markers[mind].id = id;
+    marker_array_.markers[mind].action = visualization_msgs::Marker::ADD;
+    marker_array_.markers[mind].pose = pose;
+    marker_array_.markers[mind].scale.x = 0.125;
+    marker_array_.markers[mind].scale.y = 0.125;
+    marker_array_.markers[mind].scale.z = 0.125;
+    marker_array_.markers[mind].color.r = 0.0;
+    marker_array_.markers[mind].color.g = 0.7;
+    marker_array_.markers[mind].color.b = 0.6;
+    marker_array_.markers[mind].color.a = 0.7;
+    marker_array_.markers[mind].lifetime = ros::Duration(0.0);
+    id++;
+    mind++;
+    marker_array_.markers[mind].header.stamp = time;
+    marker_array_.markers[mind].header.frame_id = frame_id;
+    marker_array_.markers[mind].ns = ns;
+    marker_array_.markers[mind].id = id;
+    marker_array_.markers[mind].type = visualization_msgs::Marker::SPHERE;
+    marker_array_.markers[mind].action = visualization_msgs::Marker::ADD;
+    marker_array_.markers[mind].pose = pose;
+    marker_array_.markers[mind].scale.x = 0.10;
+    marker_array_.markers[mind].scale.y = 0.10;
+    marker_array_.markers[mind].scale.z = 0.10;
+    marker_array_.markers[mind].color.r = 1.0;
+    marker_array_.markers[mind].color.g = 0.0;
+    marker_array_.markers[mind].color.b = 0.6;
+    marker_array_.markers[mind].color.a = 0.6;
+    marker_array_.markers[mind].lifetime = ros::Duration(0.0);
+    id++;
+    mind++;
+    marker_array_.markers[mind].header.stamp = time;
+    marker_array_.markers[mind].header.frame_id = frame_id;
+    marker_array_.markers[mind].ns = ns;
+    marker_array_.markers[mind].id = id;
+    marker_array_.markers[mind].type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+    marker_array_.markers[mind].action = visualization_msgs::Marker::ADD;
+    marker_array_.markers[mind].pose = pose;
+    marker_array_.markers[mind].pose.position.z += 0.05;
+    marker_array_.markers[mind].scale.x = 0.03;
+    marker_array_.markers[mind].scale.y = 0.03;
+    marker_array_.markers[mind].scale.z = 0.03;
+    marker_array_.markers[mind].color.r = 1.0;
+    marker_array_.markers[mind].color.g = 1.0;
+    marker_array_.markers[mind].color.b = 1.0;
+    marker_array_.markers[mind].color.a = 0.9;
+    marker_array_.markers[mind].text = text;
+    marker_array_.markers[mind].lifetime = ros::Duration(0.0);
+    id++;
+    update(ns, id);
+    SV_SHOW_INFO(marker_array_);
 }
 
 void SimpleViz::visualizeSphere(std::vector<double> pos3, int color, std::string ns, double radius, int &id, std::string reference_frame_)
 {
-  double r=0,g=0,b=0;
-  visualization_msgs::Marker marker;
+    double r=0,g=0,b=0;
+    visualization_msgs::Marker marker;
 
-  HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
+    HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
 
-  marker.header.stamp = ros::Time::now();
-  marker.header.frame_id = reference_frame_;
-  marker.ns = ns;
-  marker.id = id; id++;
-  marker.type = visualization_msgs::Marker::SPHERE;
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.pose.position.x = pos3[0];
-  marker.pose.position.y = pos3[1];
-  marker.pose.position.z = pos3[2];
-  marker.scale.x = radius*2;
-  marker.scale.y = radius*2;
-  marker.scale.z = radius*2;
-  marker.color.r = r;
-  marker.color.g = g;
-  marker.color.b = b;
-  marker.color.a = 1.0;
-  marker.lifetime = ros::Duration(500.0);
+    marker.header.stamp = ros::Time::now();
+    marker.header.frame_id = reference_frame_;
+    marker.ns = ns;
+    marker.id = id; id++;
+    marker.type = visualization_msgs::Marker::SPHERE;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.position.x = pos3[0];
+    marker.pose.position.y = pos3[1];
+    marker.pose.position.z = pos3[2];
+    marker.scale.x = radius*2;
+    marker.scale.y = radius*2;
+    marker.scale.z = radius*2;
+    marker.color.r = r;
+    marker.color.g = g;
+    marker.color.b = b;
+    marker.color.a = 1.0;
+    marker.lifetime = ros::Duration(500.0);
 
-  update(ns, id);
-  marker_publisher_.publish(marker);
+    update(ns, id);
+    showMarker(std::move(marker));
 }
 
 void SimpleViz::visualizeSphere(std::vector<double> pose, int color, std::string text, double radius, std::string reference_frame_)
 {
-  double r=0,g=0,b=0;
-  visualization_msgs::Marker marker;
+    double r=0,g=0,b=0;
+    visualization_msgs::Marker marker;
 
-  HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
+    HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
 
-  marker.header.stamp = ros::Time::now();
-  marker.header.frame_id = reference_frame_;
-  marker.ns = text + "-sphere";
-  marker.id = 1;
-  marker.type = visualization_msgs::Marker::SPHERE;
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.pose.position.x = pose[0];
-  marker.pose.position.y = pose[1];
-  marker.pose.position.z = pose[2];
-  marker.scale.x = radius*2;
-  marker.scale.y = radius*2;
-  marker.scale.z = radius*2;
-  marker.color.r = r;
-  marker.color.g = g;
-  marker.color.b = b;
-  marker.color.a = 1.0;
-  marker.lifetime = ros::Duration(500.0);
+    marker.header.stamp = ros::Time::now();
+    marker.header.frame_id = reference_frame_;
+    marker.ns = text + "-sphere";
+    marker.id = 1;
+    marker.type = visualization_msgs::Marker::SPHERE;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.position.x = pose[0];
+    marker.pose.position.y = pose[1];
+    marker.pose.position.z = pose[2];
+    marker.scale.x = radius*2;
+    marker.scale.y = radius*2;
+    marker.scale.z = radius*2;
+    marker.color.r = r;
+    marker.color.g = g;
+    marker.color.b = b;
+    marker.color.a = 1.0;
+    marker.lifetime = ros::Duration(500.0);
 
-  update(text + "-sphere", 1);
-  marker_publisher_.publish(marker);
+    update(text + "-sphere", 1);
+    showMarker(std::move(marker));
 }
 
 void SimpleViz::visualizeSpheres(const std::vector<std::vector<double> > &pose, int color, std::string text, double radius, std::string reference_frame_)
 {
-  double r=0,g=0,b=0;
-  visualization_msgs::Marker marker;
+    double r=0,g=0,b=0;
+    visualization_msgs::Marker marker;
 
-  HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
+    HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
 
-  marker.header.stamp = ros::Time::now();
-  marker.header.frame_id = reference_frame_;
-  marker.ns = "spheres-" + text;
-  marker.type = visualization_msgs::Marker::SPHERE_LIST;
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.scale.x = radius*2.0;
-  marker.scale.y = radius*2.0;
-  marker.scale.z = radius*2.0;
-  marker.color.r = r;
-  marker.color.g = g;
-  marker.color.b = b;
-  marker.color.a = 0.6;
-  marker.lifetime = ros::Duration(500.0);
-  marker.id = 1;
+    marker.header.stamp = ros::Time::now();
+    marker.header.frame_id = reference_frame_;
+    marker.ns = "spheres-" + text;
+    marker.type = visualization_msgs::Marker::SPHERE_LIST;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.scale.x = radius*2.0;
+    marker.scale.y = radius*2.0;
+    marker.scale.z = radius*2.0;
+    marker.color.r = r;
+    marker.color.g = g;
+    marker.color.b = b;
+    marker.color.a = 0.6;
+    marker.lifetime = ros::Duration(500.0);
+    marker.id = 1;
 
-  marker.points.resize(pose.size());
-  for(size_t i = 0; i < pose.size(); i++)
-  {
-    marker.points[i].x = pose[i][0];
-    marker.points[i].y = pose[i][1];
-    marker.points[i].z = pose[i][2];
-  }
-  update("spheres-" + text, 1);
-  marker_publisher_.publish(marker);
+    marker.points.resize(pose.size());
+    for(size_t i = 0; i < pose.size(); i++)
+    {
+        marker.points[i].x = pose[i][0];
+        marker.points[i].y = pose[i][1];
+        marker.points[i].z = pose[i][2];
+    }
+    update("spheres-" + text, 1);
+    showMarker(std::move(marker));
 }
 
 void SimpleViz::visualizeSpheres(const std::vector<std::vector<double> > &pose, int color, std::string text, std::vector<double> &radius, std::string reference_frame_)
 {
-  double r=0,g=0,b=0;
-  visualization_msgs::Marker marker;
+    double r=0,g=0,b=0;
+    visualization_msgs::Marker marker;
 
-  HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
+    HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
 
-  for(size_t i = 0; i < pose.size(); ++i)
-  {
-    marker.header.stamp = ros::Time::now();
-    marker.header.frame_id = reference_frame_;
-    marker.ns = text;
-    marker.type = visualization_msgs::Marker::SPHERE;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.scale.x = radius[i]*2.0;
-    marker.scale.y = radius[i]*2.0;
-    marker.scale.z = radius[i]*2.0;
-    marker.color.r = r;
-    marker.color.g = g;
-    marker.color.b = b;
-    marker.color.a = 0.6;
-    marker.lifetime = ros::Duration(500.0);
-    marker.id = i;
+    for(size_t i = 0; i < pose.size(); ++i)
+    {
+        marker.header.stamp = ros::Time::now();
+        marker.header.frame_id = reference_frame_;
+        marker.ns = text;
+        marker.type = visualization_msgs::Marker::SPHERE;
+        marker.action = visualization_msgs::Marker::ADD;
+        marker.scale.x = radius[i]*2.0;
+        marker.scale.y = radius[i]*2.0;
+        marker.scale.z = radius[i]*2.0;
+        marker.color.r = r;
+        marker.color.g = g;
+        marker.color.b = b;
+        marker.color.a = 0.6;
+        marker.lifetime = ros::Duration(500.0);
+        marker.id = i;
 
-    marker.pose.position.x = pose[i][0];
-    marker.pose.position.y = pose[i][1];
-    marker.pose.position.z = pose[i][2];
+        marker.pose.position.x = pose[i][0];
+        marker.pose.position.y = pose[i][1];
+        marker.pose.position.z = pose[i][2];
 
-    marker_publisher_.publish(marker);
-    usleep(100);
-  }
-  update(text, (int)pose.size());
+        visualization_msgs::MarkerArray ma;
+        showMarker(marker);
+    }
+    update(text, (int)pose.size());
 }
 
 void SimpleViz::visualizeSpheres(const std::vector<std::vector<double> > &pose, int color, std::string text, std::string reference_frame_)
 {
-  double r=0,g=0,b=0;
-  visualization_msgs::Marker marker;
-  visualization_msgs::MarkerArray marker_array;
-  HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
+    double r=0,g=0,b=0;
+    visualization_msgs::Marker marker;
+    visualization_msgs::MarkerArray marker_array;
+    HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
 
-  for(size_t i = 0; i < pose.size(); ++i)
-  {
-    marker.header.stamp = ros::Time::now();
-    marker.header.frame_id = reference_frame_;
-    marker.ns = text;
-    marker.type = visualization_msgs::Marker::SPHERE;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.scale.x = pose[i][3]*2.0;
-    marker.scale.y = pose[i][3]*2.0;
-    marker.scale.z = pose[i][3]*2.0;
-    marker.color.r = r;
-    marker.color.g = g;
-    marker.color.b = b;
-    marker.color.a = 0.6;
-    marker.lifetime = ros::Duration(500.0);
-    marker.id = i;
+    for(size_t i = 0; i < pose.size(); ++i)
+    {
+        marker.header.stamp = ros::Time::now();
+        marker.header.frame_id = reference_frame_;
+        marker.ns = text;
+        marker.type = visualization_msgs::Marker::SPHERE;
+        marker.action = visualization_msgs::Marker::ADD;
+        marker.scale.x = pose[i][3]*2.0;
+        marker.scale.y = pose[i][3]*2.0;
+        marker.scale.z = pose[i][3]*2.0;
+        marker.color.r = r;
+        marker.color.g = g;
+        marker.color.b = b;
+        marker.color.a = 0.6;
+        marker.lifetime = ros::Duration(500.0);
+        marker.id = i;
 
-    marker.pose.position.x = pose[i][0];
-    marker.pose.position.y = pose[i][1];
-    marker.pose.position.z = pose[i][2];
+        marker.pose.position.x = pose[i][0];
+        marker.pose.position.y = pose[i][1];
+        marker.pose.position.z = pose[i][2];
 
-    marker_array.markers.push_back(marker);
-    /*
-    marker_publisher_.publish(marker);
-    usleep(100);
-    */
-  }
-  update(text, (int)pose.size());
-  marker_array_publisher_.publish(marker_array);
+        marker_array.markers.push_back(marker);
+    }
+    update(text, (int)pose.size());
+    SV_SHOW_INFO(marker_array);
 }
 
 void SimpleViz::visualizeSpheres(const std::vector<std::vector<double> > &pose, const std::vector<int> &hue, std::string text, std::string reference_frame_)
 {
-  double r=0,g=0,b=0;
-  visualization_msgs::Marker marker;
-  visualization_msgs::MarkerArray marker_array;
+    double r=0,g=0,b=0;
+    visualization_msgs::Marker marker;
+    visualization_msgs::MarkerArray marker_array;
 
-  if(pose.size() != hue.size())
-  {
-    ROS_WARN("[SimpleViz] Didn't receive as many colors as I did spheres. Not visualizing. (spheres: %d, colors: %d)", int(pose.size()), int(hue.size()));
-    return;
-  }
+    if(pose.size() != hue.size())
+    {
+        ROS_WARN("[SimpleViz] Didn't receive as many colors as I did spheres. Not visualizing. (spheres: %d, colors: %d)", int(pose.size()), int(hue.size()));
+        return;
+    }
 
-  for(std::size_t i = 0; i < pose.size(); ++i)
-  {
-    HSVtoRGB(&r, &g, &b, hue[i], 1.0, 1.0);
-    marker.header.stamp = ros::Time::now();
-    marker.header.frame_id = reference_frame_;
-    marker.ns = text;
-    marker.type = visualization_msgs::Marker::SPHERE;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.scale.x = pose[i][3]*2.0;
-    marker.scale.y = pose[i][3]*2.0;
-    marker.scale.z = pose[i][3]*2.0;
-    marker.color.r = r;
-    marker.color.g = g;
-    marker.color.b = b;
-    marker.color.a = 0.6;
-    marker.lifetime = ros::Duration(500.0);
-    marker.id = i;
-    marker.pose.position.x = pose[i][0];
-    marker.pose.position.y = pose[i][1];
-    marker.pose.position.z = pose[i][2];
-    marker_array.markers.push_back(marker);
-  }
-  update(text, (int)pose.size());
-  marker_array_publisher_.publish(marker_array);
+    for(std::size_t i = 0; i < pose.size(); ++i)
+    {
+        HSVtoRGB(&r, &g, &b, hue[i], 1.0, 1.0);
+        marker.header.stamp = ros::Time::now();
+        marker.header.frame_id = reference_frame_;
+        marker.ns = text;
+        marker.type = visualization_msgs::Marker::SPHERE;
+        marker.action = visualization_msgs::Marker::ADD;
+        marker.scale.x = pose[i][3]*2.0;
+        marker.scale.y = pose[i][3]*2.0;
+        marker.scale.z = pose[i][3]*2.0;
+        marker.color.r = r;
+        marker.color.g = g;
+        marker.color.b = b;
+        marker.color.a = 0.6;
+        marker.lifetime = ros::Duration(500.0);
+        marker.id = i;
+        marker.pose.position.x = pose[i][0];
+        marker.pose.position.y = pose[i][1];
+        marker.pose.position.z = pose[i][2];
+        marker_array.markers.push_back(marker);
+    }
+    update(text, (int)pose.size());
+    SV_SHOW_INFO(marker_array);
 }
 
 void SimpleViz::visualize3DPath(std::vector<std::vector<double> > &dpath, std::string reference_frame_)
 {
-  if(dpath.empty())
-  {
-    ROS_INFO("[visualizeShortestPath] The shortest path is empty.");
-    return;
-  }
-  else
-    ROS_INFO("[visualizeShortestPath] There are %i waypoints in the shortest path.",int(dpath.size()));
+    if(dpath.empty())
+    {
+        ROS_INFO("[visualizeShortestPath] The shortest path is empty.");
+        return;
+    }
+    else
+        ROS_INFO("[visualizeShortestPath] There are %i waypoints in the shortest path.",int(dpath.size()));
 
-  visualization_msgs::Marker obs_marker;
-  obs_marker.header.frame_id = reference_frame_;
-  obs_marker.header.stamp = ros::Time();
-  obs_marker.header.seq = 0;
-  obs_marker.ns = "path";
-  obs_marker.id = 0;
-  obs_marker.type = visualization_msgs::Marker::SPHERE_LIST;
-  obs_marker.action = 0;
-  obs_marker.scale.x = 3*0.02;
-  obs_marker.scale.y = 3*0.02;
-  obs_marker.scale.z = 3*0.02;
-  obs_marker.color.r = 0.45;
-  obs_marker.color.g = 0.3;
-  obs_marker.color.b = 0.4;
-  obs_marker.color.a = 0.8;
-  obs_marker.lifetime = ros::Duration(500.0);
+    visualization_msgs::Marker obs_marker;
+    obs_marker.header.frame_id = reference_frame_;
+    obs_marker.header.stamp = ros::Time();
+    obs_marker.header.seq = 0;
+    obs_marker.ns = "path";
+    obs_marker.id = 0;
+    obs_marker.type = visualization_msgs::Marker::SPHERE_LIST;
+    obs_marker.action = 0;
+    obs_marker.scale.x = 3*0.02;
+    obs_marker.scale.y = 3*0.02;
+    obs_marker.scale.z = 3*0.02;
+    obs_marker.color.r = 0.45;
+    obs_marker.color.g = 0.3;
+    obs_marker.color.b = 0.4;
+    obs_marker.color.a = 0.8;
+    obs_marker.lifetime = ros::Duration(500.0);
 
-  obs_marker.points.resize(dpath.size());
+    obs_marker.points.resize(dpath.size());
 
-  for (int k = 0; k < int(dpath.size()); k++)
-  {
-    if(int(dpath[k].size()) < 3)
-      continue;
+    for (int k = 0; k < int(dpath.size()); k++)
+    {
+        if(int(dpath[k].size()) < 3)
+            continue;
 
-    obs_marker.points[k].x = dpath[k][0];
-    obs_marker.points[k].y = dpath[k][1];
-    obs_marker.points[k].z = dpath[k][2];
-  }
-  update("path", 0);
-  marker_publisher_.publish(obs_marker);
+        obs_marker.points[k].x = dpath[k][0];
+        obs_marker.points[k].y = dpath[k][1];
+        obs_marker.points[k].z = dpath[k][2];
+    }
+    update("path", 0);
+    showMarker(std::move(obs_marker));
 }
 
 void SimpleViz::visualizeLine(const std::vector<geometry_msgs::Point> points, std::string ns, int &id, int hue, double thickness, std::string reference_frame_)
 {
-  double r=0,g=0,b=0;
-  visualization_msgs::Marker marker;
+    double r=0,g=0,b=0;
+    visualization_msgs::Marker marker;
 
-  HSVtoRGB(&r, &g, &b, hue, 1.0, 1.0);
+    HSVtoRGB(&r, &g, &b, hue, 1.0, 1.0);
 
-  marker.header.stamp = ros::Time::now();
-  marker.header.frame_id = reference_frame_;
-  marker.ns = ns;
-  marker.id = id; id++;
-  marker.type = visualization_msgs::Marker::LINE_STRIP;
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.points = points;
-  marker.scale.x = thickness;
-  marker.pose.position.x = 0.0;
-  marker.pose.position.y = 0.0;
-  marker.pose.position.z = 0.0;
-  
-  marker.color.r = r;
-  marker.color.g = g;
-  marker.color.b = b;
-  marker.color.a = 0.5;
-  marker.lifetime = ros::Duration(500.0);
+    marker.header.stamp = ros::Time::now();
+    marker.header.frame_id = reference_frame_;
+    marker.ns = ns;
+    marker.id = id; id++;
+    marker.type = visualization_msgs::Marker::LINE_STRIP;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.points = points;
+    marker.scale.x = thickness;
+    marker.pose.position.x = 0.0;
+    marker.pose.position.y = 0.0;
+    marker.pose.position.z = 0.0;
 
-  //ROS_INFO("Visualizing a line with %d points", int(points.size()));
-  update(ns, id);
-  marker_publisher_.publish(marker);
+    marker.color.r = r;
+    marker.color.g = g;
+    marker.color.b = b;
+    marker.color.a = 0.5;
+    marker.lifetime = ros::Duration(500.0);
+
+    //ROS_INFO("Visualizing a line with %d points", int(points.size()));
+    update(ns, id);
+    marker_publisher_.publish(marker);
 }
 
 void SimpleViz::visualizeText(geometry_msgs::Pose pose, std::string text, std::string ns, int id, int hue, std::string reference_frame_)
 {
-  double r=0,g=0,b=0;
-  visualization_msgs::Marker marker;
+    double r=0,g=0,b=0;
+    visualization_msgs::Marker marker;
 
-  HSVtoRGB(&r, &g, &b, hue, 1.0, 1.0);
+    HSVtoRGB(&r, &g, &b, hue, 1.0, 1.0);
 
-  marker.header.stamp = ros::Time::now();
-  marker.header.frame_id = reference_frame_;
-  marker.ns = ns;
-  marker.id = id;
-  marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.scale.x = 0.2;
-  marker.scale.y = 0.2;
-  marker.scale.z = 0.2;
-  marker.pose = pose;
-  
-  marker.color.r = r;
-  marker.color.g = g;
-  marker.color.b = b;
-  marker.color.a = 1.0;
-  marker.text = text;
-  marker.lifetime = ros::Duration(10.0);
-  update(ns, id);
-  marker_publisher_.publish(marker);
+    marker.header.stamp = ros::Time::now();
+    marker.header.frame_id = reference_frame_;
+    marker.ns = ns;
+    marker.id = id;
+    marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.scale.x = 0.2;
+    marker.scale.y = 0.2;
+    marker.scale.z = 0.2;
+    marker.pose = pose;
+
+    marker.color.r = r;
+    marker.color.g = g;
+    marker.color.b = b;
+    marker.color.a = 1.0;
+    marker.text = text;
+    marker.lifetime = ros::Duration(10.0);
+    update(ns, id);
+    marker_publisher_.publish(marker);
 }
 
 void SimpleViz::visualizeText(geometry_msgs::Pose pose, std::string text, std::string ns, int id, std::vector<double> color, double size, std::string reference_frame_)
 {
-  visualization_msgs::Marker marker;
+    visualization_msgs::Marker marker;
 
-  if(color.size() < 4)
-    color.resize(4,1);
+    if(color.size() < 4)
+        color.resize(4,1);
 
-  marker.header.stamp = ros::Time::now();
-  marker.header.frame_id = reference_frame_;
-  marker.ns = ns;
-  marker.id = id;
-  marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.scale.x = size;
-  marker.scale.y = size;
-  marker.scale.z = size;
-  marker.pose = pose;
-  
-  marker.color.r = color[0];
-  marker.color.g = color[1];
-  marker.color.b = color[2];
-  marker.color.a = color[3];
-  marker.text = text;
-  marker.lifetime = ros::Duration(360.0);
-  update(ns, id);
-  marker_publisher_.publish(marker);
+    marker.header.stamp = ros::Time::now();
+    marker.header.frame_id = reference_frame_;
+    marker.ns = ns;
+    marker.id = id;
+    marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.scale.x = size;
+    marker.scale.y = size;
+    marker.scale.z = size;
+    marker.pose = pose;
+
+    marker.color.r = color[0];
+    marker.color.g = color[1];
+    marker.color.b = color[2];
+    marker.color.a = color[3];
+    marker.text = text;
+    marker.lifetime = ros::Duration(360.0);
+    update(ns, id);
+    marker_publisher_.publish(marker);
 }
 
 void SimpleViz::visualizeCube(geometry_msgs::PoseStamped pose, int color, std::string ns, int id, std::vector<double> dim)
 {
-  double r=0,g=0,b=0;
-  visualization_msgs::Marker marker;
+    double r=0,g=0,b=0;
+    visualization_msgs::Marker marker;
 
-  if(dim.size() < 3)
-  {
-    ROS_INFO("[aviz] Three dimensions are needed to visualize a cube.");
-    if(dim.size() >= 1)
-      dim.resize(3,dim[0]);
-    else
-      return;
-  }
+    if(dim.size() < 3)
+    {
+        ROS_INFO("[aviz] Three dimensions are needed to visualize a cube.");
+        if(dim.size() >= 1)
+            dim.resize(3,dim[0]);
+        else
+            return;
+    }
 
-  HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
+    HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
 
-  marker.header.stamp = ros::Time::now();
-  marker.header.frame_id = pose.header.frame_id;
-  marker.ns = ns;
-  marker.id = id;
-  marker.type = visualization_msgs::Marker::CUBE;
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.pose = pose.pose;
-  marker.scale.x = dim[0];
-  marker.scale.y = dim[1];
-  marker.scale.z = dim[2];
-  marker.color.r = r;
-  marker.color.g = g;
-  marker.color.b = b;
-  marker.color.a = 1.0;
-  marker.lifetime = ros::Duration(0.0);
-  update(ns, id);
-  marker_publisher_.publish(marker);
+    marker.header.stamp = ros::Time::now();
+    marker.header.frame_id = pose.header.frame_id;
+    marker.ns = ns;
+    marker.id = id;
+    marker.type = visualization_msgs::Marker::CUBE;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose = pose.pose;
+    marker.scale.x = dim[0];
+    marker.scale.y = dim[1];
+    marker.scale.z = dim[2];
+    marker.color.r = r;
+    marker.color.g = g;
+    marker.color.b = b;
+    marker.color.a = 1.0;
+    marker.lifetime = ros::Duration(0.0);
+    update(ns, id);
+    marker_publisher_.publish(marker);
 }
 
 void SimpleViz::visualizeMesh(const std::string& mesh_resource, const geometry_msgs::PoseStamped& pose, int color,
-                         std::string ns, int id, std::string reference_frame_)
+    std::string ns, int id, std::string reference_frame_)
 {
-	double r = 0.0, g = 0.0, b = 0.0;
-	HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
+    double r = 0.0, g = 0.0, b = 0.0;
+    HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
 
-	visualization_msgs::Marker marker;
-	marker.header.frame_id = reference_frame_;
-	marker.header.stamp = ros::Time::now();
-	marker.ns = ns;
-	marker.id = id;
-	marker.type = visualization_msgs::Marker::MESH_RESOURCE;
-	marker.action = visualization_msgs::Marker::ADD;
-	marker.pose.position.x = pose.pose.position.x;
-	marker.pose.position.y = pose.pose.position.y;
-	marker.pose.position.z = pose.pose.position.z;
-	marker.pose.orientation.x = pose.pose.orientation.x;
-	marker.pose.orientation.y = pose.pose.orientation.y;
-	marker.pose.orientation.z = pose.pose.orientation.z;
-	marker.pose.orientation.w = pose.pose.orientation.w;
-	marker.scale.x = 1.0;
-	marker.scale.y = 1.0;
-	marker.scale.z = 1.0;
-	marker.color.a = 1.0;
-	marker.color.r = r;
-	marker.color.g = g;
-	marker.color.b = b;
-	marker.mesh_resource = mesh_resource;
-	update(ns, id);
-	marker_publisher_.publish(marker);
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = reference_frame_;
+    marker.header.stamp = ros::Time::now();
+    marker.ns = ns;
+    marker.id = id;
+    marker.type = visualization_msgs::Marker::MESH_RESOURCE;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.position.x = pose.pose.position.x;
+    marker.pose.position.y = pose.pose.position.y;
+    marker.pose.position.z = pose.pose.position.z;
+    marker.pose.orientation.x = pose.pose.orientation.x;
+    marker.pose.orientation.y = pose.pose.orientation.y;
+    marker.pose.orientation.z = pose.pose.orientation.z;
+    marker.pose.orientation.w = pose.pose.orientation.w;
+    marker.scale.x = 1.0;
+    marker.scale.y = 1.0;
+    marker.scale.z = 1.0;
+    marker.color.a = 1.0;
+    marker.color.r = r;
+    marker.color.g = g;
+    marker.color.b = b;
+    marker.mesh_resource = mesh_resource;
+    update(ns, id);
+    marker_publisher_.publish(marker);
 }
 
 void SimpleViz::visualizeMeshTriangles(const std::vector<geometry_msgs::Point>& vertices, const std::vector<int>& triangles,
-                         const geometry_msgs::PoseStamped& pose, int color, std::string ns, int id, bool psychadelic, std::string reference_frame_)
+    const geometry_msgs::PoseStamped& pose, int color, std::string ns, int id, bool psychadelic, std::string reference_frame_)
 {
-	double r = 0.0, g = 0.0, b = 0.0;
-	HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
+    double r = 0.0, g = 0.0, b = 0.0;
+    HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
 
-	std_msgs::ColorRGBA red; red.a = 1.0f; red.r = 1.0f; red.g = 0.0f; red.b = 0.0f;
-	std_msgs::ColorRGBA green; green.a = 1.0f; green.r = 0.0f; green.g = 1.0f; green.b = 0.0f;
-	std_msgs::ColorRGBA blue; blue.a = 1.0f; blue.r = 0.0f; blue.g = 0.0f; blue.b = 1.0f;
+    std_msgs::ColorRGBA red; red.a = 1.0f; red.r = 1.0f; red.g = 0.0f; red.b = 0.0f;
+    std_msgs::ColorRGBA green; green.a = 1.0f; green.r = 0.0f; green.g = 1.0f; green.b = 0.0f;
+    std_msgs::ColorRGBA blue; blue.a = 1.0f; blue.r = 0.0f; blue.g = 0.0f; blue.b = 1.0f;
 
-	std::vector<std_msgs::ColorRGBA> colors;
-	for (int i = 0; i < (int)vertices.size(); i++) {
-		if (i % 3 == 0) colors.push_back(red);
-		if (i % 3 == 1) colors.push_back(green);
-		if (i % 3 == 2) colors.push_back(blue);
-	}
+    std::vector<std_msgs::ColorRGBA> colors;
+    for (int i = 0; i < (int)vertices.size(); i++) {
+        if (i % 3 == 0) colors.push_back(red);
+        if (i % 3 == 1) colors.push_back(green);
+        if (i % 3 == 2) colors.push_back(blue);
+    }
 
-	visualization_msgs::Marker marker;
-	marker.header.frame_id = reference_frame_;
-	marker.header.stamp = ros::Time::now();
-	marker.ns = ns;
-	marker.id = id;
-	marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
-	marker.action = visualization_msgs::Marker::ADD;
-	marker.pose.position.x = pose.pose.position.x;
-	marker.pose.position.y = pose.pose.position.y;
-	marker.pose.position.z = pose.pose.position.z;
-	marker.pose.orientation.x = pose.pose.orientation.x;
-	marker.pose.orientation.y = pose.pose.orientation.y;
-	marker.pose.orientation.z = pose.pose.orientation.z;
-	marker.pose.orientation.w = pose.pose.orientation.w;
-	marker.scale.x = 1.0;
-	marker.scale.y = 1.0;
-	marker.scale.z = 1.0;
-	marker.points = vertices;
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = reference_frame_;
+    marker.header.stamp = ros::Time::now();
+    marker.ns = ns;
+    marker.id = id;
+    marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.position.x = pose.pose.position.x;
+    marker.pose.position.y = pose.pose.position.y;
+    marker.pose.position.z = pose.pose.position.z;
+    marker.pose.orientation.x = pose.pose.orientation.x;
+    marker.pose.orientation.y = pose.pose.orientation.y;
+    marker.pose.orientation.z = pose.pose.orientation.z;
+    marker.pose.orientation.w = pose.pose.orientation.w;
+    marker.scale.x = 1.0;
+    marker.scale.y = 1.0;
+    marker.scale.z = 1.0;
+    marker.points = vertices;
 
-	if (psychadelic) {
-		marker.color.a = 1.0;
-		marker.color.r = 1.0;
-		marker.color.g = 1.0;
-		marker.color.b = 1.0;
-		marker.colors = colors;
-	}
-	else {
-		marker.color.a = 1.0;
-		marker.color.r = r;
-		marker.color.g = g;
-		marker.color.b = b;
-	}
-	update(ns, id);
-	marker_publisher_.publish(marker);
+    if (psychadelic) {
+        marker.color.a = 1.0;
+        marker.color.r = 1.0;
+        marker.color.g = 1.0;
+        marker.color.b = 1.0;
+        marker.colors = colors;
+    }
+    else {
+        marker.color.a = 1.0;
+        marker.color.r = r;
+        marker.color.g = g;
+        marker.color.b = b;
+    }
+    update(ns, id);
+    marker_publisher_.publish(marker);
 }
 
+void SimpleViz::showMarker(visualization_msgs::Marker&& m)
+{
+    marker_array_.markers.resize(1);
+    marker_array_.markers[0] = m;
+    SV_SHOW_INFO(marker_array_);
+}
+
+void SimpleViz::showMarker(const visualization_msgs::Marker& m)
+{
+    marker_array_.markers.resize(1);
+    marker_array_.markers[0] = m;
+    SV_SHOW_INFO(marker_array_);
+}

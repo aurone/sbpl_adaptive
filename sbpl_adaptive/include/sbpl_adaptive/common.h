@@ -77,13 +77,13 @@ struct Orientation3D_t
         x(x_), y(y_), z(z_), w(w_) { }
 };
 
-class AbstractGoal3D_t : public AbstractGoal_t
+class AbstractGoal3D : public AbstractGoal_t
 {
 public:
 
-    AbstractGoal3D_t(Position3D p, double tol) : pos(p), pos_tol(tol) { }
+    AbstractGoal3D(Position3D p, double tol) : pos(p), pos_tol(tol) { }
 
-    virtual ~AbstractGoal3D_t() { };
+    virtual ~AbstractGoal3D() { };
 
     virtual bool isSatisfied(Position3D p) const = 0;
 
@@ -97,7 +97,7 @@ protected:
     double pos_tol;
 };
 
-class AbstractGoal6D_t : public AbstractGoal3D_t
+class AbstractGoal6D_t : public AbstractGoal3D
 {
 public:
 
@@ -107,7 +107,7 @@ public:
         Orientation3D_t o,
         double o_tol)
     :
-        AbstractGoal3D_t(p, p_tol), ori(o), ori_tol(o_tol)
+        AbstractGoal3D(p, p_tol), ori(o), ori_tol(o_tol)
     { }
 
     virtual ~AbstractGoal6D_t() { };
@@ -135,6 +135,6 @@ double Position3D::dist(const Position3D &ee1, const Position3D &ee2)
     return sqrt(dx * dx + dy * dy + dz * dz);
 }
 
-} // namespace sbpl_adaptive
+} // namespace adim
 
 #endif /* SRC_SBPL_ADAPTIVE_INCLUDE_SBPL_ADAPTIVE_COMMON_H_ */

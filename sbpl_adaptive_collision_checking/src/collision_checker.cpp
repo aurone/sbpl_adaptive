@@ -26,4 +26,4 @@ visualization_msgs::MarkerArray CollisionChecker::getVisualization(
     return visualization_msgs::MarkerArray();
 }
 
-} // namespace sbpl_adaptive_collision_checking
+} // namespace adim
