@@ -148,11 +148,11 @@ int MHAPlanner_AD::replan(
     ReplanParams params,
     int* solcost)
 {
-    if (!check_params(params)) { // errors printed within
+    if (!check_params(m_params)) { // errors printed within
         return 0;
     }
 
-    m_params = params;
+    // m_params = params;
 
     SBPL_INFO("Generic Search parameters:");
     SBPL_INFO("  Initial Epsilon: %0.3f", m_params.initial_eps);
@@ -388,7 +388,7 @@ bool MHAPlanner_AD::check_params(const ReplanParams& params)
     }
 
     if (params.final_eps > params.initial_eps) {
-        SBPL_ERROR("Final Epsilon must be less than or equal to initial epsilon");
+        SBPL_ERROR("Final Epsilon must be less than or equal to initial epsilon %f %f", params.final_eps, params.initial_eps);
         return false;
     }
 

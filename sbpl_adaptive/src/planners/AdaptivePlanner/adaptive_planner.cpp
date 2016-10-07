@@ -60,11 +60,11 @@ AdaptivePlanner::AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, 
 	final_eps_planning_time = -1.0;
 	final_eps = -1.0;
 
-	timePerRetryPlan_ = 10.0;
-	timePerRetryTrack_ = 10.0;
+	timePerRetryPlan_ = 5.0;
+	timePerRetryTrack_ = 5.0;
 
-	planningEPS = -1.0;
-	trackingEPS = -1.0;
+	planningEPS = 100.0;
+	trackingEPS = 100.0;
 	targetEPS = -1.0;
 
 	nIterations = 0;
@@ -279,8 +279,8 @@ int AdaptivePlanner::replan(double allocated_time_secs, double allocated_time_pe
         track_start = MY_TIME_NOW;
         adaptive_environment_->setTrackMode(planning_stateV, p_Cost, &TrkModifiedStates);
         tracker->force_planning_from_scratch();
-        tracker->set_initialsolution_eps(targetEPS / planner->get_final_epsilon());
-        tracker->set_search_mode(true);
+        tracker->set_initialsolution_eps(trackingEPS);
+        tracker->set_search_mode(false);
         tracking_stateV.clear();
         tracking_bRet = 0;
 
@@ -288,7 +288,8 @@ int AdaptivePlanner::replan(double allocated_time_secs, double allocated_time_pe
         t_elapsed_s = MY_TIME_DIFF_S(MY_TIME_NOW, start_t);
         int last_bestTrackedID = -1;
         int retries = 0;
-        while(t_elapsed_s < allocated_time_secs){
+        // while(t_elapsed_s < allocated_time_secs)
+        {
             SBPL_INFO("Still have time (%.3fs)...tracking", allocated_time_secs - t_elapsed_s);
             MY_TIME_TYPE p_start = MY_TIME_NOW;
             tracking_bRet = tracker->replan(ad_track_time_alloc, &tracking_stateV, &t_Cost);
@@ -389,6 +390,7 @@ int AdaptivePlanner::replan(double allocated_time_secs, double allocated_time_pe
 
     return tracking_bRet;
 }
+
 
 
 int AdaptivePlanner::set_goal(int goal_stateID)
