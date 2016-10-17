@@ -252,6 +252,8 @@ public:
     boost::shared_ptr<const urdf::ModelInterface> getURDF() const;
     boost::shared_ptr<const srdf::Model> getSRDF() const;
 
+    moveit::core::RobotStatePtr getStateAt(const URDFModelCoords_t &coords) const;
+
     /// \name Required Public Functions from SBPLCollisionModel
     ///@{
     bool checkLimits(const ModelCoords_t &coord) const override;
@@ -326,6 +328,10 @@ protected:
     void addChildren(const KDL::SegmentMap::const_iterator segment);
 
     bool updateFK(const URDFModelCoords_t &coords) const;
+
+    bool updateFK(
+        moveit::core::RobotState &state,
+        const URDFModelCoords_t &coords) const;
 
     bool hasIgnoreSelfPair(std::string link1, std::string link2) const;
 

@@ -577,6 +577,14 @@ bool URDFCollisionModel::getLinkGlobalTransform(
     return true;
 }
 
+moveit::core::RobotStatePtr URDFCollisionModel::getStateAt(
+    const URDFModelCoords_t &coords) const
+{
+    auto state = boost::make_shared<moveit::core::RobotState>(robot_model_);
+    updateFK(*state, coords);
+    return state;
+}
+
 bool URDFCollisionModel::checkLimits(const URDFModelCoords_t &coords) const
 {
     if (!robot_model_) {
@@ -650,21 +658,28 @@ bool URDFCollisionModel::getModelCollisionSpheres(
 
 bool URDFCollisionModel::updateFK(const URDFModelCoords_t &coords) const
 {
+    return updateFK(*robot_state_, coords);
+}
+
+bool URDFCollisionModel::updateFK(
+    moveit::core::RobotState &state,
+    const URDFModelCoords_t &coords) const
+{
     // set the root joint first
-    const robot_model::LinkModel* rootlink = robot_model_->getRootLink();
-    const robot_model::JointModel* root = robot_model_->getRootJoint();
+    const robot_model::LinkModel* rootlink = state.getRobotModel()->getRootLink();
+    const robot_model::JointModel* root = state.getRobotModel()->getRootJoint();
 
 #ifdef __ROS_DISTRO_groovy__
-    robot_state::JointState* root_state = robot_state_->getJointState(root);
+    robot_state::JointState* root_state = state.getJointState(root);
     root_state->setVariableValues(coords.root);
 #else
-    robot_state_->setJointPositions(root, coords.root);
+    state.setJointPositions(root, coords.root);
 #endif
 
     // then go through the other joints and set them
     for (auto it = coords.coordmap.begin(); it != coords.coordmap.end(); it++) {
         std::string joint_name = it->first;
-        const robot_model::JointModel* jm = robot_model_->getJointModel(joint_name);
+        const robot_model::JointModel* jm = state.getRobotModel()->getJointModel(joint_name);
         int var_count = jm->getVariableCount();
 
         if (var_count != it->second.size()) {
@@ -674,18 +689,18 @@ bool URDFCollisionModel::updateFK(const URDFModelCoords_t &coords) const
             return false;
         }
 #ifdef __ROS_DISTRO_groovy__
-        robot_state::JointState* js = robot_state_->getJointState(jm);
+        robot_state::JointState* js = state.getJointState(jm);
         js->setVariableValues(it->second);
 #else
-        robot_state_->setJointPositions(jm, it->second);
+        state.setJointPositions(jm, it->second);
 #endif
     }
-    robot_state_->update();
-    robot_state_->updateLinkTransforms();
-    robot_state_->updateCollisionBodyTransforms();
+    state.update();
+    state.updateLinkTransforms();
+    state.updateCollisionBodyTransforms();
     ros::spinOnce();
 
-    //Eigen::Affine3d rootlink2 = robot_state_->getGlobalLinkTransform(rootlink);
+    //Eigen::Affine3d rootlink2 = state.getGlobalLinkTransform(rootlink);
     //printf("RootLinkeAfter:\n");
     //URDFModelCoords_t::print(rootlink2);
 
