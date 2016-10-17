@@ -97,7 +97,7 @@ int main(int argc, char** argv)
 
     sleep(5);
 
-    URDFModelCoords_t coords = urdf_model->getDefaultCoordinates();
+    URDFModelCoords coords = urdf_model->getDefaultCoordinates();
     std_msgs::ColorRGBA col;
     col.r = 1;
     col.g = 1;
