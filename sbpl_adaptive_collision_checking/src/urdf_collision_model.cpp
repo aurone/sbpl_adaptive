@@ -58,9 +58,9 @@ URDFCollisionModel::~URDFCollisionModel()
 
 }
 
-URDFModelCoords_t URDFCollisionModel::getDefaultCoordinates() const
+URDFModelCoords URDFCollisionModel::getDefaultCoordinates() const
 {
-    URDFModelCoords_t c;
+    URDFModelCoords c;
 
     c.root = Eigen::Affine3d::Identity();
     c.collision_links = links_with_collision_spheres_;
@@ -82,9 +82,9 @@ URDFModelCoords_t URDFCollisionModel::getDefaultCoordinates() const
     return c;
 }
 
-URDFModelCoords_t URDFCollisionModel::getRandomCoordinates() const
+URDFModelCoords URDFCollisionModel::getRandomCoordinates() const
 {
-    URDFModelCoords_t c;
+    URDFModelCoords c;
 
     c.root = Eigen::Affine3d::Identity();
     c.collision_links = links_with_collision_spheres_;
@@ -403,7 +403,7 @@ bool URDFCollisionModel::getLinkCollisionSpheres_CurrentState(
 }
 
 bool URDFCollisionModel::getLinkCollisionSpheres(
-    const URDFModelCoords_t &coords,
+    const URDFModelCoords &coords,
     std::string link_name,
     std::vector<Sphere> &spheres) const
 {
@@ -415,7 +415,7 @@ bool URDFCollisionModel::getLinkCollisionSpheres(
 }
 
 bool URDFCollisionModel::getLinkContactSpheres(
-    const URDFModelCoords_t &coords,
+    const URDFModelCoords &coords,
     std::string link_name,
     std::vector<Sphere> &spheres) const
 {
@@ -457,12 +457,12 @@ bool URDFCollisionModel::getLinkContactSpheres_CurrentState(
 
 void URDFCollisionModel::autoIgnoreSelfCollisions()
 {
-    URDFModelCoords_t defaultCoords = getDefaultCoordinates();
+    URDFModelCoords defaultCoords = getDefaultCoordinates();
     autoIgnoreSelfCollisions(defaultCoords);
 }
 
 void URDFCollisionModel::autoIgnoreSelfCollisions(
-    const URDFModelCoords_t &coords)
+    const URDFModelCoords &coords)
 {
     std::vector<std::pair<std::string, std::string>> colliding_links;
     do {
@@ -478,7 +478,7 @@ void URDFCollisionModel::autoIgnoreSelfCollisions(
 }
 
 std::vector<std::pair<std::string, std::string>> URDFCollisionModel::getSelfCollisions(
-    const URDFModelCoords_t &coords) const
+    const URDFModelCoords &coords) const
 {
     std::vector<std::pair<std::string, std::string>> colliding_links;
     if (!updateFK(coords)) {
@@ -523,7 +523,7 @@ std::vector<std::pair<std::string, std::string>> URDFCollisionModel::getSelfColl
 }
 
 bool URDFCollisionModel::checkSelfCollisions(
-    const URDFModelCoords_t &coords) const
+    const URDFModelCoords &coords) const
 {
     if (!updateFK(coords)) {
         return false;
@@ -562,7 +562,7 @@ bool URDFCollisionModel::checkSelfCollisions(
 }
 
 bool URDFCollisionModel::getLinkGlobalTransform(
-    const URDFModelCoords_t &coords,
+    const URDFModelCoords &coords,
     const std::string &link_name,
     Eigen::Affine3d &tfm) const
 {
@@ -577,7 +577,15 @@ bool URDFCollisionModel::getLinkGlobalTransform(
     return true;
 }
 
-bool URDFCollisionModel::checkLimits(const URDFModelCoords_t &coords) const
+moveit::core::RobotStatePtr URDFCollisionModel::getStateAt(
+    const URDFModelCoords &coords) const
+{
+    auto state = boost::make_shared<moveit::core::RobotState>(robot_model_);
+    updateFK(*state, coords);
+    return state;
+}
+
+bool URDFCollisionModel::checkLimits(const URDFModelCoords &coords) const
 {
     if (!robot_model_) {
         ROS_ERROR("robot_model_ not initialized!");
@@ -625,7 +633,7 @@ bool URDFCollisionModel::checkLimits(const URDFModelCoords_t &coords) const
 }
 
 bool URDFCollisionModel::getModelCollisionSpheres(
-    const URDFModelCoords_t &coords,
+    const URDFModelCoords &coords,
     std::vector<Sphere> &spheres) const
 {
     if (!updateFK(coords)) {
@@ -648,23 +656,30 @@ bool URDFCollisionModel::getModelCollisionSpheres(
     return true;
 }
 
-bool URDFCollisionModel::updateFK(const URDFModelCoords_t &coords) const
+bool URDFCollisionModel::updateFK(const URDFModelCoords &coords) const
+{
+    return updateFK(*robot_state_, coords);
+}
+
+bool URDFCollisionModel::updateFK(
+    moveit::core::RobotState &state,
+    const URDFModelCoords &coords) const
 {
     // set the root joint first
-    const robot_model::LinkModel* rootlink = robot_model_->getRootLink();
-    const robot_model::JointModel* root = robot_model_->getRootJoint();
+    const robot_model::LinkModel* rootlink = state.getRobotModel()->getRootLink();
+    const robot_model::JointModel* root = state.getRobotModel()->getRootJoint();
 
 #ifdef __ROS_DISTRO_groovy__
-    robot_state::JointState* root_state = robot_state_->getJointState(root);
+    robot_state::JointState* root_state = state.getJointState(root);
     root_state->setVariableValues(coords.root);
 #else
-    robot_state_->setJointPositions(root, coords.root);
+    state.setJointPositions(root, coords.root);
 #endif
 
     // then go through the other joints and set them
     for (auto it = coords.coordmap.begin(); it != coords.coordmap.end(); it++) {
         std::string joint_name = it->first;
-        const robot_model::JointModel* jm = robot_model_->getJointModel(joint_name);
+        const robot_model::JointModel* jm = state.getRobotModel()->getJointModel(joint_name);
         int var_count = jm->getVariableCount();
 
         if (var_count != it->second.size()) {
@@ -674,18 +689,18 @@ bool URDFCollisionModel::updateFK(const URDFModelCoords_t &coords) const
             return false;
         }
 #ifdef __ROS_DISTRO_groovy__
-        robot_state::JointState* js = robot_state_->getJointState(jm);
+        robot_state::JointState* js = state.getJointState(jm);
         js->setVariableValues(it->second);
 #else
-        robot_state_->setJointPositions(jm, it->second);
+        state.setJointPositions(jm, it->second);
 #endif
     }
-    robot_state_->update();
-    robot_state_->updateLinkTransforms();
-    robot_state_->updateCollisionBodyTransforms();
+    state.update();
+    state.updateLinkTransforms();
+    state.updateCollisionBodyTransforms();
     ros::spinOnce();
 
-    //Eigen::Affine3d rootlink2 = robot_state_->getGlobalLinkTransform(rootlink);
+    //Eigen::Affine3d rootlink2 = state.getGlobalLinkTransform(rootlink);
     //printf("RootLinkeAfter:\n");
     //URDFModelCoords_t::print(rootlink2);
 
@@ -698,7 +713,7 @@ bool URDFCollisionModel::updateFK(const URDFModelCoords_t &coords) const
 /// the contact spheres for that set of links; otherwise, this method returns
 /// returns the contact spheres for all links in the model.
 bool URDFCollisionModel::getModelContactSpheres(
-    const URDFModelCoords_t &coords,
+    const URDFModelCoords &coords,
     std::vector<Sphere> &spheres) const
 {
     if (!updateFK(coords)) {
@@ -722,10 +737,10 @@ bool URDFCollisionModel::getModelContactSpheres(
 }
 
 bool URDFCollisionModel::getInterpolatedPath(
-    const URDFModelCoords_t &coords0,
-    const URDFModelCoords_t &coords1,
+    const URDFModelCoords &coords0,
+    const URDFModelCoords &coords1,
     double resolution,
-    std::vector<URDFModelCoords_t> &path) const
+    std::vector<URDFModelCoords> &path) const
 {
     //compute max_dist that collision spheres travel between c0 and c1
     double max_dist = 0.0;
@@ -766,7 +781,7 @@ bool URDFCollisionModel::getInterpolatedPath(
     // if max_dist is more than resolution, we need to subdivide path between c0 and c1
     if (max_dist > resolution) {
         //ROS_WARN("Sphere MaxDist = %.3f", max_dist);
-        URDFModelCoords_t coords_half;
+        URDFModelCoords coords_half;
         if (!getInterpolatedCoordinates(coords0, coords1, 0.5, coords_half)) {
             ROS_ERROR("URDFCollisionModel::getInterpolatedPath - failed to get interpolation to midpoint!");
             return false;
@@ -779,8 +794,8 @@ bool URDFCollisionModel::getInterpolatedPath(
          ROS_INFO("Wp_mid:");
          coords_half.print(coords_half);*/
 
-        std::vector<URDFModelCoords_t> sub_path0;
-        std::vector<URDFModelCoords_t> sub_path1;
+        std::vector<URDFModelCoords> sub_path0;
+        std::vector<URDFModelCoords> sub_path1;
         if (!getInterpolatedPath(coords0, coords_half, resolution, sub_path0)) {
             ROS_ERROR("URDFCollisionModel::getInterpolatedPath - failed to get interpolated sub-path 1");
             return false;
@@ -803,10 +818,10 @@ bool URDFCollisionModel::getInterpolatedPath(
 }
 
 bool URDFCollisionModel::getInterpolatedCoordinates(
-    const URDFModelCoords_t &coords0,
-    const URDFModelCoords_t &coords1,
+    const URDFModelCoords &coords0,
+    const URDFModelCoords &coords1,
     double t,
-    URDFModelCoords_t &interp) const
+    URDFModelCoords &interp) const
 {
 
     const robot_model::JointModel* root = robot_model_->getRootJoint();
@@ -896,10 +911,10 @@ bool URDFCollisionModel::getInterpolatedCoordinates(
 }
 
 bool URDFCollisionModel::getInterpolatedPath(
-    const URDFModelCoords_t &coords0,
-    const URDFModelCoords_t &coords1,
+    const URDFModelCoords &coords0,
+    const URDFModelCoords &coords1,
     int steps,
-    std::vector<URDFModelCoords_t> &path) const
+    std::vector<URDFModelCoords> &path) const
 {
 
     path.clear();
@@ -958,12 +973,12 @@ bool URDFCollisionModel::getInterpolatedPath(
 }
 
 bool URDFCollisionModel::getModelPathCollisionSpheres(
-    const URDFModelCoords_t &coords0,
-    const URDFModelCoords_t &coords1,
+    const URDFModelCoords &coords0,
+    const URDFModelCoords &coords1,
     int steps,
     std::vector<Sphere> &spheres) const
 {
-    std::vector<URDFModelCoords_t> path;
+    std::vector<URDFModelCoords> path;
     if (!getInterpolatedPath(coords0, coords1, steps, path))
         return false;
     for (int i = 0; i < path.size(); i++) {
@@ -974,12 +989,12 @@ bool URDFCollisionModel::getModelPathCollisionSpheres(
 }
 
 bool URDFCollisionModel::getModelPathContactSpheres(
-    const URDFModelCoords_t &coords0,
-    const URDFModelCoords_t &coords1,
+    const URDFModelCoords &coords0,
+    const URDFModelCoords &coords1,
     int steps,
     std::vector<Sphere> &spheres) const
 {
-    std::vector<URDFModelCoords_t> path;
+    std::vector<URDFModelCoords> path;
     if (!getInterpolatedPath(coords0, coords1, steps, path)) {
         return false;
     }
@@ -992,7 +1007,7 @@ bool URDFCollisionModel::getModelPathContactSpheres(
 }
 
 visualization_msgs::MarkerArray URDFCollisionModel::getAttachedObjectsVisualization(
-    const URDFModelCoords_t &coords,
+    const URDFModelCoords &coords,
     std::string frame_id,
     std::string ns,
     std_msgs::ColorRGBA col,
@@ -1000,13 +1015,13 @@ visualization_msgs::MarkerArray URDFCollisionModel::getAttachedObjectsVisualizat
 {
     visualization_msgs::MarkerArray markers;
 
-    for (std::map<std::string, std::vector<AttachedObject_t>>::const_iterator it =
+    for (std::map<std::string, std::vector<AttachedObject>>::const_iterator it =
             attached_objects_.begin(); it != attached_objects_.end(); it++) {
         std::string link_name = it->first;
         Eigen::Affine3d tfm;
         if (!getLinkGlobalTransform(coords, link_name, tfm))
             continue;
-        for (const AttachedObject_t &o : it->second) {
+        for (const AttachedObject &o : it->second) {
             for (const Sphere s : o.spheres) {
                 Sphere s_;
                 s_.v = tfm * s.v;
@@ -1023,7 +1038,7 @@ visualization_msgs::MarkerArray URDFCollisionModel::getAttachedObjectsVisualizat
 
 //get more advanced mesh visualization when available
 visualization_msgs::MarkerArray URDFCollisionModel::getModelVisualization(
-    const URDFModelCoords_t &coords,
+    const URDFModelCoords &coords,
     std::string frame_id,
     std::string ns,
     std_msgs::ColorRGBA col,
@@ -1042,7 +1057,7 @@ visualization_msgs::MarkerArray URDFCollisionModel::getModelVisualization(
 }
 
 visualization_msgs::MarkerArray URDFCollisionModel::getModelBasicVisualizationByLink(
-    const URDFModelCoords_t &coords,
+    const URDFModelCoords &coords,
     std::string frame_id,
     std::string ns,
     int &idx) const
@@ -1084,7 +1099,7 @@ visualization_msgs::MarkerArray URDFCollisionModel::getModelBasicVisualizationBy
 
 visualization_msgs::MarkerArray
 URDFCollisionModel::getModelSelfCollisionVisualization(
-    const URDFModelCoords_t &coords,
+    const URDFModelCoords &coords,
     const std::string &frame_id,
     const std::string &ns,
     const std_msgs::ColorRGBA &col,
@@ -1131,7 +1146,7 @@ URDFCollisionModel::getModelSelfCollisionVisualization(
 }
 
 visualization_msgs::MarkerArray URDFCollisionModel::getModelBasicVisualization(
-    const URDFModelCoords_t &coords,
+    const URDFModelCoords &coords,
     std::string frame_id,
     std::string ns,
     std_msgs::ColorRGBA col,
@@ -1161,7 +1176,7 @@ visualization_msgs::MarkerArray URDFCollisionModel::getModelBasicVisualization(
 
 bool URDFCollisionModel::computeCOMRecurs(
     const KDL::SegmentMap::const_iterator& current_seg,
-    const URDFModelCoords_t &joint_positions,
+    const URDFModelCoords &joint_positions,
     const KDL::Frame& tf,
     double& m,
     KDL::Vector& com) const
@@ -1208,7 +1223,7 @@ bool URDFCollisionModel::computeCOMRecurs(
 }
 
 bool URDFCollisionModel::computeCOM(
-    const URDFModelCoords_t &joint_positions,
+    const URDFModelCoords &joint_positions,
     KDL::Vector& CoM,
     double& mass) const
 {
@@ -1240,7 +1255,7 @@ bool URDFCollisionModel::computeCOM(
 
 bool URDFCollisionModel::computeChainTipPosesRecurs(
     const KDL::SegmentMap::const_iterator& current_seg,
-    const URDFModelCoords_t &joint_positions,
+    const URDFModelCoords &joint_positions,
     const KDL::Frame& tf,
     std::map<std::string, KDL::Frame> &tip_frames)
 {
@@ -1291,7 +1306,7 @@ bool URDFCollisionModel::computeChainTipPosesRecurs(
 }
 
 bool URDFCollisionModel::computeChainTipPoses(
-    const URDFModelCoords_t &coords,
+    const URDFModelCoords &coords,
     std::map<std::string, Eigen::Affine3d> &tip_poses)
 {
     std::map<std::string, KDL::Frame> tip_frames;
@@ -1313,8 +1328,8 @@ bool URDFCollisionModel::computeChainTipPoses(
 bool URDFCollisionModel::computeGroupIK(
     const std::string &group_name,
     const Eigen::Affine3d &ee_pose_map,
-    const URDFModelCoords_t &seed,
-    URDFModelCoords_t &sol,
+    const URDFModelCoords &seed,
+    URDFModelCoords &sol,
     bool bAllowApproxSolutions,
     int n_attempts,
     double time_s)
@@ -1479,7 +1494,7 @@ bool URDFCollisionModel::attachObjectToLink(
         return false;
     }
 
-    AttachedObject_t obj;
+    AttachedObject obj;
 
     if (!computeShapeBoundingSpheres(object, res, obj.spheres)) {
         return false;
@@ -1584,7 +1599,7 @@ bool URDFCollisionModel::hasAttachedObjects(const std::string &link_name) const
     return (it != attached_objects_.end());
 }
 
-const std::vector<AttachedObject_t> URDFCollisionModel::getAttachedObjects(
+const std::vector<AttachedObject> URDFCollisionModel::getAttachedObjects(
     const std::string &link_name) const
 {
     auto it = attached_objects_.find(link_name);
@@ -1601,11 +1616,11 @@ bool URDFCollisionModel::getLinkAttachedObjectsSpheres(
 {
     if (!hasAttachedObjects(link_name))
         return true;
-    const std::vector<AttachedObject_t> objs = getAttachedObjects(link_name);
+    const std::vector<AttachedObject> objs = getAttachedObjects(link_name);
 
     ROS_INFO("Got %d attached objects for link %s", (int )objs.size(), link_name.c_str());
 
-    for (const AttachedObject_t &o : objs) {
+    for (const AttachedObject &o : objs) {
         ROS_INFO("Object %s has %zu spheres!", o.name.c_str(), o.spheres.size());
         for (const Sphere &s : o.spheres) {
             Sphere s_;
@@ -1626,7 +1641,7 @@ bool URDFCollisionModel::hasAttachedObject(
     if (it == attached_objects_.end()) {
         return false;
     }
-    for (const AttachedObject_t &obj : it->second) {
+    for (const AttachedObject &obj : it->second) {
         if (obj.name == object_name) {
             return true;
         }
@@ -1636,7 +1651,7 @@ bool URDFCollisionModel::hasAttachedObject(
 
 bool URDFCollisionModel::attachObject(
     const std::string &link_name,
-    const AttachedObject_t &obj)
+    const AttachedObject &obj)
 {
     auto it = attached_objects_.find(link_name);
     if (it == attached_objects_.end()) {

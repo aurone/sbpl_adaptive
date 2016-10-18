@@ -46,7 +46,7 @@
 
 namespace adim {
 
-struct URDFModelCoords_t : ModelCoords_t
+struct URDFModelCoords : ModelCoords_t
 {
     Eigen::Affine3d root;
     std::map<std::string, std::vector<double>> coordmap;
@@ -63,17 +63,17 @@ struct URDFModelCoords_t : ModelCoords_t
 
     void set(const std::string &name, const std::vector<double> &p_coords);
 
-    static void print(const URDFModelCoords_t &c);
+    static void print(const URDFModelCoords &c);
 
     static void print(const Eigen::Affine3d &t);
 
     static void updateWith(
-        URDFModelCoords_t &target,
-        const URDFModelCoords_t &source);
+        URDFModelCoords &target,
+        const URDFModelCoords &source);
 
     static double getMaxJointDistance(
-        const URDFModelCoords_t &from,
-        const URDFModelCoords_t &to);
+        const URDFModelCoords &from,
+        const URDFModelCoords &to);
 };
 
 struct SegmentPair
@@ -92,7 +92,7 @@ struct SegmentPair
     }
 };
 
-struct AttachedObject_t
+struct AttachedObject
 {
     std::string name;
     std::vector<Sphere> spheres;
@@ -105,9 +105,9 @@ public:
     URDFCollisionModel();
     ~URDFCollisionModel();
 
-    URDFModelCoords_t getRandomCoordinates() const;
+    URDFModelCoords getRandomCoordinates() const;
 
-    URDFModelCoords_t getDefaultCoordinates() const;
+    URDFModelCoords getDefaultCoordinates() const;
 
     virtual bool initFromURDF(
         const std::string &urdf_string,
@@ -121,60 +121,64 @@ public:
         const std::vector<std::string> &contact_links);
 
     virtual void autoIgnoreSelfCollisions();
-    virtual void autoIgnoreSelfCollisions(const URDFModelCoords_t &coords);
+    virtual void autoIgnoreSelfCollisions(const URDFModelCoords &coords);
 
     void printIgnoreSelfCollisionLinkPairs();
 
     bool InitializeChains(const std::vector<std::string> &chain_tip_link_names);
 
-    bool checkLimits(const URDFModelCoords_t &coords) const;
+    bool checkLimits(const URDFModelCoords &coords) const;
 
-    bool checkSelfCollisions(const URDFModelCoords_t &coords) const;
+    bool checkSelfCollisions(const URDFModelCoords &coords) const;
 
     std::vector<std::pair<std::string, std::string>> getSelfCollisions(
-        const URDFModelCoords_t &coords) const;
+        const URDFModelCoords &coords) const;
 
     bool getModelCollisionSpheres(
-        const URDFModelCoords_t &coords,
+        const URDFModelCoords &coords,
         std::vector<Sphere> &spheres) const;
 
     bool getModelContactSpheres(
-        const URDFModelCoords_t &coords,
+        const URDFModelCoords &coords,
         std::vector<Sphere> &spheres) const;
 
     bool getModelPathCollisionSpheres(
-        const URDFModelCoords_t &coords0,
-        const URDFModelCoords_t &coords1,
+        const URDFModelCoords &coords0,
+        const URDFModelCoords &coords1,
         int steps,
         std::vector<Sphere> &spheres) const;
 
     bool getModelPathContactSpheres(
-        const URDFModelCoords_t &coords0,
-        const URDFModelCoords_t &coords1,
+        const URDFModelCoords &coords0,
+        const URDFModelCoords &coords1,
         int steps,
         std::vector<Sphere> &spheres) const;
 
     virtual bool getInterpolatedCoordinates(
-        const URDFModelCoords_t &coords0,
-        const URDFModelCoords_t &coords1,
+        const URDFModelCoords &coords0,
+        const URDFModelCoords &coords1,
         double t,
-        URDFModelCoords_t &interp) const;
+        URDFModelCoords &interp) const;
     virtual bool getInterpolatedPath(
-        const URDFModelCoords_t &coords0,
-        const URDFModelCoords_t &coords1,
+        const URDFModelCoords &coords0,
+        const URDFModelCoords &coords1,
         double resolution,
-        std::vector<URDFModelCoords_t> &path) const;
+        std::vector<URDFModelCoords> &path) const;
     virtual bool getInterpolatedPath(
-        const URDFModelCoords_t &coords0,
-        const URDFModelCoords_t &coords1,
+        const URDFModelCoords &coords0,
+        const URDFModelCoords &coords1,
         int steps,
-        std::vector<URDFModelCoords_t> &path) const;
+        std::vector<URDFModelCoords> &path) const;
 
     bool initFromFile(std::string fname);
 
-    void addContactSpheres(const std::string &link_name, const std::vector<Sphere> &s);
+    void addContactSpheres(
+        const std::string &link_name,
+        const std::vector<Sphere> &s);
 
-    void addCollisionSpheres(const std::string &link_name, const std::vector<Sphere> &s);
+    void addCollisionSpheres(
+        const std::string &link_name,
+        const std::vector<Sphere> &s);
 
     void addContactSphere(const std::string &link_name, Sphere s);
 
@@ -182,31 +186,31 @@ public:
 
     // get more advanced mesh visualization when available
     visualization_msgs::MarkerArray getModelSelfCollisionVisualization(
-        const URDFModelCoords_t &coords,
+        const URDFModelCoords &coords,
         const std::string &frame_id,
         const std::string &ns,
         const std_msgs::ColorRGBA &col,
         int &idx) const;
 
     visualization_msgs::MarkerArray getModelBasicVisualizationByLink(
-        const URDFModelCoords_t &coords,
+        const URDFModelCoords &coords,
         std::string frame_id,
         std::string ns,
         int &idx) const;
     visualization_msgs::MarkerArray getModelBasicVisualization(
-        const URDFModelCoords_t &coords,
+        const URDFModelCoords &coords,
         std::string frame_id,
         std::string ns,
         std_msgs::ColorRGBA col,
         int &idx) const;
     visualization_msgs::MarkerArray getModelVisualization(
-        const URDFModelCoords_t &coords,
+        const URDFModelCoords &coords,
         std::string frame_id,
         std::string ns,
         std_msgs::ColorRGBA col,
         int &idx) const;
     visualization_msgs::MarkerArray getAttachedObjectsVisualization(
-        const URDFModelCoords_t &coords,
+        const URDFModelCoords &coords,
         std::string frame_id,
         std::string ns,
         std_msgs::ColorRGBA col,
@@ -215,23 +219,23 @@ public:
     bool computeGroupIK(
         const std::string &group_name,
         const Eigen::Affine3d &ee_pose_map,
-        const URDFModelCoords_t &seed,
-        URDFModelCoords_t &sol,
+        const URDFModelCoords &seed,
+        URDFModelCoords &sol,
         bool bAllowApproxSolutions = false,
         int n_attempts = 0,
         double time_s = 0);
 
     bool computeCOM(
-        const URDFModelCoords_t &coords,
+        const URDFModelCoords &coords,
         KDL::Vector &COM,
         double &mass) const;
 
     bool computeChainTipPoses(
-        const URDFModelCoords_t &coords,
+        const URDFModelCoords &coords,
         std::map<std::string, Eigen::Affine3d> &tip_poses);
 
     bool getLinkGlobalTransform(
-        const URDFModelCoords_t &coords,
+        const URDFModelCoords &coords,
         const std::string &link_name,
         Eigen::Affine3d &tfm) const;
 
@@ -251,6 +255,8 @@ public:
 
     boost::shared_ptr<const urdf::ModelInterface> getURDF() const;
     boost::shared_ptr<const srdf::Model> getSRDF() const;
+
+    moveit::core::RobotStatePtr getStateAt(const URDFModelCoords &coords) const;
 
     /// \name Required Public Functions from SBPLCollisionModel
     ///@{
@@ -309,7 +315,7 @@ protected:
     std::map<std::string, std::vector<Sphere>> collision_spheres_;
     std::map<std::string, std::vector<Sphere>> contact_spheres_;
 
-    std::map<std::string, std::vector<AttachedObject_t>> attached_objects_;
+    std::map<std::string, std::vector<AttachedObject>> attached_objects_;
 
     robot_model_loader::RobotModelLoaderPtr rm_loader_;
     robot_model::RobotModelPtr robot_model_;
@@ -325,12 +331,16 @@ protected:
 
     void addChildren(const KDL::SegmentMap::const_iterator segment);
 
-    bool updateFK(const URDFModelCoords_t &coords) const;
+    bool updateFK(const URDFModelCoords &coords) const;
+
+    bool updateFK(
+        moveit::core::RobotState &state,
+        const URDFModelCoords &coords) const;
 
     bool hasIgnoreSelfPair(std::string link1, std::string link2) const;
 
     bool getLinkCollisionSpheres(
-        const URDFModelCoords_t &coords,
+        const URDFModelCoords &coords,
         std::string link_name,
         std::vector<Sphere> &spheres) const;
     bool getLinkCollisionSpheres_CurrentState(
@@ -338,7 +348,7 @@ protected:
         std::vector<Sphere> &spheres) const;
 
     bool getLinkContactSpheres(
-        const URDFModelCoords_t &coords,
+        const URDFModelCoords &coords,
         std::string link_name,
         std::vector<Sphere> &spheres) const;
     bool getLinkContactSpheres_CurrentState(
@@ -352,13 +362,13 @@ protected:
 
     bool computeCOMRecurs(
         const KDL::SegmentMap::const_iterator &current_seg,
-        const URDFModelCoords_t &coords,
+        const URDFModelCoords &coords,
         const KDL::Frame &tf,
         double &m,
         KDL::Vector &com) const;
     bool computeChainTipPosesRecurs(
         const KDL::SegmentMap::const_iterator &current_seg,
-        const URDFModelCoords_t &joint_positions,
+        const URDFModelCoords &joint_positions,
         const KDL::Frame &tf,
         std::map<std::string, KDL::Frame> &tip_frames);
 
@@ -374,12 +384,12 @@ protected:
         const std::string &link_name,
         const std::string &object_name) const;
     bool hasAttachedObjects(const std::string &link_name) const;
-    const std::vector<AttachedObject_t> getAttachedObjects(
+    const std::vector<AttachedObject> getAttachedObjects(
             const std::string &link_name) const;
 
     bool attachObject(
         const std::string &link_name,
-        const AttachedObject_t &obj);
+        const AttachedObject &obj);
 
     bool computeShapeBoundingSpheres(
         const shapes::Shape& shape,
@@ -392,7 +402,7 @@ protected:
 //////////////////////////////////////
 
 inline
-bool URDFModelCoords_t::getCoords(
+bool URDFModelCoords::getCoords(
     const std::string &name,
     std::vector<double> &p_coords) const
 {
@@ -405,7 +415,7 @@ bool URDFModelCoords_t::getCoords(
 }
 
 inline
-bool URDFModelCoords_t::getCoord(
+bool URDFModelCoords::getCoord(
     const std::string &name,
     double &p_coord,
     int idx) const
@@ -422,7 +432,7 @@ bool URDFModelCoords_t::getCoord(
 }
 
 inline
-double URDFModelCoords_t::getCoord(const std::string &name, int idx) const
+double URDFModelCoords::getCoord(const std::string &name, int idx) const
 {
     auto jnt = coordmap.find(name);
     if (jnt == coordmap.end()) {
@@ -439,7 +449,7 @@ double URDFModelCoords_t::getCoord(const std::string &name, int idx) const
 }
 
 inline
-void URDFModelCoords_t::set(
+void URDFModelCoords::set(
     const std::string &name,
     const std::vector<double> &p_coords)
 {
@@ -447,7 +457,7 @@ void URDFModelCoords_t::set(
 }
 
 inline
-void URDFModelCoords_t::print(const URDFModelCoords_t &c)
+void URDFModelCoords::print(const URDFModelCoords &c)
 {
     printf("root: [%.3f %.3f %.3f %.3f]\n", c.root(0, 0), c.root(0, 1), c.root(0, 2), c.root(0, 3));
     printf("root: [%.3f %.3f %.3f %.3f]\n", c.root(1, 0), c.root(1, 1), c.root(1, 2), c.root(1, 3));
@@ -463,7 +473,7 @@ void URDFModelCoords_t::print(const URDFModelCoords_t &c)
 }
 
 inline
-void URDFModelCoords_t::print(const Eigen::Affine3d &t)
+void URDFModelCoords::print(const Eigen::Affine3d &t)
 {
     printf("[%.3f %.3f %.3f %.3f]\n", t(0, 0), t(0, 1), t(0, 2), t(0, 3));
     printf("[%.3f %.3f %.3f %.3f]\n", t(1, 0), t(1, 1), t(1, 2), t(1, 3));
@@ -472,9 +482,9 @@ void URDFModelCoords_t::print(const Eigen::Affine3d &t)
 }
 
 inline
-void URDFModelCoords_t::updateWith(
-    URDFModelCoords_t &target,
-    const URDFModelCoords_t &source)
+void URDFModelCoords::updateWith(
+    URDFModelCoords &target,
+    const URDFModelCoords &source)
 {
     for (auto jnt = source.coordmap.begin(); jnt != source.coordmap.end();
             jnt++)
@@ -484,9 +494,9 @@ void URDFModelCoords_t::updateWith(
 }
 
 inline
-double URDFModelCoords_t::getMaxJointDistance(
-    const URDFModelCoords_t &from,
-    const URDFModelCoords_t &to)
+double URDFModelCoords::getMaxJointDistance(
+    const URDFModelCoords &from,
+    const URDFModelCoords &to)
 {
     double max_dist = 0.0;
     for (auto it = to.coordmap.begin(); it != to.coordmap.end(); it++) {
@@ -600,7 +610,7 @@ bool URDFCollisionModel::getModelCollisionSpheres(
     const ModelCoords_t &coords,
     std::vector<Sphere> &spheres) const
 {
-    const URDFModelCoords_t &c = dynamic_cast<const URDFModelCoords_t&>(coords);
+    const URDFModelCoords &c = dynamic_cast<const URDFModelCoords&>(coords);
     return getModelCollisionSpheres(c, spheres);
 }
 
@@ -609,7 +619,7 @@ bool URDFCollisionModel::getModelContactSpheres(
     const ModelCoords_t &coords,
     std::vector<Sphere> &spheres) const
 {
-    const URDFModelCoords_t &c = dynamic_cast<const URDFModelCoords_t&>(coords);
+    const URDFModelCoords &c = dynamic_cast<const URDFModelCoords&>(coords);
     return getModelContactSpheres(c, spheres);
 }
 
@@ -619,7 +629,7 @@ bool URDFCollisionModel::getModelContactSpheres(
     const std::string &link_name,
     std::vector<Sphere> &spheres) const
 {
-    const URDFModelCoords_t &c = dynamic_cast<const URDFModelCoords_t&>(coords);
+    const URDFModelCoords &c = dynamic_cast<const URDFModelCoords&>(coords);
     return getLinkContactSpheres(c, link_name, spheres);
 }
 
@@ -630,8 +640,8 @@ bool URDFCollisionModel::getModelPathCollisionSpheres(
     int steps,
     std::vector<Sphere> &spheres) const
 {
-    const URDFModelCoords_t &c0 = dynamic_cast<const URDFModelCoords_t&>(coords0);
-    const URDFModelCoords_t &c1 = dynamic_cast<const URDFModelCoords_t&>(coords1);
+    const URDFModelCoords &c0 = dynamic_cast<const URDFModelCoords&>(coords0);
+    const URDFModelCoords &c1 = dynamic_cast<const URDFModelCoords&>(coords1);
     return getModelPathCollisionSpheres(c0, c1, steps, spheres);
 }
 
@@ -642,8 +652,8 @@ bool URDFCollisionModel::getModelPathContactSpheres(
     int steps,
     std::vector<Sphere> &spheres) const
 {
-    const URDFModelCoords_t &c0 = dynamic_cast<const URDFModelCoords_t&>(coords0);
-    const URDFModelCoords_t &c1 = dynamic_cast<const URDFModelCoords_t&>(coords1);
+    const URDFModelCoords &c0 = dynamic_cast<const URDFModelCoords&>(coords0);
+    const URDFModelCoords &c1 = dynamic_cast<const URDFModelCoords&>(coords1);
     return getModelPathContactSpheres(c0, c1, steps, spheres);
 }
 
@@ -664,7 +674,7 @@ URDFCollisionModel::getSRDF() const
 inline
 bool URDFCollisionModel::checkLimits(const ModelCoords_t &coord) const
 {
-    const URDFModelCoords_t &c = dynamic_cast<const URDFModelCoords_t&>(coord);
+    const URDFModelCoords &c = dynamic_cast<const URDFModelCoords&>(coord);
     return checkLimits(c);
 }
 
@@ -676,7 +686,7 @@ visualization_msgs::MarkerArray URDFCollisionModel::getModelVisualization(
     const std_msgs::ColorRGBA &col,
     int &idx) const
 {
-    const URDFModelCoords_t &c = dynamic_cast<const URDFModelCoords_t&>(coords);
+    const URDFModelCoords &c = dynamic_cast<const URDFModelCoords&>(coords);
     return getModelVisualization(c, frame_id, ns, col, idx);
 }
 
