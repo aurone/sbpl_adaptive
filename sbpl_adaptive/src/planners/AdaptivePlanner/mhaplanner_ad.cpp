@@ -611,7 +611,7 @@ MHASearchState* MHAPlanner_AD::state_from_open_state(
 
 int MHAPlanner_AD::compute_heuristic(int state_id, int hidx)
 {
-    if(set_heur_)
+    if(hidx == 1 && set_heur_)
         return m_hanchor->GetGoalHeuristic(state_id);
     if (hidx == 0) {
         int anc = m_hanchor->GetGoalHeuristic(state_id);
@@ -619,7 +619,7 @@ int MHAPlanner_AD::compute_heuristic(int state_id, int hidx)
     }
     else {
         int stair = m_heurs[hidx - 1]->GetGoalHeuristic(state_id);
-        if(stair == 0)
+        if(hidx == 1 && stair == 0)
         {
             set_heur_ = true;
             return m_hanchor->GetGoalHeuristic(state_id);
