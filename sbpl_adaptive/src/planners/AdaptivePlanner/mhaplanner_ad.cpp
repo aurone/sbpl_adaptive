@@ -27,8 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sbpl_adaptive/headers.h>
-
 #include <assert.h>
 #include <stdlib.h>
 #include <time.h>
@@ -36,13 +34,15 @@
 
 #include <sbpl/utils/key.h>
 
+#include <sbpl_adaptive/headers.h>
+
 static double GetTime()
 {
     return (double)clock() / (double)CLOCKS_PER_SEC;
 }
 
 MHAPlanner_AD::MHAPlanner_AD(
-    DiscreteSpaceInformation* environment,
+    adim::AdaptiveDiscreteSpaceInformation* environment,
     Heuristic* hanchor,
     Heuristic** heurs,
     int hcount)
@@ -258,6 +258,15 @@ int MHAPlanner_AD::replan(
     }
     if (time_limit_reached()) {
         SBPL_DEBUG("Time limit reached");
+
+        int best_state_id = environment_->getBestSeenState();
+        SBPL_INFO("Best stateID: %d", best_state_id);
+        if(best_state_id >= 0){
+            SBPL_WARN("Reconstructing partial path!");
+            MHASearchState* best_seen_state = get_state(best_state_id);
+            extract_partial_path(solution_stateIDs_V, solcost, best_seen_state);
+        }
+
     }
 
     return 0;
@@ -652,6 +661,23 @@ void MHAPlanner_AD::extract_path(std::vector<int>* solution_path, int* solcost)
     solution_path->clear();
     *solcost = 0;
     for (MHASearchState* state = m_goal_state; state; state = state->bp)
+    {
+        solution_path->push_back(state->state_id);
+        if (state->bp) {
+            *solcost += (state->g - state->bp->g);
+        }
+    }
+
+    // TODO: special cases for backward search
+    std::reverse(solution_path->begin(), solution_path->end());
+}
+
+void MHAPlanner_AD::extract_partial_path(std::vector<int>* solution_path, int* solcost, MHASearchState* best_seen_state)
+{
+    SBPL_DEBUG("Extracting path");
+    solution_path->clear();
+    *solcost = 0;
+    for (MHASearchState* state = best_seen_state; state; state = state->bp)
     {
         solution_path->push_back(state->state_id);
         if (state->bp) {

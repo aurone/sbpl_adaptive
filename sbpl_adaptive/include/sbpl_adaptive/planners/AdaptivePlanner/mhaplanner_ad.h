@@ -33,6 +33,7 @@
 #include <sbpl/heuristics/heuristic.h>
 #include <sbpl/planners/planner.h>
 #include <sbpl/utils/heap.h>
+#include <sbpl_adaptive/headers.h>
 
 /*struct MHASearchState
 {
@@ -58,7 +59,7 @@ class MHAPlanner_AD : public SBPLPlanner
 public:
 
     MHAPlanner_AD(
-            DiscreteSpaceInformation* environment,
+            adim::AdaptiveDiscreteSpaceInformation* environment,
             Heuristic* hanchor,
             Heuristic** heurs,
             int hcount);
@@ -171,6 +172,8 @@ private:
     double m_eps;           ///< current w_1
     double m_eps_mha;       ///< current w_2
 
+    adim::AdaptiveDiscreteSpaceInformation* environment_;
+
     /// suboptimality bound satisfied by the last search
     double m_eps_satisfied; 
 
@@ -209,6 +212,7 @@ private:
     void insert_or_update(MHASearchState* state, int hidx, int f);
 
     void extract_path(std::vector<int>* solution_path, int* solcost);
+    void extract_partial_path(std::vector<int>* solution_path, int* solcost, MHASearchState* best_seen_state);
 
     bool closed_in_anc_search(MHASearchState* state) const;
     bool closed_in_add_search(MHASearchState* state) const;
