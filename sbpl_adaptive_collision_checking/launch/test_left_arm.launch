@@ -8,7 +8,7 @@
 
     <rosparam command="load" file="$(find sbpl_adaptive_collision_checking)/config/pr2_left_arm_model.yaml" />
 
-    <rosparam command="load" file="$(find sbpl_arm_planner)/config/pr2_left_arm.yaml" />
+    <rosparam command="load" file="$(find smpl)/config/pr2_left_arm.yaml" />
 
     <remap from="joint_states" to="joint_states_throttle" />
 

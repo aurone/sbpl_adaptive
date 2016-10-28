@@ -1,12 +1,12 @@
 #include <sbpl_adaptive_collision_checking/sbpl_collision_statistics.h>
 
-SBPLCollisionStatistics::SBPLCollisionStatistics(sbpl_arm_planner::Group *group)
+SBPLCollisionStatistics::SBPLCollisionStatistics(smpl::Group *group)
 {
     group_ = group;
 }
 
 void SBPLCollisionStatistics::logSphereCollision(
-    sbpl_arm_planner::Sphere *s,
+    smpl::Sphere *s,
     int &x,
     int &y,
     int &z,
@@ -39,7 +39,7 @@ void SBPLCollisionStatistics::printSphereCollisionStats(std::string text)
 {
     ROS_INFO("[cstats] [%s] Number of Collisions per Collision Sphere:",
             text.c_str());
-    for (std::map<sbpl_arm_planner::Sphere*, int>::const_iterator iter =
+    for (std::map<smpl::Sphere*, int>::const_iterator iter =
             col_sph_map_.begin(); iter != col_sph_map_.end(); iter++) {
         ROS_INFO("[cstats] [%s] name: %5s  radius: %0.3f  collisions: %6d",
                 text.c_str(), iter->first->name.c_str(), iter->first->radius,
@@ -49,7 +49,7 @@ void SBPLCollisionStatistics::printSphereCollisionStats(std::string text)
     // count number of collisions per link
     bool found = false;
     std::vector<int> num_col_per_link(group_->links_.size(), 0);
-    for (std::map<sbpl_arm_planner::Sphere*, int>::const_iterator iter =
+    for (std::map<smpl::Sphere*, int>::const_iterator iter =
             col_sph_map_.begin(); iter != col_sph_map_.end(); iter++) {
         for (unsigned int i = 0; i < group_->links_.size(); ++i) {
             found = false;

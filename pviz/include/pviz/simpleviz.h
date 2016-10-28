@@ -23,7 +23,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Vector3.h>
 #include <ros/ros.h>
-#include <sbpl_arm_planner/visualize.h>
+#include <smpl/debug/visualize.h>
 #include <tf/tf.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
