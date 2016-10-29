@@ -81,6 +81,11 @@ MHAPlanner_AD::MHAPlanner_AD(
     m_params.max_time = 0.0;
     m_params.repair_time = 0.0;
 
+    m_heuristic_list[-1] = {0,1};
+    m_heuristic_list[0] = {0,1};
+    m_heuristic_list[1] = {0,1};
+    m_heuristic_list[2] = {0,1};
+    m_heuristic_list[3] = {0,2};
     /// Four Modes:
     ///     Search Until Solution Bounded
     ///     Search Until Solution Unbounded
@@ -189,7 +194,9 @@ int MHAPlanner_AD::replan(
     m_start_state->g = 0;
 
     // insert start state into all heaps with key(start, i) as priority
-    for (int hidx = 0; hidx < num_heuristics(); ++hidx) {
+    int dimID;
+    environment_->getDimID(m_start_state->state_id, dimID);
+    for (int hidx : m_heuristic_list[dimID]) {
         CKey key;
         key.key[0] = compute_key(m_start_state, hidx);
         m_open[hidx].insertheap(&m_start_state->od[hidx].open_state, key);
@@ -215,7 +222,15 @@ int MHAPlanner_AD::replan(
         }
 
         for (int hidx = 1; hidx < num_heuristics(); ++hidx) {
+
+            if(environment_->isInTrackingMode() && hidx == 1 )
+            {
+                ROS_INFO("Env in tracking mode, forget about lower dim heuristics");
+                continue;
+            }
+
             if (m_open[0].emptyheap()) {
+                printf("Anchor empty\n");
                 break;
             }
 
@@ -243,8 +258,7 @@ int MHAPlanner_AD::replan(
                 else {
                     MHASearchState* s =
                             state_from_open_state(m_open[0].getminheap());
-                    SBPL_INFO("Expanding state %d  from search %d g : %d h : %d", s->state_id, 0, s->g, s->od[0].h);  
-                    // getchar();
+                    SBPL_INFO("Expanding state %d  from search %d g : %d h : %d h_inadd : %d", s->state_id, 0, s->g, s->od[0].h, s->od[2].h);  
                     expand(s, 0);
                 }
             }
@@ -472,7 +486,6 @@ MHASearchState* MHAPlanner_AD::get_state(int state_id)
         int ssidx = idxs[MHAMDP_STATEID2IND];
         return m_search_states[ssidx];
     }
-
 }
 
 void MHAPlanner_AD::clear()
@@ -507,7 +520,9 @@ void MHAPlanner_AD::init_state(
     state->state_id = state_id;
     state->closed_in_anc = false;
     state->closed_in_add = false;
-    for (int i = 0; i < num_heuristics(); ++i) {
+    int dimID;
+    environment_->getDimID(state_id, dimID);
+    for (int i : m_heuristic_list[dimID]) {
         state->od[i].open_state.heapindex = 0;
         state->od[i].h = compute_heuristic(state->state_id, i);
         // hijack list element pointers to map back to mha search state
@@ -526,7 +541,9 @@ void MHAPlanner_AD::reinit_state(MHASearchState* state)
         state->closed_in_anc = false;
         state->closed_in_add = false;
 
-        for (int i = 0; i < num_heuristics(); ++i) {
+        int dimID;
+        environment_->getDimID(state->state_id, dimID);
+        for (int i : m_heuristic_list[dimID]) {
             state->od[i].open_state.heapindex = 0;
             state->od[i].h = compute_heuristic(state->state_id, i);
         }
@@ -564,10 +581,19 @@ void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
     }
     ++m_num_expansions;
 
-    // remove s from all open lists
-    for (int hidx = 0; hidx < num_heuristics(); ++hidx) {
-        if (m_open[hidx].inheap(&state->od[hidx].open_state)) {
-            m_open[hidx].deleteheap(&state->od[hidx].open_state);
+    // // remove s from all open lists
+    // for (int hidx = 0; hidx < num_heuristics(); ++hidx) {
+    //     if (m_open[hidx].inheap(&state->od[hidx].open_state)) {
+    //         m_open[hidx].deleteheap(&state->od[hidx].open_state);
+    //     }
+    // }
+
+    // remove s from all open lists based on dimID
+    int dimID;
+    environment_->getDimID(state->state_id, dimID);
+    for (int i : m_heuristic_list[dimID]){
+        if (m_open[i].inheap(&state->od[i].open_state)) {
+            m_open[i].deleteheap(&state->od[i].open_state);
         }
     }
 
@@ -593,7 +619,10 @@ void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
                 SBPL_DEBUG("  Update in search %d with f = %d", 0, fanchor);
 
                 if (!closed_in_add_search(succ_state)) {
-                    for (int hidx = 1; hidx < num_heuristics(); ++hidx) {
+                    environment_->getDimID(succ_state->state_id, dimID);
+                    for (int hidx : m_heuristic_list[dimID]){
+                        if(hidx == 0)
+                            continue; 
                         int fn = compute_key(succ_state, hidx);
                         if (fn <= m_eps_mha * fanchor) {
                             insert_or_update(succ_state, hidx, fn);
@@ -622,18 +651,18 @@ int MHAPlanner_AD::compute_heuristic(int state_id, int hidx)
 {
     if(hidx == 1 && set_heur_)
         return m_hanchor->GetGoalHeuristic(state_id);
+
     if (hidx == 0) {
         int anc = m_hanchor->GetGoalHeuristic(state_id);
         return anc;
     }
     else {
-        int stair = m_heurs[hidx - 1]->GetGoalHeuristic(state_id);
-        if(hidx == 1 && stair == 0)
-        {
+        int heur = m_heurs[hidx - 1]->GetGoalHeuristic(state_id);
+        if(heur == 0 && hidx == 1){
             set_heur_ = true;
             return m_hanchor->GetGoalHeuristic(state_id);
         }
-        return stair;
+        return heur;
     }   
 }
 

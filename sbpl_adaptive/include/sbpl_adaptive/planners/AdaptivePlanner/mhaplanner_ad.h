@@ -34,6 +34,7 @@
 #include <sbpl/planners/planner.h>
 #include <sbpl/utils/heap.h>
 #include <sbpl_adaptive/headers.h>
+#include <unordered_map>
 
 /*struct MHASearchState
 {
@@ -192,6 +193,8 @@ private:
     CHeap* m_open; ///< sequence of (m_hcount + 1) open lists
 
     std::vector<int> created_states_;
+
+    std::unordered_map<int, std::vector<int>> m_heuristic_list; 
 
     bool check_params(const ReplanParams& params);
 

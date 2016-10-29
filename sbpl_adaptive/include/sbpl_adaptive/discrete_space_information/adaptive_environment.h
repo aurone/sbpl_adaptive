@@ -114,6 +114,12 @@ public:
 
     ///@}
 
+    // get state dimension from environment for MHA
+    virtual void getDimID(int state_id, int &dimID){
+        SBPL_ERROR("Get dimID not implemented");
+    }
+
+
     /// \name Virtual Functions Called by NOBODY
     ///@{
 
