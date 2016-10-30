@@ -689,8 +689,6 @@ bool URDFCollisionModel::updateFK(
         const robot_model::JointModel* jm = state.getRobotModel()->getJointModel(joint_name);
         int var_count = jm->getVariableCount();
 
-        std::vector<std::string> var_names = jm->getVariableNames();
-
         if (var_count != it->second.size()) {
             ROS_ERROR("URDFCollisionModel::getModelCollisionSpheres -- coords.size() (%d) != joint #vars (%d) for joint %s!",
                     (int)it->second.size(), var_count, joint_name.c_str());
