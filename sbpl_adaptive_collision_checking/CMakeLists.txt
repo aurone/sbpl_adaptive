@@ -40,7 +40,7 @@ find_package(catkin REQUIRED COMPONENTS
     moveit_ros_planning
     octomap_msgs
     sbpl_adaptive
-    sbpl_arm_planner
+    smpl
     sbpl_geometry_utils
     tf
     tf_conversions)
@@ -52,7 +52,7 @@ catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
     #DEPENDS sbpl
-    CATKIN_DEPENDS roscpp leatherman sbpl_arm_planner sbpl_geometry_utils)
+    CATKIN_DEPENDS roscpp leatherman smpl sbpl_geometry_utils)
 
 include_directories(${catkin_INCLUDE_DIRS})
 include_directories(include)

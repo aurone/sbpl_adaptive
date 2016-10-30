@@ -4,7 +4,7 @@
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "sbpl_collision_model_visualizer");
-    sbpl_arm_planner::SBPLCollisionModel model;
+    smpl::SBPLCollisionModel model;
     ros::NodeHandle ph("~");
     sleep(1);
     std::string group_name;
