@@ -3,9 +3,6 @@
 
 #include <memory>
 
-#define SBPL_CLASS_FORWARD(classname) \
-class classname;\
-typedef std::shared_ptr<classname> classname##Ptr;\
-typedef std::shared_ptr<const classname> classname##ConstPtr;
+#include <smpl/forward.h>
 
 #endif
