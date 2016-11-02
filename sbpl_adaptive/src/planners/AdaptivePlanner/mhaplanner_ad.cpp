@@ -223,7 +223,7 @@ int MHAPlanner_AD::replan(
 
         for (int hidx = 1; hidx < num_heuristics(); ++hidx) {
 
-            if(environment_->isInTrackingMode() && hidx == 1 )
+            if(environment_->isInTrackingMode() && hidx != num_heuristics() - 1 )
             {
                 ROS_INFO("Env in tracking mode, forget about lower dim heuristics");
                 continue;
@@ -258,7 +258,7 @@ int MHAPlanner_AD::replan(
                 else {
                     MHASearchState* s =
                             state_from_open_state(m_open[0].getminheap());
-                    SBPL_INFO("Expanding state %d  from search %d g : %d h : %d h_inadd : %d", s->state_id, 0, s->g, s->od[0].h, s->od[2].h);  
+                    // SBPL_INFO("Expanding state %d  from search %d g : %d h : %d h_inadd : %d", s->state_id, 0, s->g, s->od[0].h, s->od[hidx].h);  
                     expand(s, 0);
                 }
             }
