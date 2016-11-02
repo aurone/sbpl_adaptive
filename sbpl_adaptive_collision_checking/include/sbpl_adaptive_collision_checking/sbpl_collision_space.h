@@ -43,27 +43,27 @@ public:
 
     /// \name Collision Detection
     ///@{
-    bool checkCollision(const ModelCoords_t &coords, double &dist);
+    bool checkCollision(const ModelCoords &coords, double &dist);
 
     bool checkCollision(
-        const ModelCoords_t &coords0,
-        const ModelCoords_t &coords1,
+        const ModelCoords &coords0,
+        const ModelCoords &coords1,
         int steps,
         double &dist);
     ///@}
 
     /// \name Contact Detection
     ///@{
-    bool checkContact(const ModelCoords_t &coords, double &dist);
+    bool checkContact(const ModelCoords &coords, double &dist);
 
     bool checkContact(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         const std::string &link_name,
         double &dist);
 
     bool checkContact(
-        const ModelCoords_t &coords0,
-        const ModelCoords_t &coords1,
+        const ModelCoords &coords0,
+        const ModelCoords &coords1,
         int steps,
         double &dist);
     ///@}
@@ -75,7 +75,7 @@ public:
     void getSize(int &dim_x, int &dim_y, int &dim_z);
 
     bool getModelVoxelsInGrid(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         std::vector<Eigen::Vector3i> &voxels);
 
     std::shared_ptr<const SBPLCollisionModel> getModelPtr();
@@ -100,7 +100,7 @@ private:
         const std::vector<int>& b,
         const int radius);
     bool getClearance(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         int num_spheres,
         double &avg_dist,
         double &min_dist);

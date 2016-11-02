@@ -39,12 +39,12 @@ public:
     inline void reset();
 
     /** @brief records the expansion step for the specified model coords */
-    void setExpansionStep(const adim::ModelCoords_t &model_coords, unsigned int exp_step);
+    void setExpansionStep(const adim::ModelCoords &model_coords, unsigned int exp_step);
 
     /** @brief returns the earliest expansion step for a given set of voxels -- pass in all modified cells in the environment to get the earliest expansion step the changes affect */
     unsigned int getEarliestExpansionStep(std::vector<Cell3D_t> voxels);
 
-    visualization_msgs::MarkerArray getVoxelVisualization(const adim::ModelCoords_t &model_coords, std::string ns, Color_t color);
+    visualization_msgs::MarkerArray getVoxelVisualization(const adim::ModelCoords &model_coords, std::string ns, Color_t color);
 
 };
 

@@ -32,7 +32,7 @@ void SBPLCollisionSpace::setContactPadding(double padding)
 /// The state is in collision with the environment if any collision sphere is
 /// in collision with the environment
 bool SBPLCollisionSpace::checkCollision(
-    const ModelCoords_t &coords,
+    const ModelCoords &coords,
     double &dist)
 {
     std::vector<Sphere> collision_spheres;
@@ -72,8 +72,8 @@ bool SBPLCollisionSpace::checkCollision(
 /// associated collision model. The path is free of collisions if all
 /// intermediate states are free of collision.
 bool SBPLCollisionSpace::checkCollision(
-    const ModelCoords_t &coords0,
-    const ModelCoords_t &coords1,
+    const ModelCoords &coords0,
+    const ModelCoords &coords1,
     int steps,
     double &dist)
 {
@@ -108,7 +108,7 @@ bool SBPLCollisionSpace::checkCollision(
 ///
 /// The state is in contact with the environment if all contact spheres are in
 /// collision with the environment.
-bool SBPLCollisionSpace::checkContact(const ModelCoords_t &coords, double &dist)
+bool SBPLCollisionSpace::checkContact(const ModelCoords &coords, double &dist)
 {
     int x, y, z;
     double sum = 0, dist_temp = 0;
@@ -136,7 +136,7 @@ bool SBPLCollisionSpace::checkContact(const ModelCoords_t &coords, double &dist)
 /// \brief Return whether a link in the collision model is in contact with the
 ///     environment
 bool SBPLCollisionSpace::checkContact(
-    const ModelCoords_t &coords,
+    const ModelCoords &coords,
     const std::string &link_name,
     double &dist)
 {
@@ -171,8 +171,8 @@ bool SBPLCollisionSpace::checkContact(
 /// associated collision model. The path is in contact with the environment if
 /// all intermediate states are in contact with the environment.
 bool SBPLCollisionSpace::checkContact(
-    const ModelCoords_t &coords0,
-    const ModelCoords_t &coords1,
+    const ModelCoords &coords0,
+    const ModelCoords &coords1,
     int steps,
     double &dist)
 {
@@ -205,7 +205,7 @@ bool SBPLCollisionSpace::checkContact(
 /// The returned voxels are the grid coordinates of each occupied voxel.
 /// \return true if the collision model returned valid spheres; false otherwise
 bool SBPLCollisionSpace::getModelVoxelsInGrid(
-    const ModelCoords_t &coords,
+    const ModelCoords &coords,
     std::vector<Eigen::Vector3i> &voxels)
 {
     std::vector<Sphere> spheres;

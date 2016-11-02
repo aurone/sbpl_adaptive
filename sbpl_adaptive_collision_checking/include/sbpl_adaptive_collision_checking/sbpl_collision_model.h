@@ -66,9 +66,9 @@
 
 namespace adim {
 
-struct ModelCoords_t
+struct ModelCoords
 {
-    virtual ~ModelCoords_t() { }
+    virtual ~ModelCoords() { }
 };
 
 SBPL_CLASS_FORWARD(SBPLCollisionModel);
@@ -80,36 +80,36 @@ public:
 
     virtual ~SBPLCollisionModel() { }
 
-    virtual bool checkLimits(const ModelCoords_t &coords) const = 0;
+    virtual bool checkLimits(const ModelCoords &coords) const = 0;
 
     virtual bool getModelCollisionSpheres(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         std::vector<Sphere> &spheres) const = 0;
 
     virtual bool getModelContactSpheres(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         std::vector<Sphere> &spheres) const = 0;
 
     virtual bool getModelContactSpheres(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         const std::string &link_name,
         std::vector<Sphere> &spheres) const = 0;
 
     virtual bool getModelPathCollisionSpheres(
-        const ModelCoords_t &coords0,
-        const ModelCoords_t &coords1,
+        const ModelCoords &coords0,
+        const ModelCoords &coords1,
         int steps,
         std::vector<Sphere> &spheres) const = 0;
 
     virtual bool getModelPathContactSpheres(
-        const ModelCoords_t &coords0,
-        const ModelCoords_t &coords1,
+        const ModelCoords &coords0,
+        const ModelCoords &coords1,
         int steps,
         std::vector<Sphere> &spheres) const = 0;
 
     // get just spheres visualization
     virtual visualization_msgs::MarkerArray getModelBasicVisualization(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         std::string frame_id,
         std::string ns,
         std_msgs::ColorRGBA col,
@@ -124,7 +124,7 @@ public:
 
     // get more advanced mesh visualization when available
     virtual visualization_msgs::MarkerArray getModelVisualization(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         const std::string &frame_id,
         const std::string &ns,
         const std_msgs::ColorRGBA &col,

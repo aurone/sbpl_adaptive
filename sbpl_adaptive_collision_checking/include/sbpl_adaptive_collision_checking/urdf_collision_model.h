@@ -46,7 +46,7 @@
 
 namespace adim {
 
-struct URDFModelCoords : ModelCoords_t
+struct URDFModelCoords : ModelCoords
 {
     Eigen::Affine3d root;
     std::map<std::string, std::vector<double>> coordmap;
@@ -260,35 +260,35 @@ public:
 
     /// \name Required Public Functions from SBPLCollisionModel
     ///@{
-    bool checkLimits(const ModelCoords_t &coord) const override;
+    bool checkLimits(const ModelCoords &coord) const override;
 
     bool getModelCollisionSpheres(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         std::vector<Sphere> &spheres) const override;
 
     bool getModelContactSpheres(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         std::vector<Sphere> &spheres) const override;
 
     bool getModelContactSpheres(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         const std::string &link_name,
         std::vector<Sphere> &spheres) const override;
 
     bool getModelPathCollisionSpheres(
-        const ModelCoords_t &coords0,
-        const ModelCoords_t &coords1,
+        const ModelCoords &coords0,
+        const ModelCoords &coords1,
         int steps,
         std::vector<Sphere> &spheres) const override;
 
     bool getModelPathContactSpheres(
-        const ModelCoords_t &coords0,
-        const ModelCoords_t &coords1,
+        const ModelCoords &coords0,
+        const ModelCoords &coords1,
         int steps,
         std::vector<Sphere> &spheres) const override;
 
     visualization_msgs::MarkerArray getModelVisualization(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         const std::string &frame_id,
         const std::string &ns,
         const std_msgs::ColorRGBA &col,
@@ -607,7 +607,7 @@ void URDFCollisionModel::addIgnoreSelfCollisionLinkPairs(
 
 inline
 bool URDFCollisionModel::getModelCollisionSpheres(
-    const ModelCoords_t &coords,
+    const ModelCoords &coords,
     std::vector<Sphere> &spheres) const
 {
     const URDFModelCoords &c = dynamic_cast<const URDFModelCoords&>(coords);
@@ -616,7 +616,7 @@ bool URDFCollisionModel::getModelCollisionSpheres(
 
 inline
 bool URDFCollisionModel::getModelContactSpheres(
-    const ModelCoords_t &coords,
+    const ModelCoords &coords,
     std::vector<Sphere> &spheres) const
 {
     const URDFModelCoords &c = dynamic_cast<const URDFModelCoords&>(coords);
@@ -625,7 +625,7 @@ bool URDFCollisionModel::getModelContactSpheres(
 
 inline
 bool URDFCollisionModel::getModelContactSpheres(
-    const ModelCoords_t &coords,
+    const ModelCoords &coords,
     const std::string &link_name,
     std::vector<Sphere> &spheres) const
 {
@@ -635,8 +635,8 @@ bool URDFCollisionModel::getModelContactSpheres(
 
 inline
 bool URDFCollisionModel::getModelPathCollisionSpheres(
-    const ModelCoords_t &coords0,
-    const ModelCoords_t &coords1,
+    const ModelCoords &coords0,
+    const ModelCoords &coords1,
     int steps,
     std::vector<Sphere> &spheres) const
 {
@@ -647,8 +647,8 @@ bool URDFCollisionModel::getModelPathCollisionSpheres(
 
 inline
 bool URDFCollisionModel::getModelPathContactSpheres(
-    const ModelCoords_t &coords0,
-    const ModelCoords_t &coords1,
+    const ModelCoords &coords0,
+    const ModelCoords &coords1,
     int steps,
     std::vector<Sphere> &spheres) const
 {
@@ -672,7 +672,7 @@ URDFCollisionModel::getSRDF() const
 }
 
 inline
-bool URDFCollisionModel::checkLimits(const ModelCoords_t &coord) const
+bool URDFCollisionModel::checkLimits(const ModelCoords &coord) const
 {
     const URDFModelCoords &c = dynamic_cast<const URDFModelCoords&>(coord);
     return checkLimits(c);
@@ -680,7 +680,7 @@ bool URDFCollisionModel::checkLimits(const ModelCoords_t &coord) const
 
 inline
 visualization_msgs::MarkerArray URDFCollisionModel::getModelVisualization(
-    const ModelCoords_t &coords,
+    const ModelCoords &coords,
     const std::string &frame_id,
     const std::string &ns,
     const std_msgs::ColorRGBA &col,
