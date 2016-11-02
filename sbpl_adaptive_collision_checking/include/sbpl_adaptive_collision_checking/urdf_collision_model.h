@@ -610,7 +610,7 @@ bool URDFCollisionModel::getModelCollisionSpheres(
     const ModelCoords &coords,
     std::vector<Sphere> &spheres) const
 {
-    const URDFModelCoords &c = dynamic_cast<const URDFModelCoords&>(coords);
+    const URDFModelCoords &c = static_cast<const URDFModelCoords&>(coords);
     return getModelCollisionSpheres(c, spheres);
 }
 
@@ -619,7 +619,7 @@ bool URDFCollisionModel::getModelContactSpheres(
     const ModelCoords &coords,
     std::vector<Sphere> &spheres) const
 {
-    const URDFModelCoords &c = dynamic_cast<const URDFModelCoords&>(coords);
+    const URDFModelCoords &c = static_cast<const URDFModelCoords&>(coords);
     return getModelContactSpheres(c, spheres);
 }
 
@@ -629,7 +629,7 @@ bool URDFCollisionModel::getModelContactSpheres(
     const std::string &link_name,
     std::vector<Sphere> &spheres) const
 {
-    const URDFModelCoords &c = dynamic_cast<const URDFModelCoords&>(coords);
+    const URDFModelCoords &c = static_cast<const URDFModelCoords&>(coords);
     return getLinkContactSpheres(c, link_name, spheres);
 }
 
@@ -640,8 +640,8 @@ bool URDFCollisionModel::getModelPathCollisionSpheres(
     int steps,
     std::vector<Sphere> &spheres) const
 {
-    const URDFModelCoords &c0 = dynamic_cast<const URDFModelCoords&>(coords0);
-    const URDFModelCoords &c1 = dynamic_cast<const URDFModelCoords&>(coords1);
+    const URDFModelCoords &c0 = static_cast<const URDFModelCoords&>(coords0);
+    const URDFModelCoords &c1 = static_cast<const URDFModelCoords&>(coords1);
     return getModelPathCollisionSpheres(c0, c1, steps, spheres);
 }
 
@@ -652,8 +652,8 @@ bool URDFCollisionModel::getModelPathContactSpheres(
     int steps,
     std::vector<Sphere> &spheres) const
 {
-    const URDFModelCoords &c0 = dynamic_cast<const URDFModelCoords&>(coords0);
-    const URDFModelCoords &c1 = dynamic_cast<const URDFModelCoords&>(coords1);
+    const URDFModelCoords &c0 = static_cast<const URDFModelCoords&>(coords0);
+    const URDFModelCoords &c1 = static_cast<const URDFModelCoords&>(coords1);
     return getModelPathContactSpheres(c0, c1, steps, spheres);
 }
 
@@ -674,7 +674,7 @@ URDFCollisionModel::getSRDF() const
 inline
 bool URDFCollisionModel::checkLimits(const ModelCoords &coord) const
 {
-    const URDFModelCoords &c = dynamic_cast<const URDFModelCoords&>(coord);
+    const URDFModelCoords &c = static_cast<const URDFModelCoords&>(coord);
     return checkLimits(c);
 }
 
@@ -686,7 +686,7 @@ visualization_msgs::MarkerArray URDFCollisionModel::getModelVisualization(
     const std_msgs::ColorRGBA &col,
     int &idx) const
 {
-    const URDFModelCoords &c = dynamic_cast<const URDFModelCoords&>(coords);
+    const URDFModelCoords &c = static_cast<const URDFModelCoords&>(coords);
     return getModelVisualization(c, frame_id, ns, col, idx);
 }
 

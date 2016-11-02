@@ -66,10 +66,7 @@
 
 namespace adim {
 
-struct ModelCoords
-{
-    virtual ~ModelCoords() { }
-};
+struct ModelCoords { };
 
 SBPL_CLASS_FORWARD(SBPLCollisionModel);
 
