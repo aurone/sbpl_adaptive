@@ -2,14 +2,22 @@
 
 #include <pviz/simpleviz.h>
 
-SimpleViz::SimpleViz() : ph_("~"), nh_()
+SimpleViz::SimpleViz() :
+    nh_(),
+    ph_("~"),
+    marker_array_publisher_(),
+    marker_publisher_(),
+    marker_ns_id_map_(),
+    marker_array_(),
+    marker_()
 {
-    srand (time(NULL));
+    srand(time(NULL));
+    marker_array_publisher_ = nh_.advertise<visualization_msgs::MarkerArray>("visualization_markers", 100);
+    marker_publisher_ = nh_.advertise<visualization_msgs::Marker>("visualization_marker", 100);
 }
 
 SimpleViz::~SimpleViz()
 {
-
 }
 
 void SimpleViz::visualizeObstacles(const std::vector<std::vector<double> > &obstacles, std::string reference_frame_)

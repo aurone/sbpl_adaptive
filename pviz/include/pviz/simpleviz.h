@@ -23,6 +23,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Vector3.h>
 #include <ros/ros.h>
+#include <smpl/forward.h>
 #include <smpl/debug/visualize.h>
 #include <tf/tf.h>
 #include <visualization_msgs/Marker.h>
@@ -30,6 +31,7 @@
 
 void HSVtoRGB(double *r, double *g, double *b, double h, double s, double v );
 
+SBPL_CLASS_FORWARD(SimpleViz)
 class SimpleViz
 {
 public:
