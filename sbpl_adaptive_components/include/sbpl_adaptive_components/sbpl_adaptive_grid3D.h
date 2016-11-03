@@ -130,6 +130,9 @@ public:
 
 private:
 
+    std::vector<int> grid_sizes_;
+    std::vector<std::vector<int>> spheres_;
+
     // used to keep track of state type (LD, NearLD, HD)
     std::vector<std::vector<std::vector<AdaptiveGridCell_t>>> grid_;
 

@@ -26,7 +26,7 @@ class AdaptiveGrid
 {
 public:
 
-    AdaptiveGrid(int ldID) { ldID_ = ldID; trackMode_ = false; }
+    AdaptiveGrid(int ldID) : ldID_(ldID), trackMode_(false) { }
 
     virtual ~AdaptiveGrid() { }
 
@@ -69,10 +69,6 @@ protected:
     bool trackMode_;
 
     int ldID_;
-
-    std::vector<int> grid_sizes_;
-
-    std::vector<std::vector<int>> spheres_;
 
     virtual void resetTrackingGrid() = 0;
 

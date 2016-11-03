@@ -13,6 +13,46 @@
 
 namespace adim {
 
+AdaptiveGrid3D::AdaptiveGrid3D(
+    const sbpl::OccupancyGridPtr& grid,
+    int ldID)
+:
+    ph_("~"),
+    AdaptiveGrid(ldID)
+{
+    oc_grid_ = grid;
+    grid_sizes_.resize(3);
+    oc_grid_->getGridSize(grid_sizes_[0], grid_sizes_[1], grid_sizes_[2]);
+    grid_.resize(grid_sizes_[0]);
+    for (size_t i = 0; i < (size_t)grid_sizes_[0]; i++) {
+        grid_[i].resize(grid_sizes_[1]);
+        for (size_t j = 0; j < (size_t)grid_sizes_[1]; j++) {
+            grid_[i][j].resize(grid_sizes_[2]);
+            for (size_t k = 0; k < (size_t)grid_sizes_[2]; k++) {
+                grid_[i][j][k].costToGoal = INFINITECOST;
+                grid_[i][j][k].pDimID = ldID_;
+                grid_[i][j][k].pDefaultDimID = ldID_;
+                grid_[i][j][k].tDimID = grid_[i][j][k].pDimID;
+            }
+        }
+    }
+    frame_ = grid->getReferenceFrame();
+    SBPL_INFO("[ad_grid] Allocated grid of size %d x %d x %d in frame %s", grid_sizes_[0], grid_sizes_[1], grid_sizes_[2], frame_.c_str());
+    trackMode_ = false;
+    marker_array_publisher_ = nh_.advertise<visualization_msgs::MarkerArray>(
+            "visualization_marker_array", 500, true);
+    marker_publisher_ = nh_.advertise<visualization_msgs::Marker>(
+            "visualization_marker", 500, true);
+    max_dimID_ = 0;
+    max_costToGoal_ = 0;
+}
+
+AdaptiveGrid3D::~AdaptiveGrid3D()
+{
+    grid_.clear();
+    spheres_.clear();
+}
+
 void AdaptiveGrid3D::reset()
 {
     clearAllSpheres();
@@ -146,46 +186,6 @@ void AdaptiveGrid3D::init()
             }
         }
     }
-}
-
-AdaptiveGrid3D::AdaptiveGrid3D(
-    const sbpl::OccupancyGridPtr& grid,
-    int ldID)
-:
-    ph_("~"),
-    AdaptiveGrid(ldID)
-{
-    oc_grid_ = grid;
-    grid_sizes_.resize(3);
-    oc_grid_->getGridSize(grid_sizes_[0], grid_sizes_[1], grid_sizes_[2]);
-    grid_.resize(grid_sizes_[0]);
-    for (size_t i = 0; i < (size_t)grid_sizes_[0]; i++) {
-        grid_[i].resize(grid_sizes_[1]);
-        for (size_t j = 0; j < (size_t)grid_sizes_[1]; j++) {
-            grid_[i][j].resize(grid_sizes_[2]);
-            for (size_t k = 0; k < (size_t)grid_sizes_[2]; k++) {
-                grid_[i][j][k].costToGoal = INFINITECOST;
-                grid_[i][j][k].pDimID = ldID_;
-                grid_[i][j][k].pDefaultDimID = ldID_;
-                grid_[i][j][k].tDimID = grid_[i][j][k].pDimID;
-            }
-        }
-    }
-    frame_ = grid->getReferenceFrame();
-    SBPL_INFO("[ad_grid] Allocated grid of size %d x %d x %d in frame %s", grid_sizes_[0], grid_sizes_[1], grid_sizes_[2], frame_.c_str());
-    trackMode_ = false;
-    marker_array_publisher_ = nh_.advertise<visualization_msgs::MarkerArray>(
-            "visualization_marker_array", 500, true);
-    marker_publisher_ = nh_.advertise<visualization_msgs::Marker>(
-            "visualization_marker", 500, true);
-    max_dimID_ = 0;
-    max_costToGoal_ = 0;
-}
-
-AdaptiveGrid3D::~AdaptiveGrid3D()
-{
-    grid_.clear();
-    spheres_.clear();
 }
 
 void AdaptiveGrid3D::clearAllSpheres()
