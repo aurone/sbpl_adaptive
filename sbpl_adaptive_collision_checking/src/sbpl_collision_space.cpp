@@ -292,8 +292,10 @@ double SBPLCollisionSpace::isValidLineSegment(
     const int radius)
 {
     leatherman::bresenham3d_param_t params;
-    int nXYZ[3], retvalue = 1;
-    double cell_val, min_dist = 100.0;
+    int nXYZ[3];
+    int retvalue = 1;
+    double cell_val;
+    double min_dist = 100.0;
     leatherman::CELL3V tempcell;
     std::vector<leatherman::CELL3V>* pTestedCells = NULL;
 
