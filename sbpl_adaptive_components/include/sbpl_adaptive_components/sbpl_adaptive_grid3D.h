@@ -100,8 +100,6 @@ public:
 
     void reset();
 
-    void init();
-
     void clearAllSpheres();
 
     void setPlanningMode();

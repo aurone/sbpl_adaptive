@@ -36,8 +36,6 @@ public:
 
     virtual void reset() = 0;
 
-    virtual void init() = 0;
-
     virtual void clearAllSpheres() = 0;
 
     virtual void setPlanningMode() = 0;

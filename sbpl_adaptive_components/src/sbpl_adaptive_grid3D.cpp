@@ -45,6 +45,19 @@ AdaptiveGrid3D::AdaptiveGrid3D(
             "visualization_marker", 500, true);
     max_dimID_ = 0;
     max_costToGoal_ = 0;
+
+    max_costToGoal_ = 0;
+    for (size_t i = 0; i < (size_t)grid_sizes_[0]; i++) {
+        grid_[i].resize(grid_sizes_[1]);
+        for (size_t j = 0; j < (size_t)grid_sizes_[1]; j++) {
+            grid_[i][j].resize(grid_sizes_[2]);
+            for (size_t k = 0; k < (size_t)grid_sizes_[2]; k++) {
+                grid_[i][j][k].costToGoal = INFINITECOST;
+                grid_[i][j][k].pDimID = ldID_;
+                grid_[i][j][k].tDimID = grid_[i][j][k].pDimID;
+            }
+        }
+    }
 }
 
 AdaptiveGrid3D::~AdaptiveGrid3D()
@@ -170,22 +183,6 @@ bool AdaptiveGrid3D::setCellNearDim(
         grid_[x][y][z].tNearDimID = dimID;
     }
     return changed;
-}
-
-void AdaptiveGrid3D::init()
-{
-    max_costToGoal_ = 0;
-    for (size_t i = 0; i < (size_t)grid_sizes_[0]; i++) {
-        grid_[i].resize(grid_sizes_[1]);
-        for (size_t j = 0; j < (size_t)grid_sizes_[1]; j++) {
-            grid_[i][j].resize(grid_sizes_[2]);
-            for (size_t k = 0; k < (size_t)grid_sizes_[2]; k++) {
-                grid_[i][j][k].costToGoal = INFINITECOST;
-                grid_[i][j][k].pDimID = ldID_;
-                grid_[i][j][k].tDimID = grid_[i][j][k].pDimID;
-            }
-        }
-    }
 }
 
 void AdaptiveGrid3D::clearAllSpheres()
