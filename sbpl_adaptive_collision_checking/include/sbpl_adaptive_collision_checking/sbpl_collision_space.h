@@ -22,7 +22,6 @@
 
 // project includes
 #include <sbpl_adaptive_collision_checking/sbpl_collision_model.h>
-#include <sbpl_adaptive_collision_checking/bresenham.h>
 
 namespace adim {
 
@@ -33,7 +32,7 @@ class SBPLCollisionSpace
 public:
 
     SBPLCollisionSpace(
-        std::shared_ptr<SBPLCollisionModel> model,
+        SBPLCollisionModelPtr model,
         const sbpl::OccupancyGridPtr& grid);
 
     ~SBPLCollisionSpace();
@@ -78,13 +77,13 @@ public:
         const ModelCoords &coords,
         std::vector<Eigen::Vector3i> &voxels);
 
-    std::shared_ptr<const SBPLCollisionModel> getModelPtr();
+    SBPLCollisionModelConstPtr getModelPtr() const;
 
     bool isValidPoint(double x, double y, double z) const;
 
 private:
 
-    std::shared_ptr<SBPLCollisionModel> model_;
+    SBPLCollisionModelPtr model_;
     sbpl::OccupancyGridPtr grid_;
 
     double padding_;
@@ -125,9 +124,9 @@ void SBPLCollisionSpace::getSize(int &dim_x, int &dim_y, int &dim_z)
 }
 
 inline
-std::shared_ptr<const SBPLCollisionModel> SBPLCollisionSpace::getModelPtr()
+SBPLCollisionModelConstPtr SBPLCollisionSpace::getModelPtr() const
 {
-    std::shared_ptr<const SBPLCollisionModel> ptr = model_;
+    SBPLCollisionModelConstPtr ptr = model_;
     return ptr;
 }
 
