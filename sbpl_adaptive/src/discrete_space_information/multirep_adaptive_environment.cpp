@@ -69,17 +69,17 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
 
     // projecting directly from footprint to stairs
     // (Karthik) remove hardcoded dim numbers in if check
-    // if(fromID == 0 and toID == 1)
-    // {
-    //     bool bRes = representations_[fromID]->ProjectFootprintToStairs(state_data, proj_stateIDs, adPathIdx);
+    if(fromID == 0 and toID == 1)
+    {
+        bool bRes = representations_[fromID]->ProjectFootprintToStairs(state_data, proj_stateIDs, adPathIdx);
 
-    //     if(!bRes)
-    //     {
-    //         SBPL_ERROR("Failed to project from [%s] to [%s]", representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
-    //     }
+        if(!bRes)
+        {
+            SBPL_ERROR("Failed to project from [%s] to [%s]", representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
+        }
 
-    //     return bRes;
-    // }
+        return bRes;
+    }
 
     // project state to HD and project the hd-projections to a different LD
     std::vector<int> hd_proj_stateIDs;

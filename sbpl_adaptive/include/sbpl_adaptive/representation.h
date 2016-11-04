@@ -84,6 +84,13 @@ public:
         std::vector<int> &hd_projStateIDs,
         int adPathIdx = 0) = 0;
 
+    virtual bool ProjectFootprintToStairs(
+        const void *ld_state_data,
+        std::vector<int> &hd_projStateIDs,
+        int adPathIdx = 0){
+        return false;
+    }
+
     virtual bool ProjectFromFullD(
         const void *hd_state_data,
         std::vector<int> &ld_projStateIDs,
