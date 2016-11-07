@@ -10,7 +10,7 @@
 
 namespace adim {
 
-struct AdaptiveGridCell_t
+struct AdaptiveGridCell
 {
     int pDefaultDimID;
     int pDimID;
@@ -52,7 +52,7 @@ public:
 
     virtual bool isInBounds(const std::vector<int> &coord) const = 0;
 
-    virtual AdaptiveGridCell_t getCell(const std::vector<int> &coord) const = 0;
+    virtual AdaptiveGridCell getCell(const std::vector<int> &coord) const = 0;
 
     virtual int getCellPlanningDim(const std::vector<int> &coord) const = 0;
 

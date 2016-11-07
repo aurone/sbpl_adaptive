@@ -60,16 +60,16 @@ void ExpansionGrid3D::setExpansionStep(const adim::ModelCoords &model_coords, un
     }
 }
 
-unsigned int ExpansionGrid3D::getEarliestExpansionStep(std::vector<Cell3D_t> voxels){
+unsigned int ExpansionGrid3D::getEarliestExpansionStep(std::vector<Cell3D> voxels){
     unsigned int min_ = UINT_MAX;
-    for(Cell3D_t voxel : voxels){
+    for(Cell3D voxel : voxels){
         if(!inGrid(voxel.x, voxel.y, voxel.z)) continue;
         min_ = std::min(expands_grid_[voxel.x][voxel.y][voxel.z], min_);
     }
     return min_;
 }
 
-visualization_msgs::MarkerArray ExpansionGrid3D::getVoxelVisualization(const adim::ModelCoords &model_coords, std::string ns, Color_t color){
+visualization_msgs::MarkerArray ExpansionGrid3D::getVoxelVisualization(const adim::ModelCoords &model_coords, std::string ns, Color color){
     visualization_msgs::MarkerArray markers;
 
     visualization_msgs::Marker marker;

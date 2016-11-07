@@ -16,21 +16,21 @@
 
 namespace adim {
 
-struct Point3D_t
+struct Point3D
 {
    double x;
    double y;
    double z;
 };
 
-struct Cell3D_t
+struct Cell3D
 {
     int x;
     int y;
     int z;
 };
 
-struct Sphere3D_t
+struct Sphere3D
 {
     double x;
     double y;
@@ -38,7 +38,7 @@ struct Sphere3D_t
     double rad;
 };
 
-struct CellSphere3D_t
+struct CellSphere3D
 {
     int x;
     int y;
@@ -46,28 +46,28 @@ struct CellSphere3D_t
     int rad;
 };
 
-struct Color_t
+struct Color
 {
     double r;
     double g;
     double b;
     double a;
 
-    Color_t(double r_, double g_, double b_) : r(r_), g(g_), b(b_), a(1) { }
-    Color_t(double r_, double g_, double b_, double a_) :
+    Color(double r_, double g_, double b_) : r(r_), g(g_), b(b_), a(1) { }
+    Color(double r_, double g_, double b_, double a_) :
         r(r_), g(g_), b(b_), a(a_) { }
 };
 
 inline
-Color_t colorFromHSV(double h, double s, double v)
+Color colorFromHSV(double h, double s, double v)
 {
     double r, g, b;
     leatherman::HSVtoRGB(&r, &g, &b, h, s, v);
-    return Color_t(r, g, b);
+    return Color(r, g, b);
 }
 
 inline
-std_msgs::ColorRGBA toColorMSG(Color_t col)
+std_msgs::ColorRGBA toColorMSG(Color col)
 {
     std_msgs::ColorRGBA c;
     c.r = col.r;
@@ -90,13 +90,13 @@ std_msgs::ColorRGBA fromHSV(double h, double s, double v)
     return col;
 }
 
-struct VizLabel_t
+struct VizLabel
 {
     std::string label;
     double fontsize;
     tf::Vector3 offset;
 
-    VizLabel_t(const std::string& l, double s, const tf::Vector3& off) :
+    VizLabel(const std::string& l, double s, const tf::Vector3& off) :
         label(l), fontsize(s), offset(off) { }
 };
 

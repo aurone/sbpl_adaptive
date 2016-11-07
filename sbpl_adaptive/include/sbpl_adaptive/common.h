@@ -37,23 +37,23 @@ struct StopWatch_t
     void print(const std::string &prefix);
 };
 
-struct AdaptiveSphere2D_t
+struct AdaptiveSphere2D
 {
     int dimID;
     int costToGoal;
     double x, y, rad, near_rad;
 };
 
-struct AdaptiveSphere3D_t
+struct AdaptiveSphere3D
 {
     int dimID;
     int costToGoal;
     double x, y, z, rad, near_rad;
 
-    static void print(const AdaptiveSphere3D_t &sphere);
+    static void print(const AdaptiveSphere3D &sphere);
 };
 
-class AbstractGoal_t
+class AbstractGoal
 {
 };
 
@@ -68,16 +68,16 @@ struct Position3D
     static double dist(const Position3D &ee1, const Position3D &ee2);
 };
 
-struct Orientation3D_t
+struct Orientation3D
 {
     double x, y, z, w;
 
-    Orientation3D_t() : x(0), y(0), z(0), w(1) { }
-    Orientation3D_t(double x_, double y_, double z_, double w_) :
+    Orientation3D() : x(0), y(0), z(0), w(1) { }
+    Orientation3D(double x_, double y_, double z_, double w_) :
         x(x_), y(y_), z(z_), w(w_) { }
 };
 
-class AbstractGoal3D : public AbstractGoal_t
+class AbstractGoal3D : public AbstractGoal
 {
 public:
 
@@ -97,32 +97,32 @@ protected:
     double pos_tol;
 };
 
-class AbstractGoal6D_t : public AbstractGoal3D
+class AbstractGoal6D : public AbstractGoal3D
 {
 public:
 
-    AbstractGoal6D_t(
+    AbstractGoal6D(
         Position3D p,
         double p_tol,
-        Orientation3D_t o,
+        Orientation3D o,
         double o_tol)
     :
         AbstractGoal3D(p, p_tol), ori(o), ori_tol(o_tol)
     { }
 
-    virtual ~AbstractGoal6D_t() { };
+    virtual ~AbstractGoal6D() { };
 
-    virtual bool isSatisfied(Orientation3D_t ori) const  = 0;
+    virtual bool isSatisfied(Orientation3D ori) const  = 0;
 
-    virtual bool isSatisfied(Position3D pos, Orientation3D_t ori) const = 0;
+    virtual bool isSatisfied(Position3D pos, Orientation3D ori) const = 0;
 
-    const Orientation3D_t &getOrientation() const { return ori; }
+    const Orientation3D &getOrientation() const { return ori; }
 
     double getOrientationTolerance() const { return ori_tol; }
 
 protected:
 
-    Orientation3D_t ori;
+    Orientation3D ori;
     double ori_tol;
 };
 

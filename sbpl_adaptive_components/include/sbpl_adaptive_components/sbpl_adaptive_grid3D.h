@@ -40,7 +40,7 @@ public:
         std::vector<adim::Position3D> &modCells);
 
     void setTrackingMode(
-        const std::vector<adim::AdaptiveSphere3D_t> &tunnel,
+        const std::vector<adim::AdaptiveSphere3D> &tunnel,
         std::vector<adim::Position3D> &modCells);
 
     void addPlanningSphere(
@@ -51,10 +51,10 @@ public:
         std::vector<adim::Position3D> &modCells);
 
     void addPlanningSphere(
-        adim::AdaptiveSphere3D_t sphere,
+        adim::AdaptiveSphere3D sphere,
         std::vector<adim::Position3D> &modCells);
 
-    AdaptiveGridCell_t getCell(double wx, double wy, double wz) const;
+    AdaptiveGridCell getCell(double wx, double wy, double wz) const;
 
     int getCellPlanningDim(double wx, double wy, double wz) const;
 
@@ -112,7 +112,7 @@ public:
 
     bool isInBounds(const std::vector<int> &coord) const;
 
-    AdaptiveGridCell_t getCell(const std::vector<int> &gcoord) const;
+    AdaptiveGridCell getCell(const std::vector<int> &gcoord) const;
 
     int getCellPlanningDim(const std::vector<int> &gcoord) const;
 
@@ -128,7 +128,7 @@ private:
     std::vector<std::vector<int>> spheres_;
 
     // used to keep track of state type (LD, NearLD, HD)
-    std::vector<std::vector<std::vector<AdaptiveGridCell_t>>> grid_;
+    std::vector<std::vector<std::vector<AdaptiveGridCell>>> grid_;
 
     int max_dimID_;
     unsigned int max_costToGoal_;
@@ -154,7 +154,7 @@ private:
         std::vector<adim::Position3D> &modCells);
 
     void addTrackingSphere(
-        adim::AdaptiveSphere3D_t sphere,
+        adim::AdaptiveSphere3D sphere,
         std::vector<adim::Position3D> &modCells);
 
     void getOverlappingSpheres(
@@ -208,7 +208,7 @@ void AdaptiveGrid3D::addPlanningSphere(
 
 inline
 void AdaptiveGrid3D::addPlanningSphere(
-    adim::AdaptiveSphere3D_t sphere,
+    adim::AdaptiveSphere3D sphere,
     std::vector<adim::Position3D> &modCells)
 {
     size_t gx, gy, gz;
@@ -227,7 +227,7 @@ void AdaptiveGrid3D::getDimensions(int &sizeX, int &sizeY, int &sizeZ) const
 }
 
 inline
-AdaptiveGridCell_t AdaptiveGrid3D::getCell(double wx, double wy, double wz) const
+AdaptiveGridCell AdaptiveGrid3D::getCell(double wx, double wy, double wz) const
 {
     size_t gcoordx, gcoordy, gcoordz;
     world2grid(wx,wy,wz,gcoordx,gcoordy,gcoordz);
@@ -298,7 +298,7 @@ void AdaptiveGrid3D::addTrackingSphere(
 
 inline
 void AdaptiveGrid3D::addTrackingSphere(
-    adim::AdaptiveSphere3D_t sphere,
+    adim::AdaptiveSphere3D sphere,
     std::vector<adim::Position3D> &modCells)
 {
     size_t gx, gy, gz;

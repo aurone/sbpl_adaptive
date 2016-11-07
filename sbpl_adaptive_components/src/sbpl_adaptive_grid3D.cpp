@@ -201,7 +201,7 @@ void AdaptiveGrid3D::setPlanningMode()
 }
 
 void AdaptiveGrid3D::setTrackingMode(
-    const std::vector<adim::AdaptiveSphere3D_t> &tunnel,
+    const std::vector<adim::AdaptiveSphere3D> &tunnel,
     std::vector<adim::Position3D> &modCells)
 {
     trackMode_ = true;
@@ -216,7 +216,6 @@ void AdaptiveGrid3D::setTrackingMode(
     std::vector<adim::Position3D> &modCells)
 {
     trackMode_ = true;
-    int min_val = -1;
     for (size_t i = 0; i < tunnel.size(); i++) {
         if (tunnel[i].size() < 5) {
             continue;
@@ -238,7 +237,7 @@ unsigned int AdaptiveGrid3D::getCellCostToGoal(
     return grid_[coord[0]][coord[1]][coord[2]].costToGoal;
 }
 
-AdaptiveGridCell_t AdaptiveGrid3D::getCell(
+AdaptiveGridCell AdaptiveGrid3D::getCell(
     const std::vector<int> &coord) const
 {
     if (!isInBounds( { coord[0], coord[1], coord[2] })) {

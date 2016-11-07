@@ -24,7 +24,7 @@ public:
 
     virtual int GetTrackingCostToGoalForPosition(Position3D p) = 0;
 
-    virtual void addSphere(const AdaptiveSphere3D_t &sphere) = 0;
+    virtual void addSphere(const AdaptiveSphere3D &sphere) = 0;
 };
 
 } // namespace adim

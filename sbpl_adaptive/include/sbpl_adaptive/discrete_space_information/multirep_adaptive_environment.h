@@ -24,7 +24,7 @@ struct EnvStateData
         startHashEntry = NULL;
     }
 
-    AbstractGoal_t *goaldata;
+    AbstractGoal *goaldata;
 
     // start and goal entries
     AdaptiveHashEntry *goalHashEntry;
@@ -92,7 +92,7 @@ public:
     int SetGoalCoords(int dimID, const void *goal_representation_specific_discrete_data);
     int SetGoalConfig(int dimID, const void *goal_representation_specific_continuous_data);
 
-    int SetAbstractGoal(AbstractGoal_t *abstract_goal);
+    int SetAbstractGoal(AbstractGoal *abstract_goal);
 
     void updateBestTracked(int StateID, int costToGoal);
 

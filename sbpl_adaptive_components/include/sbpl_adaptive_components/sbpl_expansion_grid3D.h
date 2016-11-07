@@ -21,7 +21,7 @@ private:
 	std::shared_ptr<adim::SBPLCollisionSpace> cspace_;
 
 protected:
-	Cell3D_t size_;
+	Cell3D size_;
 	std::vector<std::vector<std::vector<unsigned int>>> expands_grid_;
 
 public:
@@ -42,9 +42,9 @@ public:
     void setExpansionStep(const adim::ModelCoords &model_coords, unsigned int exp_step);
 
     /** @brief returns the earliest expansion step for a given set of voxels -- pass in all modified cells in the environment to get the earliest expansion step the changes affect */
-    unsigned int getEarliestExpansionStep(std::vector<Cell3D_t> voxels);
+    unsigned int getEarliestExpansionStep(std::vector<Cell3D> voxels);
 
-    visualization_msgs::MarkerArray getVoxelVisualization(const adim::ModelCoords &model_coords, std::string ns, Color_t color);
+    visualization_msgs::MarkerArray getVoxelVisualization(const adim::ModelCoords &model_coords, std::string ns, Color color);
 
 };
 
