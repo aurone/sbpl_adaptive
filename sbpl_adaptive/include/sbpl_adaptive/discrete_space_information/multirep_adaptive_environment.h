@@ -59,6 +59,14 @@ public:
 
     const void *getEnvDataPtr() { return env_data_.get(); }
 
+    template <class T> T* envDataAs() {
+        return static_cast<T*>(env_data_.get());
+    }
+
+    template <class T> const T* envDataAs() const {
+        return static_cast<const T*>(env_data_.get());
+    }
+
     bool RegisterFullDRepresentation(
         AdaptiveStateRepresentationPtr fullD_representation);
 
