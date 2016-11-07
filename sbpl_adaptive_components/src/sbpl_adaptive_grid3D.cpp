@@ -17,7 +17,6 @@ AdaptiveGrid3D::AdaptiveGrid3D(
     const sbpl::OccupancyGridPtr& grid,
     int ldID)
 :
-    ph_("~"),
     AdaptiveGrid(ldID)
 {
     oc_grid_ = grid;
@@ -36,13 +35,8 @@ AdaptiveGrid3D::AdaptiveGrid3D(
             }
         }
     }
-    frame_ = grid->getReferenceFrame();
-    SBPL_INFO("[ad_grid] Allocated grid of size %d x %d x %d in frame %s", grid_sizes_[0], grid_sizes_[1], grid_sizes_[2], frame_.c_str());
+    SBPL_INFO("[ad_grid] Allocated grid of size %d x %d x %d in frame %s", grid_sizes_[0], grid_sizes_[1], grid_sizes_[2], oc_grid_->getReferenceFrame().c_str());
     trackMode_ = false;
-    marker_array_publisher_ = nh_.advertise<visualization_msgs::MarkerArray>(
-            "visualization_marker_array", 500, true);
-    marker_publisher_ = nh_.advertise<visualization_msgs::Marker>(
-            "visualization_marker", 500, true);
     max_dimID_ = 0;
     max_costToGoal_ = 0;
 
@@ -298,11 +292,6 @@ int AdaptiveGrid3D::getCellDim(
     return bTrackMode ? grid_[x][y][z].tDimID : grid_[x][y][z].pDimID;
 }
 
-void AdaptiveGrid3D::setVisualizationReferenceFrame(std::string frm)
-{
-    frame_ = frm;
-}
-
 void AdaptiveGrid3D::getOverlappingSpheres(
     size_t x,
     size_t y,
@@ -422,7 +411,7 @@ visualization_msgs::Marker AdaptiveGrid3D::getAdaptiveGridVisualization(
     visualization_msgs::Marker marker;
     double m_scale = (scale <= 0) ? oc_grid_->getResolution() : scale;
     marker.header.stamp = ros::Time::now();
-    marker.header.frame_id = frame_;
+    marker.header.frame_id = oc_grid_->getReferenceFrame();
     marker.ns = ns_prefix + "_AdaptiveGrid3D";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::CUBE_LIST;
@@ -503,7 +492,7 @@ visualization_msgs::Marker AdaptiveGrid3D::getCostToGoalGridVisualization(
     visualization_msgs::Marker marker;
     double m_scale = (scale <= 0) ? oc_grid_->getResolution() : scale;
     marker.header.stamp = ros::Time::now();
-    marker.header.frame_id = frame_;
+    marker.header.frame_id = oc_grid_->getReferenceFrame();
     marker.ns = ns_prefix + "_AdaptiveGrid3D_indeces";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::CUBE_LIST;

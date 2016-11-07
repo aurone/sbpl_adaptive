@@ -5,8 +5,8 @@
  *      Author: kalin
  */
 
-#ifndef sbpl_adim_multirep_adaptive_environment_h
-#define sbpl_adim_multirep_adaptive_environment_h
+#ifndef SBPL_ADAPTIVE_MULTIREP_ADAPTIVE_ENVIRONMENT_H
+#define SBPL_ADAPTIVE_MULTIREP_ADAPTIVE_ENVIRONMENT_H
 
 #include <sbpl_adaptive/headers.h>
 

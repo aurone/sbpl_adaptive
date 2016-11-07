@@ -64,8 +64,6 @@ public:
 
     int getCellDim(bool bTrackMode, size_t x, size_t y, size_t z) const;
 
-    void setVisualizationReferenceFrame(std::string frm);
-
     void getDimensions(int &sizeX, int &sizeY, int &sizeZ) const;
 
     double getResolution() const { return oc_grid_->getResolution(); }
@@ -92,8 +90,6 @@ public:
         std::string ns_prefix,
         int throttle = 1,
         double scale = 1);
-
-    void visualize(std::string ns_prefix);
 
     /// \name Required Public Functions From AdaptiveGrid
     ///@{
@@ -134,17 +130,10 @@ private:
     // used to keep track of state type (LD, NearLD, HD)
     std::vector<std::vector<std::vector<AdaptiveGridCell_t>>> grid_;
 
-    std::string frame_;
-
     int max_dimID_;
     unsigned int max_costToGoal_;
 
     sbpl::OccupancyGridPtr oc_grid_;
-
-    ros::NodeHandle nh_;
-    ros::NodeHandle ph_;
-    ros::Publisher marker_array_publisher_;
-    ros::Publisher marker_publisher_;
 
     static double getDist2(int x1, int y1, int z1, int x2, int y2, int z2);
 
@@ -296,12 +285,6 @@ bool AdaptiveGrid3D::isInBounds(const std::vector<int> &coord) const
 }
 
 inline
-void AdaptiveGrid3D::visualize(std::string ns_prefix)
-{
-    marker_array_publisher_.publish(getVisualizations(ns_prefix));
-}
-
-inline
 void AdaptiveGrid3D::addTrackingSphere(
     const std::vector<int> &coords,
     int dimID,
@@ -319,7 +302,7 @@ void AdaptiveGrid3D::addTrackingSphere(
     std::vector<adim::Position3D> &modCells)
 {
     size_t gx, gy, gz;
-    world2grid(sphere.x,sphere.y,sphere.z,gx,gy,gz);
+    world2grid(sphere.x, sphere.y, sphere.z, gx, gy, gz);
     int r = round(sphere.rad / oc_grid_->getResolution());
     int nr = round(sphere.near_rad / oc_grid_->getResolution());
     addSphere(true, gx, gy, gz, r, nr, sphere.dimID, sphere.costToGoal, modCells);
