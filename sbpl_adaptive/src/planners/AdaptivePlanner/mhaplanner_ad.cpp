@@ -85,7 +85,7 @@ MHAPlanner_AD::MHAPlanner_AD(
     m_heuristic_list[0] = {0,1};
     m_heuristic_list[1] = {0,1};
     m_heuristic_list[2] = {0,1};
-    m_heuristic_list[3] = {0,2};
+    m_heuristic_list[3] = {0};
     /// Four Modes:
     ///     Search Until Solution Bounded
     ///     Search Until Solution Unbounded
@@ -223,11 +223,11 @@ int MHAPlanner_AD::replan(
 
         for (int hidx = 1; hidx < num_heuristics(); ++hidx) {
 
-            if(environment_->isInTrackingMode() && hidx != num_heuristics() - 1 )
-            {
-                ROS_INFO("Env in tracking mode, forget about lower dim heuristics");
-                continue;
-            }
+            // if(environment_->isInTrackingMode() && hidx != num_heuristics() - 1 )
+            // {
+            //     ROS_INFO("Env in tracking mode, forget about lower dim heuristics");
+            //     continue;
+            // }
 
             if (m_open[0].emptyheap()) {
                 printf("Anchor empty\n");
