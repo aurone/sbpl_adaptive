@@ -5,8 +5,8 @@
  *      Author: kalin
  */
 
-#ifndef sbpl_adim_multirep_adaptive_environment_h
-#define sbpl_adim_multirep_adaptive_environment_h
+#ifndef SBPL_ADAPTIVE_MULTIREP_ADAPTIVE_ENVIRONMENT_H
+#define SBPL_ADAPTIVE_MULTIREP_ADAPTIVE_ENVIRONMENT_H
 
 #include <sbpl_adaptive/headers.h>
 
@@ -24,7 +24,7 @@ struct EnvStateData
         startHashEntry = NULL;
     }
 
-    AbstractGoal_t *goaldata;
+    AbstractGoal *goaldata;
 
     // start and goal entries
     AdaptiveHashEntry *goalHashEntry;
@@ -59,6 +59,14 @@ public:
 
     const void *getEnvDataPtr() { return env_data_.get(); }
 
+    template <class T> T* envDataAs() {
+        return static_cast<T*>(env_data_.get());
+    }
+
+    template <class T> const T* envDataAs() const {
+        return static_cast<const T*>(env_data_.get());
+    }
+
     bool RegisterFullDRepresentation(
         AdaptiveStateRepresentationPtr fullD_representation);
 
@@ -84,7 +92,7 @@ public:
     int SetGoalCoords(int dimID, const void *goal_representation_specific_discrete_data);
     int SetGoalConfig(int dimID, const void *goal_representation_specific_continuous_data);
 
-    int SetAbstractGoal(AbstractGoal_t *abstract_goal);
+    int SetAbstractGoal(AbstractGoal *abstract_goal);
 
     void updateBestTracked(int StateID, int costToGoal);
 

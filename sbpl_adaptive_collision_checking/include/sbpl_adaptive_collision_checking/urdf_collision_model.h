@@ -46,7 +46,7 @@
 
 namespace adim {
 
-struct URDFModelCoords : ModelCoords_t
+struct URDFModelCoords : ModelCoords
 {
     Eigen::Affine3d root;
     std::map<std::string, std::vector<double>> coordmap;
@@ -260,35 +260,35 @@ public:
 
     /// \name Required Public Functions from SBPLCollisionModel
     ///@{
-    bool checkLimits(const ModelCoords_t &coord) const override;
+    bool checkLimits(const ModelCoords &coord) const override;
 
     bool getModelCollisionSpheres(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         std::vector<Sphere> &spheres) const override;
 
     bool getModelContactSpheres(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         std::vector<Sphere> &spheres) const override;
 
     bool getModelContactSpheres(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         const std::string &link_name,
         std::vector<Sphere> &spheres) const override;
 
     bool getModelPathCollisionSpheres(
-        const ModelCoords_t &coords0,
-        const ModelCoords_t &coords1,
+        const ModelCoords &coords0,
+        const ModelCoords &coords1,
         int steps,
         std::vector<Sphere> &spheres) const override;
 
     bool getModelPathContactSpheres(
-        const ModelCoords_t &coords0,
-        const ModelCoords_t &coords1,
+        const ModelCoords &coords0,
+        const ModelCoords &coords1,
         int steps,
         std::vector<Sphere> &spheres) const override;
 
     visualization_msgs::MarkerArray getModelVisualization(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         const std::string &frame_id,
         const std::string &ns,
         const std_msgs::ColorRGBA &col,
@@ -397,9 +397,9 @@ protected:
         std::vector<Sphere>& spheres);
 };
 
-//////////////////////////////////////
-// URDFModelCoords_t Implementation //
-//////////////////////////////////////
+////////////////////////////////////
+// URDFModelCoords Implementation //
+////////////////////////////////////
 
 inline
 bool URDFModelCoords::getCoords(
@@ -607,53 +607,53 @@ void URDFCollisionModel::addIgnoreSelfCollisionLinkPairs(
 
 inline
 bool URDFCollisionModel::getModelCollisionSpheres(
-    const ModelCoords_t &coords,
+    const ModelCoords &coords,
     std::vector<Sphere> &spheres) const
 {
-    const URDFModelCoords &c = dynamic_cast<const URDFModelCoords&>(coords);
+    const URDFModelCoords &c = static_cast<const URDFModelCoords&>(coords);
     return getModelCollisionSpheres(c, spheres);
 }
 
 inline
 bool URDFCollisionModel::getModelContactSpheres(
-    const ModelCoords_t &coords,
+    const ModelCoords &coords,
     std::vector<Sphere> &spheres) const
 {
-    const URDFModelCoords &c = dynamic_cast<const URDFModelCoords&>(coords);
+    const URDFModelCoords &c = static_cast<const URDFModelCoords&>(coords);
     return getModelContactSpheres(c, spheres);
 }
 
 inline
 bool URDFCollisionModel::getModelContactSpheres(
-    const ModelCoords_t &coords,
+    const ModelCoords &coords,
     const std::string &link_name,
     std::vector<Sphere> &spheres) const
 {
-    const URDFModelCoords &c = dynamic_cast<const URDFModelCoords&>(coords);
+    const URDFModelCoords &c = static_cast<const URDFModelCoords&>(coords);
     return getLinkContactSpheres(c, link_name, spheres);
 }
 
 inline
 bool URDFCollisionModel::getModelPathCollisionSpheres(
-    const ModelCoords_t &coords0,
-    const ModelCoords_t &coords1,
+    const ModelCoords &coords0,
+    const ModelCoords &coords1,
     int steps,
     std::vector<Sphere> &spheres) const
 {
-    const URDFModelCoords &c0 = dynamic_cast<const URDFModelCoords&>(coords0);
-    const URDFModelCoords &c1 = dynamic_cast<const URDFModelCoords&>(coords1);
+    const URDFModelCoords &c0 = static_cast<const URDFModelCoords&>(coords0);
+    const URDFModelCoords &c1 = static_cast<const URDFModelCoords&>(coords1);
     return getModelPathCollisionSpheres(c0, c1, steps, spheres);
 }
 
 inline
 bool URDFCollisionModel::getModelPathContactSpheres(
-    const ModelCoords_t &coords0,
-    const ModelCoords_t &coords1,
+    const ModelCoords &coords0,
+    const ModelCoords &coords1,
     int steps,
     std::vector<Sphere> &spheres) const
 {
-    const URDFModelCoords &c0 = dynamic_cast<const URDFModelCoords&>(coords0);
-    const URDFModelCoords &c1 = dynamic_cast<const URDFModelCoords&>(coords1);
+    const URDFModelCoords &c0 = static_cast<const URDFModelCoords&>(coords0);
+    const URDFModelCoords &c1 = static_cast<const URDFModelCoords&>(coords1);
     return getModelPathContactSpheres(c0, c1, steps, spheres);
 }
 
@@ -672,21 +672,21 @@ URDFCollisionModel::getSRDF() const
 }
 
 inline
-bool URDFCollisionModel::checkLimits(const ModelCoords_t &coord) const
+bool URDFCollisionModel::checkLimits(const ModelCoords &coord) const
 {
-    const URDFModelCoords &c = dynamic_cast<const URDFModelCoords&>(coord);
+    const URDFModelCoords &c = static_cast<const URDFModelCoords&>(coord);
     return checkLimits(c);
 }
 
 inline
 visualization_msgs::MarkerArray URDFCollisionModel::getModelVisualization(
-    const ModelCoords_t &coords,
+    const ModelCoords &coords,
     const std::string &frame_id,
     const std::string &ns,
     const std_msgs::ColorRGBA &col,
     int &idx) const
 {
-    const URDFModelCoords &c = dynamic_cast<const URDFModelCoords&>(coords);
+    const URDFModelCoords &c = static_cast<const URDFModelCoords&>(coords);
     return getModelVisualization(c, frame_id, ns, col, idx);
 }
 

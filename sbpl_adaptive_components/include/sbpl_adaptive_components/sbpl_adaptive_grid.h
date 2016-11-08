@@ -10,7 +10,7 @@
 
 namespace adim {
 
-struct AdaptiveGridCell_t
+struct AdaptiveGridCell
 {
     int pDefaultDimID;
     int pDimID;
@@ -26,7 +26,7 @@ class AdaptiveGrid
 {
 public:
 
-    AdaptiveGrid(int ldID) { ldID_ = ldID; trackMode_ = false; }
+    AdaptiveGrid(int ldID) : ldID_(ldID), trackMode_(false) { }
 
     virtual ~AdaptiveGrid() { }
 
@@ -35,8 +35,6 @@ public:
     bool isInTrackingMode() { return trackMode_; }
 
     virtual void reset() = 0;
-
-    virtual void init() = 0;
 
     virtual void clearAllSpheres() = 0;
 
@@ -54,7 +52,7 @@ public:
 
     virtual bool isInBounds(const std::vector<int> &coord) const = 0;
 
-    virtual AdaptiveGridCell_t getCell(const std::vector<int> &coord) const = 0;
+    virtual AdaptiveGridCell getCell(const std::vector<int> &coord) const = 0;
 
     virtual int getCellPlanningDim(const std::vector<int> &coord) const = 0;
 
@@ -69,10 +67,6 @@ protected:
     bool trackMode_;
 
     int ldID_;
-
-    std::vector<int> grid_sizes_;
-
-    std::vector<std::vector<int>> spheres_;
 
     virtual void resetTrackingGrid() = 0;
 

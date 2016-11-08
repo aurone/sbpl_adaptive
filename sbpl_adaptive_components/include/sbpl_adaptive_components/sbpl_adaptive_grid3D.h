@@ -40,7 +40,7 @@ public:
         std::vector<adim::Position3D> &modCells);
 
     void setTrackingMode(
-        const std::vector<adim::AdaptiveSphere3D_t> &tunnel,
+        const std::vector<adim::AdaptiveSphere3D> &tunnel,
         std::vector<adim::Position3D> &modCells);
 
     void addPlanningSphere(
@@ -51,10 +51,10 @@ public:
         std::vector<adim::Position3D> &modCells);
 
     void addPlanningSphere(
-        adim::AdaptiveSphere3D_t sphere,
+        adim::AdaptiveSphere3D sphere,
         std::vector<adim::Position3D> &modCells);
 
-    AdaptiveGridCell_t getCell(double wx, double wy, double wz) const;
+    AdaptiveGridCell getCell(double wx, double wy, double wz) const;
 
     int getCellPlanningDim(double wx, double wy, double wz) const;
 
@@ -63,8 +63,6 @@ public:
     int getCellTrackingDim(double wx, double wy, double wz) const;
 
     int getCellDim(bool bTrackMode, size_t x, size_t y, size_t z) const;
-
-    void setVisualizationReferenceFrame(std::string frm);
 
     void getDimensions(int &sizeX, int &sizeY, int &sizeZ) const;
 
@@ -93,14 +91,10 @@ public:
         int throttle = 1,
         double scale = 1);
 
-    void visualize(std::string ns_prefix);
-
     /// \name Required Public Functions From AdaptiveGrid
     ///@{
 
     void reset();
-
-    void init();
 
     void clearAllSpheres();
 
@@ -118,7 +112,7 @@ public:
 
     bool isInBounds(const std::vector<int> &coord) const;
 
-    AdaptiveGridCell_t getCell(const std::vector<int> &gcoord) const;
+    AdaptiveGridCell getCell(const std::vector<int> &gcoord) const;
 
     int getCellPlanningDim(const std::vector<int> &gcoord) const;
 
@@ -130,20 +124,16 @@ public:
 
 private:
 
-    // used to keep track of state type (LD, NearLD, HD)
-    std::vector<std::vector<std::vector<AdaptiveGridCell_t>>> grid_;
+    std::vector<int> grid_sizes_;
+    std::vector<std::vector<int>> spheres_;
 
-    std::string frame_;
+    // used to keep track of state type (LD, NearLD, HD)
+    std::vector<std::vector<std::vector<AdaptiveGridCell>>> grid_;
 
     int max_dimID_;
     unsigned int max_costToGoal_;
 
     sbpl::OccupancyGridPtr oc_grid_;
-
-    ros::NodeHandle nh_;
-    ros::NodeHandle ph_;
-    ros::Publisher marker_array_publisher_;
-    ros::Publisher marker_publisher_;
 
     static double getDist2(int x1, int y1, int z1, int x2, int y2, int z2);
 
@@ -164,7 +154,7 @@ private:
         std::vector<adim::Position3D> &modCells);
 
     void addTrackingSphere(
-        adim::AdaptiveSphere3D_t sphere,
+        adim::AdaptiveSphere3D sphere,
         std::vector<adim::Position3D> &modCells);
 
     void getOverlappingSpheres(
@@ -218,7 +208,7 @@ void AdaptiveGrid3D::addPlanningSphere(
 
 inline
 void AdaptiveGrid3D::addPlanningSphere(
-    adim::AdaptiveSphere3D_t sphere,
+    adim::AdaptiveSphere3D sphere,
     std::vector<adim::Position3D> &modCells)
 {
     size_t gx, gy, gz;
@@ -237,7 +227,7 @@ void AdaptiveGrid3D::getDimensions(int &sizeX, int &sizeY, int &sizeZ) const
 }
 
 inline
-AdaptiveGridCell_t AdaptiveGrid3D::getCell(double wx, double wy, double wz) const
+AdaptiveGridCell AdaptiveGrid3D::getCell(double wx, double wy, double wz) const
 {
     size_t gcoordx, gcoordy, gcoordz;
     world2grid(wx,wy,wz,gcoordx,gcoordy,gcoordz);
@@ -295,12 +285,6 @@ bool AdaptiveGrid3D::isInBounds(const std::vector<int> &coord) const
 }
 
 inline
-void AdaptiveGrid3D::visualize(std::string ns_prefix)
-{
-    marker_array_publisher_.publish(getVisualizations(ns_prefix));
-}
-
-inline
 void AdaptiveGrid3D::addTrackingSphere(
     const std::vector<int> &coords,
     int dimID,
@@ -314,11 +298,11 @@ void AdaptiveGrid3D::addTrackingSphere(
 
 inline
 void AdaptiveGrid3D::addTrackingSphere(
-    adim::AdaptiveSphere3D_t sphere,
+    adim::AdaptiveSphere3D sphere,
     std::vector<adim::Position3D> &modCells)
 {
     size_t gx, gy, gz;
-    world2grid(sphere.x,sphere.y,sphere.z,gx,gy,gz);
+    world2grid(sphere.x, sphere.y, sphere.z, gx, gy, gz);
     int r = round(sphere.rad / oc_grid_->getResolution());
     int nr = round(sphere.near_rad / oc_grid_->getResolution());
     addSphere(true, gx, gy, gz, r, nr, sphere.dimID, sphere.costToGoal, modCells);

@@ -13,6 +13,53 @@
 
 namespace adim {
 
+AdaptiveGrid3D::AdaptiveGrid3D(
+    const sbpl::OccupancyGridPtr& grid,
+    int ldID)
+:
+    AdaptiveGrid(ldID)
+{
+    oc_grid_ = grid;
+    grid_sizes_.resize(3);
+    oc_grid_->getGridSize(grid_sizes_[0], grid_sizes_[1], grid_sizes_[2]);
+    grid_.resize(grid_sizes_[0]);
+    for (size_t i = 0; i < (size_t)grid_sizes_[0]; i++) {
+        grid_[i].resize(grid_sizes_[1]);
+        for (size_t j = 0; j < (size_t)grid_sizes_[1]; j++) {
+            grid_[i][j].resize(grid_sizes_[2]);
+            for (size_t k = 0; k < (size_t)grid_sizes_[2]; k++) {
+                grid_[i][j][k].costToGoal = INFINITECOST;
+                grid_[i][j][k].pDimID = ldID_;
+                grid_[i][j][k].pDefaultDimID = ldID_;
+                grid_[i][j][k].tDimID = grid_[i][j][k].pDimID;
+            }
+        }
+    }
+    SBPL_INFO("[ad_grid] Allocated grid of size %d x %d x %d in frame %s", grid_sizes_[0], grid_sizes_[1], grid_sizes_[2], oc_grid_->getReferenceFrame().c_str());
+    trackMode_ = false;
+    max_dimID_ = 0;
+    max_costToGoal_ = 0;
+
+    max_costToGoal_ = 0;
+    for (size_t i = 0; i < (size_t)grid_sizes_[0]; i++) {
+        grid_[i].resize(grid_sizes_[1]);
+        for (size_t j = 0; j < (size_t)grid_sizes_[1]; j++) {
+            grid_[i][j].resize(grid_sizes_[2]);
+            for (size_t k = 0; k < (size_t)grid_sizes_[2]; k++) {
+                grid_[i][j][k].costToGoal = INFINITECOST;
+                grid_[i][j][k].pDimID = ldID_;
+                grid_[i][j][k].tDimID = grid_[i][j][k].pDimID;
+            }
+        }
+    }
+}
+
+AdaptiveGrid3D::~AdaptiveGrid3D()
+{
+    grid_.clear();
+    spheres_.clear();
+}
+
 void AdaptiveGrid3D::reset()
 {
     clearAllSpheres();
@@ -132,62 +179,6 @@ bool AdaptiveGrid3D::setCellNearDim(
     return changed;
 }
 
-void AdaptiveGrid3D::init()
-{
-    max_costToGoal_ = 0;
-    for (size_t i = 0; i < (size_t)grid_sizes_[0]; i++) {
-        grid_[i].resize(grid_sizes_[1]);
-        for (size_t j = 0; j < (size_t)grid_sizes_[1]; j++) {
-            grid_[i][j].resize(grid_sizes_[2]);
-            for (size_t k = 0; k < (size_t)grid_sizes_[2]; k++) {
-                grid_[i][j][k].costToGoal = INFINITECOST;
-                grid_[i][j][k].pDimID = ldID_;
-                grid_[i][j][k].tDimID = grid_[i][j][k].pDimID;
-            }
-        }
-    }
-}
-
-AdaptiveGrid3D::AdaptiveGrid3D(
-    const sbpl::OccupancyGridPtr& grid,
-    int ldID)
-:
-    ph_("~"),
-    AdaptiveGrid(ldID)
-{
-    oc_grid_ = grid;
-    grid_sizes_.resize(3);
-    oc_grid_->getGridSize(grid_sizes_[0], grid_sizes_[1], grid_sizes_[2]);
-    grid_.resize(grid_sizes_[0]);
-    for (size_t i = 0; i < (size_t)grid_sizes_[0]; i++) {
-        grid_[i].resize(grid_sizes_[1]);
-        for (size_t j = 0; j < (size_t)grid_sizes_[1]; j++) {
-            grid_[i][j].resize(grid_sizes_[2]);
-            for (size_t k = 0; k < (size_t)grid_sizes_[2]; k++) {
-                grid_[i][j][k].costToGoal = INFINITECOST;
-                grid_[i][j][k].pDimID = ldID_;
-                grid_[i][j][k].pDefaultDimID = ldID_;
-                grid_[i][j][k].tDimID = grid_[i][j][k].pDimID;
-            }
-        }
-    }
-    frame_ = grid->getReferenceFrame();
-    SBPL_INFO("[ad_grid] Allocated grid of size %d x %d x %d in frame %s", grid_sizes_[0], grid_sizes_[1], grid_sizes_[2], frame_.c_str());
-    trackMode_ = false;
-    marker_array_publisher_ = nh_.advertise<visualization_msgs::MarkerArray>(
-            "visualization_marker_array", 500, true);
-    marker_publisher_ = nh_.advertise<visualization_msgs::Marker>(
-            "visualization_marker", 500, true);
-    max_dimID_ = 0;
-    max_costToGoal_ = 0;
-}
-
-AdaptiveGrid3D::~AdaptiveGrid3D()
-{
-    grid_.clear();
-    spheres_.clear();
-}
-
 void AdaptiveGrid3D::clearAllSpheres()
 {
     //clears all HD regions from the grid
@@ -210,7 +201,7 @@ void AdaptiveGrid3D::setPlanningMode()
 }
 
 void AdaptiveGrid3D::setTrackingMode(
-    const std::vector<adim::AdaptiveSphere3D_t> &tunnel,
+    const std::vector<adim::AdaptiveSphere3D> &tunnel,
     std::vector<adim::Position3D> &modCells)
 {
     trackMode_ = true;
@@ -225,7 +216,6 @@ void AdaptiveGrid3D::setTrackingMode(
     std::vector<adim::Position3D> &modCells)
 {
     trackMode_ = true;
-    int min_val = -1;
     for (size_t i = 0; i < tunnel.size(); i++) {
         if (tunnel[i].size() < 5) {
             continue;
@@ -247,7 +237,7 @@ unsigned int AdaptiveGrid3D::getCellCostToGoal(
     return grid_[coord[0]][coord[1]][coord[2]].costToGoal;
 }
 
-AdaptiveGridCell_t AdaptiveGrid3D::getCell(
+AdaptiveGridCell AdaptiveGrid3D::getCell(
     const std::vector<int> &coord) const
 {
     if (!isInBounds( { coord[0], coord[1], coord[2] })) {
@@ -299,11 +289,6 @@ int AdaptiveGrid3D::getCellDim(
     size_t z) const
 {
     return bTrackMode ? grid_[x][y][z].tDimID : grid_[x][y][z].pDimID;
-}
-
-void AdaptiveGrid3D::setVisualizationReferenceFrame(std::string frm)
-{
-    frame_ = frm;
 }
 
 void AdaptiveGrid3D::getOverlappingSpheres(
@@ -425,7 +410,7 @@ visualization_msgs::Marker AdaptiveGrid3D::getAdaptiveGridVisualization(
     visualization_msgs::Marker marker;
     double m_scale = (scale <= 0) ? oc_grid_->getResolution() : scale;
     marker.header.stamp = ros::Time::now();
-    marker.header.frame_id = frame_;
+    marker.header.frame_id = oc_grid_->getReferenceFrame();
     marker.ns = ns_prefix + "_AdaptiveGrid3D";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::CUBE_LIST;
@@ -506,7 +491,7 @@ visualization_msgs::Marker AdaptiveGrid3D::getCostToGoalGridVisualization(
     visualization_msgs::Marker marker;
     double m_scale = (scale <= 0) ? oc_grid_->getResolution() : scale;
     marker.header.stamp = ros::Time::now();
-    marker.header.frame_id = frame_;
+    marker.header.frame_id = oc_grid_->getReferenceFrame();
     marker.ns = ns_prefix + "_AdaptiveGrid3D_indeces";
     marker.id = 0;
     marker.type = visualization_msgs::Marker::CUBE_LIST;

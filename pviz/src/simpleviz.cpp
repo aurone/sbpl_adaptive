@@ -2,34 +2,38 @@
 
 #include <pviz/simpleviz.h>
 
-SimpleViz::SimpleViz() : ph_("~"), nh_()
+SimpleViz::SimpleViz() :
+    nh_(),
+    ph_("~"),
+    marker_ns_id_map_(),
+    marker_array_(),
+    marker_()
 {
-    srand (time(NULL));
+    srand(time(NULL));
 }
 
 SimpleViz::~SimpleViz()
 {
-
 }
 
-void SimpleViz::visualizeObstacles(const std::vector<std::vector<double> > &obstacles, std::string reference_frame_)
+void SimpleViz::visualizeObstacles(
+    const std::vector<std::vector<double>> &obstacles,
+    std::string reference_frame_)
 {
     marker_array_.markers.clear();
     marker_array_.markers.resize(obstacles.size());
 
     ROS_INFO("[SimpleViz] Displaying %d obstaclesin the %s frame", (int)obstacles.size(), reference_frame_.c_str());
 
-    std::string ns = "obstacles"+boost::lexical_cast<std::string>(rand());
+    std::string ns = "obstacles" + boost::lexical_cast<std::string>(rand());
 
-    for(int i = 0; i < int(obstacles.size()); i++)
-    {
-        if(obstacles[i].size() < 6)
-        {
+    for (size_t i = 0; i < obstacles.size(); i++) {
+        if (obstacles[i].size() < 6) {
             ROS_INFO("[SimpleViz] Obstacle description doesn't have length = 6");
             continue;
         }
 
-        //TODO: Change this to use a CUBE_LIST
+        // TODO: Change this to use a CUBE_LIST
         marker_array_.markers[i].header.stamp = ros::Time::now();
         marker_array_.markers[i].header.frame_id = reference_frame_;
         marker_array_.markers[i].ns = ns;
@@ -63,8 +67,7 @@ void SimpleViz::visualizePoses(const std::vector<std::vector<double> > &poses, s
 
     ros::Time time = ros::Time::now();
 
-    for(int i = 0; i < (int)poses.size(); ++i)
-    {
+    for (size_t i = 0; i < poses.size(); ++i) {
         pose_quaternion.setRPY(poses[i][3],poses[i][4],poses[i][5]);
         tf::quaternionTFToMsg(pose_quaternion, quaternion_msg);
 
@@ -563,7 +566,7 @@ void SimpleViz::visualizeLine(const std::vector<geometry_msgs::Point> points, st
 
     //ROS_INFO("Visualizing a line with %d points", int(points.size()));
     update(ns, id);
-    marker_publisher_.publish(marker);
+    showMarker(marker);
 }
 
 void SimpleViz::visualizeText(geometry_msgs::Pose pose, std::string text, std::string ns, int id, int hue, std::string reference_frame_)
@@ -591,7 +594,7 @@ void SimpleViz::visualizeText(geometry_msgs::Pose pose, std::string text, std::s
     marker.text = text;
     marker.lifetime = ros::Duration(10.0);
     update(ns, id);
-    marker_publisher_.publish(marker);
+    showMarker(marker);
 }
 
 void SimpleViz::visualizeText(geometry_msgs::Pose pose, std::string text, std::string ns, int id, std::vector<double> color, double size, std::string reference_frame_)
@@ -619,7 +622,7 @@ void SimpleViz::visualizeText(geometry_msgs::Pose pose, std::string text, std::s
     marker.text = text;
     marker.lifetime = ros::Duration(360.0);
     update(ns, id);
-    marker_publisher_.publish(marker);
+    showMarker(marker);
 }
 
 void SimpleViz::visualizeCube(geometry_msgs::PoseStamped pose, int color, std::string ns, int id, std::vector<double> dim)
@@ -654,7 +657,7 @@ void SimpleViz::visualizeCube(geometry_msgs::PoseStamped pose, int color, std::s
     marker.color.a = 1.0;
     marker.lifetime = ros::Duration(0.0);
     update(ns, id);
-    marker_publisher_.publish(marker);
+    showMarker(marker);
 }
 
 void SimpleViz::visualizeMesh(const std::string& mesh_resource, const geometry_msgs::PoseStamped& pose, int color,
@@ -686,7 +689,7 @@ void SimpleViz::visualizeMesh(const std::string& mesh_resource, const geometry_m
     marker.color.b = b;
     marker.mesh_resource = mesh_resource;
     update(ns, id);
-    marker_publisher_.publish(marker);
+    showMarker(marker);
 }
 
 void SimpleViz::visualizeMeshTriangles(const std::vector<geometry_msgs::Point>& vertices, const std::vector<int>& triangles,
@@ -739,7 +742,21 @@ void SimpleViz::visualizeMeshTriangles(const std::vector<geometry_msgs::Point>& 
         marker.color.b = b;
     }
     update(ns, id);
-    marker_publisher_.publish(marker);
+    showMarker(marker);
+}
+
+void SimpleViz::publish(const visualization_msgs::MarkerArray &markers)
+{
+    for (const visualization_msgs::Marker &m : markers.markers){
+        update(m.ns, m.id);
+    }
+    SV_SHOW_INFO(markers);
+}
+
+void SimpleViz::publish(const visualization_msgs::Marker &marker)
+{
+    update(marker.ns, marker.id);
+    showMarker(marker);
 }
 
 void SimpleViz::showMarker(visualization_msgs::Marker&& m)

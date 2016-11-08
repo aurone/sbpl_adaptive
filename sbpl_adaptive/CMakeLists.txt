@@ -4,9 +4,7 @@ project(sbpl_adaptive)
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
-find_package(catkin REQUIRED COMPONENTS
-    roscpp
-)
+find_package(catkin REQUIRED COMPONENTS roscpp smpl)
 
 find_package(PkgConfig REQUIRED)
 #find_package(sbpl REQUIRED)
@@ -25,7 +23,7 @@ MESSAGE("lib: ${SBPL_LIBRARIES}")
 catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
-    CATKIN_DEPENDS roscpp
+    CATKIN_DEPENDS roscpp smpl
     DEPENDS sbpl)
 
 #add_definitions(-DROS)

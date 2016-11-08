@@ -22,7 +22,6 @@
 
 // project includes
 #include <sbpl_adaptive_collision_checking/sbpl_collision_model.h>
-#include <sbpl_adaptive_collision_checking/bresenham.h>
 
 namespace adim {
 
@@ -33,7 +32,7 @@ class SBPLCollisionSpace
 public:
 
     SBPLCollisionSpace(
-        std::shared_ptr<SBPLCollisionModel> model,
+        SBPLCollisionModelPtr model,
         const sbpl::OccupancyGridPtr& grid);
 
     ~SBPLCollisionSpace();
@@ -43,27 +42,27 @@ public:
 
     /// \name Collision Detection
     ///@{
-    bool checkCollision(const ModelCoords_t &coords, double &dist);
+    bool checkCollision(const ModelCoords &coords, double &dist);
 
     bool checkCollision(
-        const ModelCoords_t &coords0,
-        const ModelCoords_t &coords1,
+        const ModelCoords &coords0,
+        const ModelCoords &coords1,
         int steps,
         double &dist);
     ///@}
 
     /// \name Contact Detection
     ///@{
-    bool checkContact(const ModelCoords_t &coords, double &dist);
+    bool checkContact(const ModelCoords &coords, double &dist);
 
     bool checkContact(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         const std::string &link_name,
         double &dist);
 
     bool checkContact(
-        const ModelCoords_t &coords0,
-        const ModelCoords_t &coords1,
+        const ModelCoords &coords0,
+        const ModelCoords &coords1,
         int steps,
         double &dist);
     ///@}
@@ -75,16 +74,16 @@ public:
     void getSize(int &dim_x, int &dim_y, int &dim_z);
 
     bool getModelVoxelsInGrid(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         std::vector<Eigen::Vector3i> &voxels);
 
-    std::shared_ptr<const SBPLCollisionModel> getModelPtr();
+    SBPLCollisionModelConstPtr getModelPtr() const;
 
     bool isValidPoint(double x, double y, double z) const;
 
 private:
 
-    std::shared_ptr<SBPLCollisionModel> model_;
+    SBPLCollisionModelPtr model_;
     sbpl::OccupancyGridPtr grid_;
 
     double padding_;
@@ -100,7 +99,7 @@ private:
         const std::vector<int>& b,
         const int radius);
     bool getClearance(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         int num_spheres,
         double &avg_dist,
         double &min_dist);
@@ -125,9 +124,9 @@ void SBPLCollisionSpace::getSize(int &dim_x, int &dim_y, int &dim_z)
 }
 
 inline
-std::shared_ptr<const SBPLCollisionModel> SBPLCollisionSpace::getModelPtr()
+SBPLCollisionModelConstPtr SBPLCollisionSpace::getModelPtr() const
 {
-    std::shared_ptr<const SBPLCollisionModel> ptr = model_;
+    SBPLCollisionModelConstPtr ptr = model_;
     return ptr;
 }
 

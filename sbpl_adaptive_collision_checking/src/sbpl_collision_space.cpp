@@ -1,9 +1,11 @@
 #include <sbpl_adaptive_collision_checking/sbpl_collision_space.h>
 
+#include <leatherman/bresenham.h>
+
 namespace adim {
 
 SBPLCollisionSpace::SBPLCollisionSpace(
-    std::shared_ptr<adim::SBPLCollisionModel> model,
+    adim::SBPLCollisionModelPtr model,
     const sbpl::OccupancyGridPtr& grid)
 :
     model_(model),
@@ -32,7 +34,7 @@ void SBPLCollisionSpace::setContactPadding(double padding)
 /// The state is in collision with the environment if any collision sphere is
 /// in collision with the environment
 bool SBPLCollisionSpace::checkCollision(
-    const ModelCoords_t &coords,
+    const ModelCoords &coords,
     double &dist)
 {
     std::vector<Sphere> collision_spheres;
@@ -72,8 +74,8 @@ bool SBPLCollisionSpace::checkCollision(
 /// associated collision model. The path is free of collisions if all
 /// intermediate states are free of collision.
 bool SBPLCollisionSpace::checkCollision(
-    const ModelCoords_t &coords0,
-    const ModelCoords_t &coords1,
+    const ModelCoords &coords0,
+    const ModelCoords &coords1,
     int steps,
     double &dist)
 {
@@ -108,7 +110,7 @@ bool SBPLCollisionSpace::checkCollision(
 ///
 /// The state is in contact with the environment if all contact spheres are in
 /// collision with the environment.
-bool SBPLCollisionSpace::checkContact(const ModelCoords_t &coords, double &dist)
+bool SBPLCollisionSpace::checkContact(const ModelCoords &coords, double &dist)
 {
     int x, y, z;
     double sum = 0, dist_temp = 0;
@@ -136,7 +138,7 @@ bool SBPLCollisionSpace::checkContact(const ModelCoords_t &coords, double &dist)
 /// \brief Return whether a link in the collision model is in contact with the
 ///     environment
 bool SBPLCollisionSpace::checkContact(
-    const ModelCoords_t &coords,
+    const ModelCoords &coords,
     const std::string &link_name,
     double &dist)
 {
@@ -171,8 +173,8 @@ bool SBPLCollisionSpace::checkContact(
 /// associated collision model. The path is in contact with the environment if
 /// all intermediate states are in contact with the environment.
 bool SBPLCollisionSpace::checkContact(
-    const ModelCoords_t &coords0,
-    const ModelCoords_t &coords1,
+    const ModelCoords &coords0,
+    const ModelCoords &coords1,
     int steps,
     double &dist)
 {
@@ -205,7 +207,7 @@ bool SBPLCollisionSpace::checkContact(
 /// The returned voxels are the grid coordinates of each occupied voxel.
 /// \return true if the collision model returned valid spheres; false otherwise
 bool SBPLCollisionSpace::getModelVoxelsInGrid(
-    const ModelCoords_t &coords,
+    const ModelCoords &coords,
     std::vector<Eigen::Vector3i> &voxels)
 {
     std::vector<Sphere> spheres;
@@ -289,16 +291,18 @@ double SBPLCollisionSpace::isValidLineSegment(
     const std::vector<int>& b,
     const int radius)
 {
-    bresenham3d_param_t params;
-    int nXYZ[3], retvalue = 1;
-    double cell_val, min_dist = 100.0;
-    CELL3V tempcell;
-    std::vector<CELL3V>* pTestedCells = NULL;
+    leatherman::bresenham3d_param_t params;
+    int nXYZ[3];
+    int retvalue = 1;
+    double cell_val;
+    double min_dist = 100.0;
+    leatherman::CELL3V tempcell;
+    std::vector<leatherman::CELL3V>* pTestedCells = NULL;
 
     // iterate through the points on the segment
-    get_bresenham3d_parameters(a[0], a[1], a[2], b[0], b[1], b[2], &params);
+    leatherman::get_bresenham3d_parameters(a[0], a[1], a[2], b[0], b[1], b[2], &params);
     do {
-        get_current_point3d(&params, &(nXYZ[0]), &(nXYZ[1]), &(nXYZ[2]));
+        leatherman::get_current_point3d(&params, &(nXYZ[0]), &(nXYZ[1]), &(nXYZ[2]));
 
         if (!grid_->isInBounds(nXYZ[0], nXYZ[1], nXYZ[2])) {
             return 0;
@@ -332,7 +336,7 @@ double SBPLCollisionSpace::isValidLineSegment(
             pTestedCells->push_back(tempcell);
         }
     }
-    while (get_next_point3d(&params));
+    while (leatherman::get_next_point3d(&params));
 
     if (retvalue) {
         return min_dist;

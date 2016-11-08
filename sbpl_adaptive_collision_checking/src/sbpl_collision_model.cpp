@@ -32,7 +32,7 @@ visualization_msgs::Marker SBPLCollisionModel::getSphereMarker(
 }
 
 visualization_msgs::MarkerArray SBPLCollisionModel::getModelBasicVisualization(
-    const ModelCoords_t &coords,
+    const ModelCoords &coords,
     std::string frame_id,
     std::string ns,
     std_msgs::ColorRGBA col,

@@ -206,7 +206,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::InsertMetaGoalHashEntry(
 }
 
 int MultiRepAdaptiveDiscreteSpaceInformation::SetAbstractGoal(
-    AbstractGoal_t *goal)
+    AbstractGoal *goal)
 {
     SBPL_INFO("Setting abstract goal...");
     data_.goaldata = goal;

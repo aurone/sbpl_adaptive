@@ -18,6 +18,14 @@ struct AdaptiveHashEntry
     size_t heur;            //the heuristic value
     char dimID;             //the dimensionality ID
     void *stateData;        //the state data specific to this dimensionality
+
+    template <class T> T* dataAs() {
+        return static_cast<T*>(stateData);
+    }
+
+    template <class T> const T* dataAs() const {
+        return static_cast<const T*>(stateData);
+    }
 };
 
 inline

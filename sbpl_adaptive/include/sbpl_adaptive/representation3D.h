@@ -27,12 +27,12 @@ public:
 
     virtual ~AdaptiveStateRepresentation3D() { }
 
-    virtual std::vector<AdaptiveSphere3D_t> getSpheresForState(int StateID) = 0;
+    virtual std::vector<AdaptiveSphere3D> getSpheresForState(int StateID) = 0;
 
-    virtual std::vector<AdaptiveSphere3D_t> getUpgradeSpheresForState(
+    virtual std::vector<AdaptiveSphere3D> getUpgradeSpheresForState(
         int StateID) = 0;
 
-    virtual std::vector<AdaptiveSphere3D_t> getTunnelSpheresForState(
+    virtual std::vector<AdaptiveSphere3D> getTunnelSpheresForState(
         int StateID,
         int costToGoal) = 0;
 

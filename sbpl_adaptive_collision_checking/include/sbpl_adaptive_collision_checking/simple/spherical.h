@@ -13,7 +13,7 @@
 
 namespace adim {
 
-struct SphericalModelCoords_t : public ModelCoords_t
+struct SphericalModelCoords_t : public ModelCoords
 {
     double x, y, z;
 };
@@ -39,30 +39,30 @@ public:
 
     /// \name Reimplemented Public Functions
     ///@{
-    bool checkLimits(const ModelCoords_t &coords) const override;
+    bool checkLimits(const ModelCoords &coords) const override;
 
     bool getModelCollisionSpheres(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         std::vector<Sphere> &spheres) const override;
 
     bool getModelContactSpheres(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         std::vector<Sphere> &spheres) const override;
 
     bool getModelPathCollisionSpheres(
-        const ModelCoords_t &coords0,
-        const ModelCoords_t &coords1,
+        const ModelCoords &coords0,
+        const ModelCoords &coords1,
         int steps,
         std::vector<Sphere> &spheres) const override;
 
     bool getModelPathContactSpheres(
-        const ModelCoords_t &coords0,
-        const ModelCoords_t &coords1,
+        const ModelCoords &coords0,
+        const ModelCoords &coords1,
         int steps,
         std::vector<Sphere> &spheres) const override;
 
     visualization_msgs::MarkerArray getModelVisualization(
-        const ModelCoords_t &coords,
+        const ModelCoords &coords,
         const std::string &frame_id,
         const std::string &ns,
         const std_msgs::ColorRGBA &col) const override;
@@ -86,14 +86,14 @@ SBPLSphericalCollisionModel::~SBPLSphericalCollisionModel()
 }
 
 inline
-bool SBPLSphericalCollisionModel::checkLimits(const ModelCoords_t &coords) const
+bool SBPLSphericalCollisionModel::checkLimits(const ModelCoords &coords) const
 {
     return true;
 }
 
 inline
 bool SBPLSphericalCollisionModel::getModelCollisionSpheres(
-    const ModelCoords_t &coords,
+    const ModelCoords &coords,
     std::vector<Sphere> &spheres) const
 {
     const SphericalModelCoords_t &c =
@@ -119,7 +119,7 @@ bool SBPLSphericalCollisionModel::getModelCollisionSpheres(
 
 inline
 bool SBPLSphericalCollisionModel::getModelContactSpheres(
-    const ModelCoords_t &coords,
+    const ModelCoords &coords,
     std::vector<Sphere> &spheres) const
 {
     return true;
@@ -127,8 +127,8 @@ bool SBPLSphericalCollisionModel::getModelContactSpheres(
 
 inline
 bool SBPLSphericalCollisionModel::getModelPathCollisionSpheres(
-    const ModelCoords_t &coords0,
-    const ModelCoords_t &coords1,
+    const ModelCoords &coords0,
+    const ModelCoords &coords1,
     int steps,
     std::vector<Sphere> &spheres) const
 {
@@ -162,8 +162,8 @@ bool SBPLSphericalCollisionModel::getModelPathCollisionSpheres(
 
 inline
 bool SBPLSphericalCollisionModel::getModelPathContactSpheres(
-    const ModelCoords_t &coords0,
-    const ModelCoords_t &coords1,
+    const ModelCoords &coords0,
+    const ModelCoords &coords1,
     int steps,
     std::vector<Sphere> &spheres) const
 {
@@ -173,7 +173,7 @@ bool SBPLSphericalCollisionModel::getModelPathContactSpheres(
 inline
 visualization_msgs::MarkerArray
 SBPLSphericalCollisionModel::getModelVisualization(
-    const ModelCoords_t &coords,
+    const ModelCoords &coords,
     const std::string &frame_id,
     const std::string &ns,
     const std_msgs::ColorRGBA &col) const
