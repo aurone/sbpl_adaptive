@@ -63,9 +63,7 @@ URDFModelCoords URDFCollisionModel::getDefaultCoordinates() const
     c.collision_links = links_with_collision_spheres_;
     c.contact_links = links_with_contact_spheres_;
 
-    const std::vector<robot_model::JointModel*> joints = robot_model_->getJointModels();
-
-    for (robot_model::JointModel* j : joints) {
+    for (robot_model::JointModel* j : robot_model_->getJointModels()) {
         std::vector<double> vals;
         vals.resize(j->getVariableCount());
         j->getVariableDefaultPositions(&vals[0]);
@@ -546,16 +544,12 @@ bool URDFCollisionModel::checkLimits(const URDFModelCoords &coords) const
     }
     for (auto it = coords.coordmap.begin(); it != coords.coordmap.end(); it++) {
         std::string joint_name = it->first;
-        const robot_model::JointModel* jm =
-                robot_model_->getJointModel(joint_name);
+        const robot_model::JointModel* jm = robot_model_->getJointModel(joint_name);
 
-        if (jm == NULL) {
+        if (!jm) {
             ROS_ERROR("Could not get joint model for joint %s", joint_name.c_str());
             throw SBPL_Exception();
         }
-
-        if(joint_name.compare("joint_tr_P") == 0)
-            continue;
 
         int var_count = jm->getVariableCount();
         robot_model::JointModel::Bounds bounds = jm->getVariableBounds();
@@ -570,7 +564,7 @@ bool URDFCollisionModel::checkLimits(const URDFModelCoords &coords) const
                 if (it->second[j] < bounds[j].min_position_ ||
                     it->second[j] > bounds[j].max_position_)
                 {
-                    ROS_WARN("Joint %s var %d [%.3f] outside limits [%.3f to %.3f]", joint_name.c_str(), j, it->second[j], bounds[j].min_position_, bounds[j].max_position_);
+                    ROS_DEBUG("Joint %s var %d [%.3f] outside limits [%.3f to %.3f]", joint_name.c_str(), j, it->second[j], bounds[j].min_position_, bounds[j].max_position_);
                     return false;
                 }
             }
@@ -621,10 +615,6 @@ bool URDFCollisionModel::updateFK(
     // then go through the other joints and set them
     for (auto it = coords.coordmap.begin(); it != coords.coordmap.end(); it++) {
         const std::string &joint_name = it->first;
-
-        if (joint_name == "joint_tr_P") {
-            continue;
-        }
 
         const robot_model::JointModel* jm = state.getRobotModel()->getJointModel(joint_name);
         int var_count = jm->getVariableCount();
@@ -749,7 +739,7 @@ bool URDFCollisionModel::getInterpolatedCoordinates(
     URDFModelCoords &interp) const
 {
     const robot_model::JointModel* root = robot_model_->getRootJoint();
-    if (root == NULL) {
+    if (!root) {
         ROS_ERROR("Could not find root joint!");
         return false;
     }
@@ -770,15 +760,11 @@ bool URDFCollisionModel::getInterpolatedCoordinates(
     robot_state_->setJointPositions(root, root_varsT);
     interp.root = robot_state_->getJointTransform(root);
 
-    for (std::map<std::string, std::vector<double>>::const_iterator it0 =
-            coords0.coordmap.begin(); it0 != coords0.coordmap.end(); it0++) {
+    for (auto it0 = coords0.coordmap.begin(); it0 != coords0.coordmap.end(); it0++) {
         std::string joint_name = it0->first;
         std::vector<double> j0_pos = it0->second;
         std::vector<double> j1_pos;
         std::vector<double> jt_pos(j0_pos.size());
-
-        if(joint_name.compare("joint_tr_P") == 0)
-            continue;
 
         if (!coords1.getCoords(joint_name, j1_pos)) {
             ROS_ERROR("Could not find joint %s in coords1", joint_name.c_str());
@@ -787,7 +773,7 @@ bool URDFCollisionModel::getInterpolatedCoordinates(
 
         const robot_model::JointModel* jm = robot_model_->getJointModel(
                 joint_name);
-        if (jm == NULL) {
+        if (!jm) {
             ROS_ERROR(
                     "URDFCollisionModel::getInterpolatedPath -- Joint %s not found in model!",
                     joint_name.c_str());
@@ -858,7 +844,7 @@ bool URDFCollisionModel::getInterpolatedPath(
             }
 
             const robot_model::JointModel* jm = robot_model_->getJointModel(joint_name);
-            if (jm == NULL) {
+            if (!jm) {
                 ROS_ERROR("URDFCollisionModel::getInterpolatedPath -- Joint %s not found in model!", joint_name.c_str());
                 throw SBPL_Exception();
                 return false;
@@ -1235,7 +1221,7 @@ bool URDFCollisionModel::computeGroupIK(
     const robot_model::JointModelGroup* joint_model_group =
             robot_model_->getJointModelGroup(group_name);
 
-    if (joint_model_group == NULL) {
+    if (!joint_model_group) {
         ROS_ERROR("Could not get joint model group: %s", group_name.c_str());
         return false;
     }
@@ -1349,7 +1335,7 @@ bool URDFCollisionModel::attachObjectToLink(
     }
 
     const robot_model::LinkModel* link = robot_model_->getLinkModel(link_name);
-    if (link == NULL) {
+    if (!link) {
         ROS_ERROR("Could not find link %s", link_name.c_str());
         return false;
     }
