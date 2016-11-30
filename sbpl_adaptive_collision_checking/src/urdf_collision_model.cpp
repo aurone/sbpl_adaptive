@@ -1399,90 +1399,65 @@ bool URDFCollisionModel::computeGroupIK(
     return true;
 }
 
-void URDFCollisionModel::PrintModelInfo() const
+void URDFCollisionModel::PrintModelInfo(std::ostream &o) const
 {
-    ROS_INFO("Root Joint: %s", robot_model_->getRootJointName().c_str());
-    ROS_INFO("Root Link: %s", robot_model_->getRootLinkName().c_str());
+    o << "Root Joint: " << robot_model_->getRootJointName() << '\n';
+    o << "Root Link: " <<  robot_model_->getRootLinkName() << '\n';
 
-    ROS_INFO("Active Joints:");
-    const std::vector<robot_model::JointModel*> joints =
-            robot_model_->getJointModels();
-    for (robot_model::JointModel* j : joints) {
-        if (j->isPassive())
+    o << "Active Joints:\n";
+    for (robot_model::JointModel* j : robot_model_->getJointModels()) {
+        if (j->isPassive()) {
             continue;
-        if (j->getType() == robot_model::JointModel::FIXED)
+        }
+        if (j->getType() == robot_model::JointModel::FIXED) {
             continue;
-        ROS_INFO("  %s", j->getName().c_str());
+        }
+        o << "  " << j->getName() << '\n';
         if (j->getVariableCount() > 0) {
-            ROS_INFO("\tVariables:");
+            o << "    Variables:\n";
             std::vector<std::string> varnames = j->getVariableNames();
             robot_model::JointModel::Bounds bounds = j->getVariableBounds();
             for (int i = 0; i < varnames.size(); i++) {
                 std::string vn = varnames[i];
-#ifdef __ROS_DISTRO_groovy__
-                std::pair<double, double> bound = bounds[i];
-#else
                 robot_model::VariableBounds bound = bounds[i];
-#endif
-                ROS_INFO("\t\t%s [%.3f : %.3f]", vn.c_str(),
-#ifdef __ROS_DISTRO_groovy__
-                        bound.first, bound.second
-#else
-                        bound.min_position_, bound.max_position_
-#endif
-                        );
+                o << "      " << vn << " [" << bound.min_position_ << " : " << bound.max_position_ << "]\n";
             }
         }
     }
-    ROS_INFO("Fixed Joints:");
-    for (robot_model::JointModel* j : joints) {
-        if (j->isPassive())
+    o << "Fixed Joints:\n";
+    for (robot_model::JointModel* j : robot_model_->getJointModels()) {
+        if (j->isPassive()) {
             continue;
-        if (j->getType() != robot_model::JointModel::FIXED)
+        }
+        if (j->getType() != robot_model::JointModel::FIXED) {
             continue;
-        ROS_INFO("  %s", j->getName().c_str());
+        }
+        o << "  " << j->getName() << '\n';
         if (j->getVariableCount() > 0) {
-            ROS_INFO("\tVariables:");
+            o << "    Variables:\n";
             std::vector<std::string> varnames = j->getVariableNames();
             robot_model::JointModel::Bounds bounds = j->getVariableBounds();
             for (int i = 0; i < varnames.size(); i++) {
                 std::string vn = varnames[i];
-#ifdef __ROS_DISTRO_groovy__
-                std::pair<double, double> bound = bounds[i];
-#else
                 robot_model::VariableBounds bound = bounds[i];
-#endif
-                ROS_INFO("\t\t%s [%.3f : %.3f]", vn.c_str(),
-#ifdef __ROS_DISTRO_groovy__
-                        bound.first, bound.second
-#else
-                        bound.min_position_, bound.max_position_
-#endif
-                        );
+                o << "      " << vn << " [" << bound.min_position_ << " : " << bound.max_position_ << "]\n";
             }
         }
     }
 
-    ROS_INFO("Links:");
-    const std::vector<robot_model::LinkModel*> links =
-            robot_model_->getLinkModels();
-    for (robot_model::LinkModel* l : links) {
-        ROS_INFO("\t%s", l->getName().c_str());
+    o << "Links:\n";
+    for (robot_model::LinkModel* l : robot_model_->getLinkModels()) {
+        o << "  " << l->getName();
     }
-    ROS_INFO("Groups:");
-    std::vector<std::string> group_names =
-            robot_model_->getJointModelGroupNames();
-    for (std::string gn : group_names) {
-        const robot_model::JointModelGroup* group =
-                robot_model_->getJointModelGroup(gn);
-        const std::vector<const robot_model::JointModel*> roots =
-                group->getJointRoots();
-        ROS_INFO("\t%s:", gn.c_str());
-        ROS_INFO("\tRoot joints:");
-        for (const robot_model::JointModel* r : roots) {
-            ROS_INFO("\t\t%s", r->getName().c_str());
+
+    o << "Groups:\n";
+    for (const robot_model::JointModelGroup *group : robot_model_->getJointModelGroups()) {
+        o << "  " << group->getName() << '\n';
+        o << "  Root Joints:\n";
+        for (const robot_model::JointModel* r : group->getJointRoots()) {
+            o << "    " << r->getName() << '\n';
         }
-        ROS_INFO("\tEnd effector: %s", group->getEndEffectorName().c_str());
+        o << "  End Effector: " << group->getEndEffectorName() << '\n';
     }
 }
 

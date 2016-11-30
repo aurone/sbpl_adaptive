@@ -246,7 +246,7 @@ public:
         const std::string &object_name,
         double res);
 
-    void PrintModelInfo() const;
+    void PrintModelInfo(std::ostream &o) const;
 
     void addIgnoreSelfCollisionLinkPair(
         const std::pair<std::string, std::string> pair);

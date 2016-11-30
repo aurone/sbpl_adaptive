@@ -72,7 +72,9 @@ int main(int argc, char** argv)
         ROS_ERROR("Failed to create collision space!");
     }
 
-    urdf_model->PrintModelInfo();
+    std::ostringstream oss;
+    urdf_model->PrintModelInfo(oss);
+    ROS_INFO_STREAM(oss);
 
     if (urdf_model->computeSpheresFromURDFModel(0.05, { }, { }) == false) {
         ROS_WARN("Could not auto-compute model spheres!");
