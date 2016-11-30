@@ -112,7 +112,7 @@ public:
     /// \name Required Public Functions From AdaptiveDiscreteSpaceInformation
     ///@{
 
-    bool isExecutablePath(const std::vector<int> &stateIDV);
+    bool isExecutablePath(const std::vector<int> &stateIDV) override;
 
     virtual void GetSuccs_Track(
         int SourceStateID,
