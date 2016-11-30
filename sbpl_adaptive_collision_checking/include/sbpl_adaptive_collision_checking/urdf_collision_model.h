@@ -170,8 +170,6 @@ public:
         int steps,
         std::vector<URDFModelCoords> &path) const;
 
-    bool initFromFile(std::string fname);
-
     void addContactSpheres(
         const std::string &link_name,
         const std::vector<Sphere> &s);
@@ -255,6 +253,7 @@ public:
 
     boost::shared_ptr<const urdf::ModelInterface> getURDF() const;
     boost::shared_ptr<const srdf::Model> getSRDF() const;
+    moveit::core::RobotModelConstPtr getRobotModel() const;
 
     moveit::core::RobotStatePtr getStateAt(const URDFModelCoords &coords) const;
 
@@ -669,6 +668,12 @@ boost::shared_ptr<const srdf::Model>
 URDFCollisionModel::getSRDF() const
 {
     return srdf_;
+}
+
+inline
+moveit::core::RobotModelConstPtr URDFCollisionModel::getRobotModel() const
+{
+    return robot_model_;
 }
 
 inline
