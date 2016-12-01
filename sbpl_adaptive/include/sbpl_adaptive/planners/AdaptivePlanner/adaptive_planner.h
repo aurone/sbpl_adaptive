@@ -1,15 +1,9 @@
-#ifndef __ADAPTIVEPLANNER_H_
-#define __ADAPTIVEPLANNER_H_
+#ifndef ADIM_ADAPTIVE_PLANNER_H
+#define ADIM_ADAPTIVE_PLANNER_H
 
 #include <sbpl_adaptive/macros.h>
 
-#define ADP_DEBUG
-#define ADP_VERBOSE //toggles verbose mode
 #define ADP_GRAPHICAL //enables calling of visualization functions from the environment
-
-#ifndef ADP_VERBOSE
-#define SBPL_INFO(...)
-#endif
 
 namespace adim {
 
@@ -21,7 +15,7 @@ public:
 
     /// \brief constructor
     AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, bool bforwardsearch);
-	AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, bool bSearchForward, Heuristic* anc_heur, Heuristic** heurs, int num_heur);
+    AdaptivePlanner(AdaptiveDiscreteSpaceInformation* environment, bool bSearchForward, Heuristic* anc_heur, Heuristic** heurs, int num_heur);
 
     /// \brief destructor
     ~AdaptivePlanner();
@@ -159,7 +153,7 @@ private:
     int GoalStateID;
 
     /*double newSphereRad;
-	double tunnelWidth;*/
+    double tunnelWidth;*/
     double timePerRetryPlan_;
     double timePerRetryTrack_;
 
@@ -173,14 +167,14 @@ private:
     bool bforwardsearch; //if true, then search proceeds forward, otherwise backward
     bool bsearchuntilfirstsolution; //if true, then search until first solution only (see planner.h for search modes)
 
-	//MHA*
-	Heuristic* plan_anc_heur_;
-	Heuristic** plan_heurs_;
-	Heuristic* track_anc_heur_;
-	Heuristic** track_heurs_;
-	int num_heur_;
+    //MHA*
+    Heuristic* plan_anc_heur_;
+    Heuristic** plan_heurs_;
+    Heuristic* track_anc_heur_;
+    Heuristic** track_heurs_;
+    int num_heur_;
 
-	//member functions
+    //member functions
     unsigned int searchexpands;
 };
 
