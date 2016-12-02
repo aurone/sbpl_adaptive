@@ -660,12 +660,12 @@ int MHAPlanner_AD::compute_heuristic(int state_id, int hidx)
 
     if (hidx == 0) {
         int anc = m_hanchor->GetGoalHeuristic(state_id);
-        ROS_INFO("Anchor is %d", anc);
+        ROS_DEBUG("Anchor is %d", anc);
         return anc;
     }
     else {
         int heur = m_heurs[hidx - 1]->GetGoalHeuristic(state_id);
-        ROS_INFO("Stair is %d", heur);
+        ROS_DEBUG("Stair is %d", heur);
         if(heur == 0 && hidx == 1 && state_id != 1){
             set_heur_ = true;
             return m_hanchor->GetGoalHeuristic(state_id);
