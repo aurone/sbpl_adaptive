@@ -160,9 +160,9 @@ public:
         const std::string& mesh_resource,
         const geometry_msgs::PoseStamped& pose,
         int color,
-        std::string ns,
+        const std::string &ns,
         int id,
-        std::string reference_frame_);
+        const std::string &reference_frame_);
 
     // visualizes a triangle list; if psychadelic is true then each triangle has
     // one of each red, green, and blue vertices

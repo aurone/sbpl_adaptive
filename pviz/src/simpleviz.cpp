@@ -660,8 +660,13 @@ void SimpleViz::visualizeCube(geometry_msgs::PoseStamped pose, int color, std::s
     showMarker(marker);
 }
 
-void SimpleViz::visualizeMesh(const std::string& mesh_resource, const geometry_msgs::PoseStamped& pose, int color,
-    std::string ns, int id, std::string reference_frame_)
+void SimpleViz::visualizeMesh(
+    const std::string &mesh_resource,
+    const geometry_msgs::PoseStamped &pose,
+    int color,
+    const std::string &ns,
+    int id,
+    const std::string &reference_frame_)
 {
     double r = 0.0, g = 0.0, b = 0.0;
     HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
