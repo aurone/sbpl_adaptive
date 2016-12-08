@@ -498,11 +498,11 @@ double URDFModelCoords::getMaxJointDistance(
     const URDFModelCoords &to)
 {
     double max_dist = 0.0;
-    for (auto it = to.coordmap.begin(); it != to.coordmap.end(); it++) {
+    for (auto it = to.coordmap.begin(); it != to.coordmap.end(); ++it) {
         std::vector<double> seed_val;
         if (!from.getCoords(it->first, seed_val)) {
-            ROS_ERROR("%s not found in [from]!", it->first.c_str());
-            throw SBPL_Exception();
+            ROS_ERROR_THROTTLE(1.0, "%s not found in [from]!", it->first.c_str());
+            continue;
         }
         for (int v = 0; v < seed_val.size(); v++) {
             double diff = fabs(angles::shortest_angular_distance(
