@@ -50,7 +50,7 @@ include_directories(include)
 
 add_definitions(-DROS)
 
-add_library(${PROJECT_NAME} src/pviz.cpp src/simpleviz.cpp)
+add_library(${PROJECT_NAME} src/simpleviz.cpp)
 
 install(
     TARGETS ${PROJECT_NAME}

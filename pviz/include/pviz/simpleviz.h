@@ -29,8 +29,6 @@
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 
-void HSVtoRGB(double *r, double *g, double *b, double h, double s, double v );
-
 SBPL_CLASS_FORWARD(SimpleViz)
 class SimpleViz
 {

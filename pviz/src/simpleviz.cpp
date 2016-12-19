@@ -2,6 +2,8 @@
 
 #include <pviz/simpleviz.h>
 
+#include <leatherman/utils.h>
+
 SimpleViz::SimpleViz() :
     nh_(),
     ph_("~"),
@@ -305,7 +307,7 @@ void SimpleViz::visualizeSphere(std::vector<double> pos3, int color, std::string
     double r=0,g=0,b=0;
     visualization_msgs::Marker marker;
 
-    HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
+    leatherman::HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
 
     marker.header.stamp = ros::Time::now();
     marker.header.frame_id = reference_frame_;
@@ -334,7 +336,7 @@ void SimpleViz::visualizeSphere(std::vector<double> pose, int color, std::string
     double r=0,g=0,b=0;
     visualization_msgs::Marker marker;
 
-    HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
+    leatherman::HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
 
     marker.header.stamp = ros::Time::now();
     marker.header.frame_id = reference_frame_;
@@ -363,7 +365,7 @@ void SimpleViz::visualizeSpheres(const std::vector<std::vector<double> > &pose, 
     double r=0,g=0,b=0;
     visualization_msgs::Marker marker;
 
-    HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
+    leatherman::HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
 
     marker.header.stamp = ros::Time::now();
     marker.header.frame_id = reference_frame_;
@@ -396,7 +398,7 @@ void SimpleViz::visualizeSpheres(const std::vector<std::vector<double> > &pose, 
     double r=0,g=0,b=0;
     visualization_msgs::Marker marker;
 
-    HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
+    leatherman::HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
 
     for(size_t i = 0; i < pose.size(); ++i)
     {
@@ -430,7 +432,7 @@ void SimpleViz::visualizeSpheres(const std::vector<std::vector<double> > &pose, 
     double r=0,g=0,b=0;
     visualization_msgs::Marker marker;
     visualization_msgs::MarkerArray marker_array;
-    HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
+    leatherman::HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
 
     for(size_t i = 0; i < pose.size(); ++i)
     {
@@ -473,7 +475,7 @@ void SimpleViz::visualizeSpheres(const std::vector<std::vector<double> > &pose, 
 
     for(std::size_t i = 0; i < pose.size(); ++i)
     {
-        HSVtoRGB(&r, &g, &b, hue[i], 1.0, 1.0);
+        leatherman::HSVtoRGB(&r, &g, &b, hue[i], 1.0, 1.0);
         marker.header.stamp = ros::Time::now();
         marker.header.frame_id = reference_frame_;
         marker.ns = text;
@@ -544,7 +546,7 @@ void SimpleViz::visualizeLine(const std::vector<geometry_msgs::Point> points, st
     double r=0,g=0,b=0;
     visualization_msgs::Marker marker;
 
-    HSVtoRGB(&r, &g, &b, hue, 1.0, 1.0);
+    leatherman::HSVtoRGB(&r, &g, &b, hue, 1.0, 1.0);
 
     marker.header.stamp = ros::Time::now();
     marker.header.frame_id = reference_frame_;
@@ -574,7 +576,7 @@ void SimpleViz::visualizeText(geometry_msgs::Pose pose, std::string text, std::s
     double r=0,g=0,b=0;
     visualization_msgs::Marker marker;
 
-    HSVtoRGB(&r, &g, &b, hue, 1.0, 1.0);
+    leatherman::HSVtoRGB(&r, &g, &b, hue, 1.0, 1.0);
 
     marker.header.stamp = ros::Time::now();
     marker.header.frame_id = reference_frame_;
@@ -639,7 +641,7 @@ void SimpleViz::visualizeCube(geometry_msgs::PoseStamped pose, int color, std::s
             return;
     }
 
-    HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
+    leatherman::HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
 
     marker.header.stamp = ros::Time::now();
     marker.header.frame_id = pose.header.frame_id;
@@ -669,7 +671,7 @@ void SimpleViz::visualizeMesh(
     const std::string &reference_frame_)
 {
     double r = 0.0, g = 0.0, b = 0.0;
-    HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
+    leatherman::HSVtoRGB(&r, &g, &b, color, 1.0, 0.6);
 
     visualization_msgs::Marker marker;
     marker.header.frame_id = reference_frame_;
@@ -688,7 +690,7 @@ void SimpleViz::visualizeMesh(
     marker.scale.x = 1.0;
     marker.scale.y = 1.0;
     marker.scale.z = 1.0;
-    marker.color.a = 1.0;
+    marker.color.a = 0.8;
     marker.color.r = r;
     marker.color.g = g;
     marker.color.b = b;
@@ -701,7 +703,7 @@ void SimpleViz::visualizeMeshTriangles(const std::vector<geometry_msgs::Point>& 
     const geometry_msgs::PoseStamped& pose, int color, std::string ns, int id, bool psychadelic, std::string reference_frame_)
 {
     double r = 0.0, g = 0.0, b = 0.0;
-    HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
+    leatherman::HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
 
     std_msgs::ColorRGBA red; red.a = 1.0f; red.r = 1.0f; red.g = 0.0f; red.b = 0.0f;
     std_msgs::ColorRGBA green; green.a = 1.0f; green.r = 0.0f; green.g = 1.0f; green.b = 0.0f;

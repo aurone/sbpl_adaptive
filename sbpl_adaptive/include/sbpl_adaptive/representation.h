@@ -87,7 +87,8 @@ public:
     virtual bool ProjectFootprintToStairs(
         const void *ld_state_data,
         std::vector<int> &hd_projStateIDs,
-        int adPathIdx = 0){
+        int adPathIdx = 0)
+    {
         return false;
     }
 
