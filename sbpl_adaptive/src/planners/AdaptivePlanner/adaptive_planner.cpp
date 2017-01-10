@@ -303,6 +303,7 @@ int AdaptivePlanner::replan(
         {
             ROS_INFO("Still have time (%.3fs)...tracking", allocated_time_secs - t_elapsed_s);
             MY_TIME_TYPE p_start = MY_TIME_NOW;
+            ad_track_time_alloc = allocated_time_secs - t_elapsed_s;
             tracking_bRet = tracker->replan(ad_track_time_alloc, &tracking_stateV, &t_Cost);
             t_elapsed_s = MY_TIME_DIFF_S(MY_TIME_NOW, start_t);
             if(!tracking_bRet && MY_TIME_DIFF_S(MY_TIME_NOW, p_start) < 0.1*ad_track_time_alloc){
@@ -310,9 +311,9 @@ int AdaptivePlanner::replan(
                 break;
             }
 
-            if(tracking_bRet) {
-                break;
-            } else {
+            // if(tracking_bRet) {
+            //     break;
+            // } else {
                 int new_bestTrackedID = adaptive_environment_->getBestSeenState();
                 if(new_bestTrackedID != -1 && new_bestTrackedID == last_bestTrackedID){
                     if(retries>=TRACK_RETRIES){
@@ -323,7 +324,7 @@ int AdaptivePlanner::replan(
                 } else {
                     last_bestTrackedID = new_bestTrackedID;
                     retries=0;
-                }
+                // }
             }
         }
 
