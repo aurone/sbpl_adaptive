@@ -159,6 +159,7 @@ int MHAPlanner_AD::replan(
     }
 
     // m_params = params;
+    m_params.max_time = params.max_time;
 
     SBPL_INFO("Generic Search parameters:");
     SBPL_INFO("  Initial Epsilon: %0.3f", m_params.initial_eps);
@@ -281,6 +282,7 @@ int MHAPlanner_AD::replan(
             SBPL_WARN("Reconstructing partial path!");
             MHASearchState* best_seen_state = get_state(best_state_id);
             extract_partial_path(solution_stateIDs_V, solcost, best_seen_state);
+            return 1;
         }
 
     }
@@ -574,6 +576,7 @@ int MHAPlanner_AD::compute_key(MHASearchState* state, int hidx)
 void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
 {
     SBPL_DEBUG("Expanding state %d in search %d", state->state_id, hidx);
+    environment_->expandingState(state->state_id);
 
     assert(!closed_in_add_search(state) || !closed_in_anc_search(state));
 
