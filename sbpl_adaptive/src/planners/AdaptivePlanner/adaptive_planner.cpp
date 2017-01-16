@@ -5,47 +5,49 @@
 
 using namespace std;
 
-//====================================== PUBLIC ====================================================
 namespace adim {
 
 AdaptivePlanner::AdaptivePlanner(
     AdaptiveDiscreteSpaceInformation* environment,
     bool bSearchForward)
+:
+    num_iterations_(0),
+    repair_time_(0.0),
+    track_time_total_s_(0.0),
+    plan_time_total_s_(0.0),
+    adaptive_environment_(environment),
+    planner_(),
+    tracker_(),
+    stat_(),
+    start_state_id_(-1),
+    goal_state_id_(-1),
+    time_per_retry_plan_(5.0),
+    time_per_retry_track_(5.0),
+    target_eps_(-1.0),
+    planning_eps_(-1.0),
+    tracking_eps_(-1.0),
+    final_eps_planning_time_(-1.0),
+    final_eps_(-1.0),
+    forward_search_(bSearchForward),
+    search_until_first_solution_(true),
+    plan_anc_heur_(nullptr),
+    plan_heurs_(nullptr),
+    track_anc_heur_(nullptr),
+    track_heurs_(nullptr),
+    num_heur_(0),
+    search_expands_(0)
 {
-    logstream_ = stdout;
+//    ros::WallTime t = ros::WallTime::now();
+
     ROS_INFO("Create adaptive planner...");
-    bforwardsearch = bSearchForward;
-    adaptive_environment_ = environment;
-
-    StartStateID = -1;
-    GoalStateID = -1;
-
-    final_eps_planning_time = -1.0;
-    final_eps = -1.0;
-
-    timePerRetryPlan_ = 5.0;
-    timePerRetryTrack_ = 5.0;
-
-    planningEPS = -1.0;
-    trackingEPS = -1.0;
-    targetEPS = -1.0;
-
-    nIterations = 0;
-    plan_time_total_s = 0;
-    track_time_total_s = 0;
-    bsearchuntilfirstsolution = true;
-    repair_time = 0;
-    searchexpands = 0;
 
     stat_.reset(new AdaptivePlannerCSVStat_c());
-    //adaptive_environment_->setStat(stat_.get());
 
     ROS_INFO("Initialize planners...");
-
-    planner.reset(new ARAPlanner(adaptive_environment_, bSearchForward));
-    planner->set_search_mode(false);
-    tracker.reset(new ARAPlanner_AD(adaptive_environment_, bSearchForward));
-    tracker->set_search_mode(false);
+    planner_.reset(new ARAPlanner(adaptive_environment_, forward_search_));
+    planner_->set_search_mode(false);
+    tracker_.reset(new ARAPlanner_AD(adaptive_environment_, forward_search_));
+    tracker_->set_search_mode(false);
     ROS_INFO("done!");
 }
 
@@ -56,30 +58,29 @@ AdaptivePlanner::AdaptivePlanner(
     Heuristic** heurs,
     int num_heur)
 {
-    logstream_ = stdout;
     ROS_INFO("Create adaptive planner...");
-    bforwardsearch = bSearchForward;
+    forward_search_ = bSearchForward;
     adaptive_environment_ = environment;
 
-    StartStateID = -1;
-    GoalStateID = -1;
+    start_state_id_ = -1;
+    goal_state_id_ = -1;
 
-    final_eps_planning_time = -1.0;
-    final_eps = -1.0;
+    final_eps_planning_time_ = -1.0;
+    final_eps_ = -1.0;
 
-    timePerRetryPlan_ = 5.0;
-    timePerRetryTrack_ = 5.0;
+    time_per_retry_plan_ = 5.0;
+    time_per_retry_track_ = 5.0;
 
-    planningEPS = 100.0;
-    trackingEPS = 100.0;
-    targetEPS = -1.0;
+    planning_eps_ = 100.0;
+    tracking_eps_ = 100.0;
+    target_eps_ = -1.0;
 
-    nIterations = 0;
-    plan_time_total_s = 0;
-    track_time_total_s = 0;
-    bsearchuntilfirstsolution = true;
-    repair_time = 0;
-    searchexpands = 0;
+    num_iterations_ = 0;
+    plan_time_total_s_ = 0;
+    track_time_total_s_ = 0;
+    search_until_first_solution_ = true;
+    repair_time_ = 0;
+    search_expands_ = 0;
 
     stat_.reset(new AdaptivePlannerCSVStat_c());
     //adaptive_environment_->setStat(stat_.get());
@@ -94,12 +95,12 @@ AdaptivePlanner::AdaptivePlanner(
 
     num_heur_ = num_heur;
 
-    // planner.reset(new Imp_MHAPlanner_AD(adaptive_environment_, plan_anc_heur_, plan_heurs_, num_heur_, bforwardsearch));
-    planner.reset(new MHAPlanner_AD(adaptive_environment_, plan_anc_heur_, plan_heurs_, num_heur_));
-    planner->set_search_mode(false);
-    // tracker.reset(new Imp_MHAPlanner_AD(adaptive_environment_, track_anc_heur_, track_heurs_, num_heur_, bforwardsearch));
-    tracker.reset(new MHAPlanner_AD(adaptive_environment_, track_anc_heur_, track_heurs_, num_heur_));
-    tracker->set_search_mode(false);
+    // planner.reset(new Imp_MHAPlanner_AD(adaptive_environment_, plan_anc_heur_, plan_heurs_, num_heur_, forward_search_));
+    planner_.reset(new MHAPlanner_AD(adaptive_environment_, plan_anc_heur_, plan_heurs_, num_heur_));
+    planner_->set_search_mode(false);
+    // tracker.reset(new Imp_MHAPlanner_AD(adaptive_environment_, track_anc_heur_, track_heurs_, num_heur_, forward_search_));
+    tracker_.reset(new MHAPlanner_AD(adaptive_environment_, track_anc_heur_, track_heurs_, num_heur_));
+    tracker_->set_search_mode(false);
 
     ROS_INFO("done!");
 }
@@ -125,8 +126,8 @@ int AdaptivePlanner::replan(
     std::vector<int> tracking_stateV;
 
     MY_TIME_TYPE start_t = MY_TIME_NOW;
-    track_time_total_s = 0;
-    plan_time_total_s = 0;
+    track_time_total_s_ = 0;
+    plan_time_total_s_ = 0;
 
     int round = 0;
 
@@ -138,26 +139,26 @@ int AdaptivePlanner::replan(
     int planning_bRet;
     int tracking_bRet;
 
-    ROS_INFO("Set start and goal for planner and tracker...");
+    ROS_INFO("Set start and goal for planner and tracker_...");
 
-    if(planner->set_start(StartStateID) == 0)
+    if(planner_->set_start(start_state_id_) == 0)
     {
         ROS_ERROR("ERROR: planner failed to set start state");
         throw SBPL_Exception();
     }
 
-    if(tracker->set_start(StartStateID) == 0){
+    if(tracker_->set_start(start_state_id_) == 0){
         ROS_ERROR("ERROR: tracker failed to set start state");
         throw SBPL_Exception();
     }
 
-    if(planner->set_goal(GoalStateID) == 0)
+    if(planner_->set_goal(goal_state_id_) == 0)
     {
         ROS_ERROR("ERROR: planner failed to set goal state");
         throw SBPL_Exception();
     }
 
-    if(tracker->set_goal(GoalStateID) == 0){
+    if(tracker_->set_goal(goal_state_id_) == 0){
         ROS_ERROR("ERROR: tracker failed to set goal state");
         throw SBPL_Exception();
     }
@@ -165,23 +166,23 @@ int AdaptivePlanner::replan(
     ROS_INFO("Set environment in planning mode...");
     adaptive_environment_->setPlanMode();
 
-    ROS_INFO("Add start (%d) and goal (%d) spheres...", StartStateID, GoalStateID);
-    adaptive_environment_->addSphere(GoalStateID);
-    adaptive_environment_->addSphere(StartStateID);
+    ROS_INFO("Add start (%d) and goal (%d) spheres...", start_state_id_, goal_state_id_);
+    adaptive_environment_->addSphere(goal_state_id_);
+    adaptive_environment_->addSphere(start_state_id_);
 
     std::vector<int> ModifiedStates;
     std::vector<int> TrkModifiedStates;
-    repair_time = 0.0;
+    repair_time_ = 0.0;
 
-    ROS_INFO("Force planning from scratch for planner and tracker...");
-    planner->force_planning_from_scratch();
-    tracker->force_planning_from_scratch();
+    ROS_INFO("Force planning from scratch for planner and tracker_...");
+    planner_->force_planning_from_scratch();
+    tracker_->force_planning_from_scratch();
 
     std::vector<int> LastTrackPath;
     bool LastTrackSuccess = false;
     double t_elapsed_s;
 
-    stat_->setInitialEps(planningEPS*trackingEPS);
+    stat_->setInitialEps(planning_eps_*tracking_eps_);
 
     std::vector<int> new_sphere_locations; //as stateIDs
     do {
@@ -192,7 +193,7 @@ int AdaptivePlanner::replan(
                 solution_stateIDs_V->push_back(LastTrackPath[i]);
             }
             ROS_INFO("Done in: %.3f sec", MY_TIME_DIFF_S(MY_TIME_NOW, start_t));
-            nIterations = round;
+            num_iterations_ = round;
 
             stat_->setTotalPlanningTime(MY_TIME_DIFF_S(MY_TIME_NOW, start_t));
             stat_->setFinalEps(-1.0);
@@ -217,9 +218,9 @@ int AdaptivePlanner::replan(
         ROS_INFO("\t||          Planning Phase           ||");
         ROS_INFO("\t=======================================");
 
-        planner->force_planning_from_scratch();
-        planner->set_initialsolution_eps(planningEPS);
-        planner->set_search_mode(false);
+        planner_->force_planning_from_scratch();
+        planner_->set_initialsolution_eps(planning_eps_);
+        planner_->set_search_mode(false);
 
         adaptive_environment_->setPlanMode();
         //add pending new spheres
@@ -236,7 +237,7 @@ int AdaptivePlanner::replan(
         while(t_elapsed_s < allocated_time_secs){
             ROS_INFO("Still have time (%.3fs)...planning", allocated_time_secs - t_elapsed_s);
             MY_TIME_TYPE p_start = MY_TIME_NOW;
-            planning_bRet = planner->replan(ad_plan_time_alloc, &planning_stateV, &p_Cost);
+            planning_bRet = planner_->replan(ad_plan_time_alloc, &planning_stateV, &p_Cost);
             t_elapsed_s = MY_TIME_DIFF_S(MY_TIME_NOW, start_t);
             if(!planning_bRet && MY_TIME_DIFF_S(MY_TIME_NOW, p_start) < 0.1*ad_plan_time_alloc){
                 ROS_WARN("Planning too quick! Probably stuck!");
@@ -246,7 +247,7 @@ int AdaptivePlanner::replan(
         }
 
         plan_time_s = MY_TIME_DIFF_S(MY_TIME_NOW, plan_start);
-        plan_time_total_s += plan_time_s;
+        plan_time_total_s_ += plan_time_s;
         stat_->addPlanningPhaseTime(plan_time_s);
 
         ROS_INFO("Planner done in %.3fs...", plan_time_s);
@@ -256,10 +257,10 @@ int AdaptivePlanner::replan(
 #ifdef ADP_GRAPHICAL
             adaptive_environment_->visualizeEnvironment();
 #endif
-            nIterations = round;
+            num_iterations_ = round;
             stat_->setFinalEps(-1.0);
             stat_->setSuccess(false);
-            stat_->setNumIterations(nIterations+1);
+            stat_->setNumIterations(num_iterations_+1);
             return planning_bRet;
         }
         if(adaptive_environment_->isExecutablePath(planning_stateV)){
@@ -269,11 +270,11 @@ int AdaptivePlanner::replan(
             }
             ROS_INFO("Iteration Time: %.3f sec (avg: %.3f)", MY_TIME_DIFF_S(MY_TIME_NOW, iter_start), MY_TIME_DIFF_S(MY_TIME_NOW, start_t) / (round+1.0));
             ROS_INFO("Done in: %.3f sec", MY_TIME_DIFF_S(MY_TIME_NOW, start_t));
-            nIterations = round;
-            stat_->setFinalEps(planner->get_final_epsilon());
+            num_iterations_ = round;
+            stat_->setFinalEps(planner_->get_final_epsilon());
             stat_->setFinalPlanCost(p_Cost);
             stat_->setFinalTrackCost(p_Cost);
-            stat_->setNumIterations(nIterations+1);
+            stat_->setNumIterations(num_iterations_+1);
             stat_->setSuccess(true);
             stat_->setTotalPlanningTime(MY_TIME_DIFF_S(MY_TIME_NOW, start_t));
             return true;
@@ -289,9 +290,9 @@ int AdaptivePlanner::replan(
         ROS_INFO("\t=======================================");
         track_start = MY_TIME_NOW;
         adaptive_environment_->setTrackMode(planning_stateV, p_Cost, &TrkModifiedStates);
-        tracker->force_planning_from_scratch();
-        tracker->set_initialsolution_eps(trackingEPS);
-        tracker->set_search_mode(false);
+        tracker_->force_planning_from_scratch();
+        tracker_->set_initialsolution_eps(tracking_eps_);
+        tracker_->set_search_mode(false);
         tracking_stateV.clear();
         tracking_bRet = 0;
 
@@ -304,7 +305,7 @@ int AdaptivePlanner::replan(
             ROS_INFO("Still have time (%.3fs)...tracking", allocated_time_secs - t_elapsed_s);
             MY_TIME_TYPE p_start = MY_TIME_NOW;
             ad_track_time_alloc = allocated_time_secs - t_elapsed_s;
-            tracking_bRet = tracker->replan(ad_track_time_alloc, &tracking_stateV, &t_Cost);
+            tracking_bRet = tracker_->replan(ad_track_time_alloc, &tracking_stateV, &t_Cost);
             t_elapsed_s = MY_TIME_DIFF_S(MY_TIME_NOW, start_t);
             if(!tracking_bRet && MY_TIME_DIFF_S(MY_TIME_NOW, p_start) < 0.1*ad_track_time_alloc){
                 ROS_WARN("Tracking too quick! Probably stuck!");
@@ -329,7 +330,7 @@ int AdaptivePlanner::replan(
         }
 
         track_time_s = MY_TIME_DIFF_S(MY_TIME_NOW, track_start);
-        track_time_total_s += track_time_s;
+        track_time_total_s_ += track_time_s;
         stat_->addTrackingPhaseTime(track_time_s);
 
         LastTrackPath.clear();
@@ -349,16 +350,16 @@ int AdaptivePlanner::replan(
         adaptive_environment_->visualizeStatePath(&tracking_stateV, 240, 300, "tracking_path");
 #endif
 
-        if(tracking_bRet && (t_Cost / (1.0f * p_Cost)) > trackingEPS * planningEPS){
+        if(tracking_bRet && (t_Cost / (1.0f * p_Cost)) > tracking_eps_ * planning_eps_){
             //tracking found a costly path
-            ROS_INFO("Tracking succeeded - costly path found! tCost %d / pCost %d (eps: %.3f, target: %.3f)", t_Cost, p_Cost, (t_Cost/(double)p_Cost), trackingEPS * planningEPS);
+            ROS_INFO("Tracking succeeded - costly path found! tCost %d / pCost %d (eps: %.3f, target: %.3f)", t_Cost, p_Cost, (t_Cost/(double)p_Cost), tracking_eps_ * planning_eps_);
             adaptive_environment_->processCostlyPath(planning_stateV, tracking_stateV, &new_sphere_locations);
             if(new_sphere_locations.size() == 0){
                 ROS_ERROR("No new spheres added during this planning episode!!!");
                 throw SBPL_Exception();
             }
-        } else if (tracking_bRet && (t_Cost / (1.0f * p_Cost)) <= trackingEPS * planningEPS ) {
-            ROS_INFO("Tracking succeeded! - good path found! tCost %d / pCost %d (eps: %.3f, target: %.3f)", t_Cost, p_Cost, (t_Cost/(double)p_Cost), trackingEPS * planningEPS);
+        } else if (tracking_bRet && (t_Cost / (1.0f * p_Cost)) <= tracking_eps_ * planning_eps_ ) {
+            ROS_INFO("Tracking succeeded! - good path found! tCost %d / pCost %d (eps: %.3f, target: %.3f)", t_Cost, p_Cost, (t_Cost/(double)p_Cost), tracking_eps_ * planning_eps_);
 #ifdef ADP_GRAPHICAL
             adaptive_environment_->visualizeStatePath(&tracking_stateV, 0, 240, "tracking_path");
 #endif
@@ -368,11 +369,11 @@ int AdaptivePlanner::replan(
             }
             ROS_INFO("Iteration Time: %.3f sec (avg: %.3f)", MY_TIME_DIFF_S(MY_TIME_NOW, iter_start), MY_TIME_DIFF_S(MY_TIME_NOW, start_t) / (round+1.0));
             ROS_INFO("Done in: %.3f sec", MY_TIME_DIFF_S(MY_TIME_NOW, start_t));
-            nIterations = round;
-            stat_->setFinalEps(planner->get_final_epsilon() * tracker->get_final_epsilon());
+            num_iterations_ = round;
+            stat_->setFinalEps(planner_->get_final_epsilon() * tracker_->get_final_epsilon());
             stat_->setFinalPlanCost(p_Cost);
             stat_->setFinalTrackCost(t_Cost);
-            stat_->setNumIterations(nIterations+1);
+            stat_->setNumIterations(num_iterations_+1);
             stat_->setSuccess(true);
             stat_->setTotalPlanningTime(MY_TIME_DIFF_S(MY_TIME_NOW, start_t));
             return true;
@@ -405,24 +406,24 @@ int AdaptivePlanner::replan(
 
 int AdaptivePlanner::set_goal(int goal_stateID)
 {
-    GoalStateID = goal_stateID;
+    goal_state_id_ = goal_stateID;
     ROS_INFO("goal set (StateID: %d)", goal_stateID);
     return 1;
 }
 
 int AdaptivePlanner::set_start(int start_stateID)
 {
-    StartStateID = start_stateID;
+    start_state_id_ = start_stateID;
     ROS_INFO("start set (StateID: %d)", start_stateID);
     return 1;
 }
 
 int AdaptivePlanner::force_planning_from_scratch()
 {
-    if(planner != NULL && tracker != NULL){
-        ROS_INFO("Reset planner and tracker!");
-        planner->force_planning_from_scratch();
-        tracker->force_planning_from_scratch();
+    if(planner_ != NULL && tracker_ != NULL){
+        ROS_INFO("Reset planner and tracker_!");
+        planner_->force_planning_from_scratch();
+        tracker_->force_planning_from_scratch();
     }
     adaptive_environment_->reset();
     stat_->reset();
@@ -431,10 +432,10 @@ int AdaptivePlanner::force_planning_from_scratch()
 
 int AdaptivePlanner::set_search_mode(bool bSearchUntilFirstSolution)
 {
-    bsearchuntilfirstsolution = bSearchUntilFirstSolution;
+    search_until_first_solution_ = bSearchUntilFirstSolution;
     //set search mode
-    planner->set_search_mode(bsearchuntilfirstsolution);
-    tracker->set_search_mode(bsearchuntilfirstsolution);
+    planner_->set_search_mode(search_until_first_solution_);
+    tracker_->set_search_mode(search_until_first_solution_);
     return 1;
 }
 
@@ -446,18 +447,18 @@ void AdaptivePlanner::print_searchpath(FILE* fOut)
 
 bool AdaptivePlanner::set_time_per_retry(double t_plan, double t_track)
 {
-    timePerRetryPlan_ = t_plan;
-    timePerRetryTrack_ = t_track;
+    time_per_retry_plan_ = t_plan;
+    time_per_retry_track_ = t_track;
     return true;
 }
 
 void AdaptivePlanner::set_initialsolution_eps(double initialsolution_eps)
 {
-    targetEPS = initialsolution_eps;
-    planningEPS = sqrt(initialsolution_eps);
-    trackingEPS = sqrt(initialsolution_eps);
-    planner->set_initialsolution_eps(planningEPS);
-    tracker->set_initialsolution_eps(trackingEPS);
+    target_eps_ = initialsolution_eps;
+    planning_eps_ = sqrt(initialsolution_eps);
+    tracking_eps_ = sqrt(initialsolution_eps);
+    planner_->set_initialsolution_eps(planning_eps_);
+    tracker_->set_initialsolution_eps(tracking_eps_);
 }
 
 int AdaptivePlanner::replan(
@@ -465,7 +466,7 @@ int AdaptivePlanner::replan(
     ReplanParams params, int* solcost)
 {
     set_initialsolution_eps(params.initial_eps);
-    bsearchuntilfirstsolution = params.return_first_solution;
+    search_until_first_solution_ = params.return_first_solution;
     return replan(params.max_time, params.repair_time, params.repair_time, solution_stateIDs_V, solcost);
 }
 
