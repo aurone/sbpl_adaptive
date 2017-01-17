@@ -106,8 +106,6 @@ private:
 
     int num_iterations_;
     double repair_time_;
-    std::chrono::duration<double> track_time_total_s_;
-    std::chrono::duration<double> plan_time_total_s_;
 
     AdaptiveDiscreteSpaceInformation* adaptive_environment_;
 
