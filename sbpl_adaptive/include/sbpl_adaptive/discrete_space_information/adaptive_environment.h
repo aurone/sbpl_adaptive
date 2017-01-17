@@ -171,18 +171,24 @@ public:
     ///@}
 
     // MHA - return anchor
-    virtual Heuristic* getAnchorHeur(){
+    virtual Heuristic* getAnchorHeur()
+    {
         SBPL_ERROR("Not implemented");
+        return nullptr;
     }
 
     // MHA - return other heurs
-    virtual Heuristic** getHeurs(){
-        SBPL_ERROR("Not implemented");    
+    virtual Heuristic** getHeurs()
+    {
+        SBPL_ERROR("Not implemented");
+        return nullptr;
     }
 
     // MHA - return number of heurs
-    virtual int getNumHeur(){
-        SBPL_ERROR("Not implemented");    
+    virtual int getNumHeur()
+    {
+        SBPL_ERROR("Not implemented");
+        return 0;
     }
 
     /// \name Called by ARAPlanner_AD, TRAPlanner, and standard SBPL planners
