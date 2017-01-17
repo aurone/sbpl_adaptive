@@ -1,11 +1,19 @@
 
 #include <sbpl_adaptive/headers.h>
 
+#include <smpl/time.h>
+
 #define TRACK_RETRIES 0
 
 using namespace std;
 
 namespace adim {
+
+template <class Rep, class Period>
+double to_secs(const std::chrono::duration<Rep, Period>& d)
+{
+    return std::chrono::duration_cast<std::chrono::duration<double>>(d).count();
+}
 
 AdaptivePlanner::AdaptivePlanner(
     AdaptiveDiscreteSpaceInformation* environment,
@@ -37,8 +45,6 @@ AdaptivePlanner::AdaptivePlanner(
     num_heur_(0),
     search_expands_(0)
 {
-//    ros::WallTime t = ros::WallTime::now();
-
     ROS_INFO("Create adaptive planner...");
 
     stat_.reset(new AdaptivePlannerCSVStat_c());
@@ -76,8 +82,8 @@ AdaptivePlanner::AdaptivePlanner(
     target_eps_ = -1.0;
 
     num_iterations_ = 0;
-    plan_time_total_s_ = 0;
-    track_time_total_s_ = 0;
+    plan_time_total_s_ = std::chrono::seconds::zero();
+    track_time_total_s_ = std::chrono::seconds::zero();
     search_until_first_solution_ = true;
     repair_time_ = 0;
     search_expands_ = 0;
@@ -121,44 +127,42 @@ int AdaptivePlanner::replan(
 {
     ROS_INFO("Begin Adaptive Planning...");
     adaptive_environment_->setPlanMode();
-    //DO THE ADAPTIVE PLANNING LOOP HERE
+    // DO THE ADAPTIVE PLANNING LOOP HERE
     std::vector<int> planning_stateV;
     std::vector<int> tracking_stateV;
 
-    MY_TIME_TYPE start_t = MY_TIME_NOW;
-    track_time_total_s_ = 0;
-    plan_time_total_s_ = 0;
+    auto start_t = sbpl::clock::now();
+    track_time_total_s_ = std::chrono::seconds::zero();
+    plan_time_total_s_ = std::chrono::seconds::zero();
 
     int round = 0;
 
-    double ad_plan_time_alloc = allocated_time_per_retry_plan_;
-    double ad_track_time_alloc = allocated_time_per_retry_track_;
+    std::chrono::duration<double> allowed_ad_plan_time(allocated_time_per_retry_plan_);
+    std::chrono::duration<double> allowed_ad_track_time(allocated_time_per_retry_track_);
 
-    ROS_INFO("Retry time limits: (Planning: %.4f) (Tracking: %.4f)", ad_plan_time_alloc, ad_track_time_alloc);
+    ROS_INFO("Retry time limits: (Planning: %.4f) (Tracking: %.4f)", to_secs(allowed_ad_plan_time), to_secs(allowed_ad_track_time));
 
     int planning_bRet;
     int tracking_bRet;
 
     ROS_INFO("Set start and goal for planner and tracker_...");
 
-    if(planner_->set_start(start_state_id_) == 0)
-    {
+    if (planner_->set_start(start_state_id_) == 0) {
         ROS_ERROR("ERROR: planner failed to set start state");
         throw SBPL_Exception();
     }
 
-    if(tracker_->set_start(start_state_id_) == 0){
+    if (tracker_->set_start(start_state_id_) == 0) {
         ROS_ERROR("ERROR: tracker failed to set start state");
         throw SBPL_Exception();
     }
 
-    if(planner_->set_goal(goal_state_id_) == 0)
-    {
+    if (planner_->set_goal(goal_state_id_) == 0) {
         ROS_ERROR("ERROR: planner failed to set goal state");
         throw SBPL_Exception();
     }
 
-    if(tracker_->set_goal(goal_state_id_) == 0){
+    if (tracker_->set_goal(goal_state_id_) == 0) {
         ROS_ERROR("ERROR: tracker failed to set goal state");
         throw SBPL_Exception();
     }
@@ -180,22 +184,24 @@ int AdaptivePlanner::replan(
 
     std::vector<int> LastTrackPath;
     bool LastTrackSuccess = false;
-    double t_elapsed_s;
+    sbpl::clock::duration t_elapsed = sbpl::clock::duration::zero();
 
-    stat_->setInitialEps(planning_eps_*tracking_eps_);
+    stat_->setInitialEps(planning_eps_ * tracking_eps_);
 
     std::vector<int> new_sphere_locations; //as stateIDs
+
+    const std::chrono::duration<double> allowed_time(allocated_time_secs);
     do {
-        if(MY_TIME_DIFF_S(MY_TIME_NOW, start_t) > allocated_time_secs){
+        if (sbpl::clock::now() - start_t > allowed_time) {
             ROS_INFO("Search ran out of time!");
             solution_stateIDs_V->clear();
-            for(unsigned int i = 0; i < LastTrackPath.size(); i++){
+            for (unsigned int i = 0; i < LastTrackPath.size(); i++) {
                 solution_stateIDs_V->push_back(LastTrackPath[i]);
             }
-            ROS_INFO("Done in: %.3f sec", MY_TIME_DIFF_S(MY_TIME_NOW, start_t));
+            ROS_INFO("Done in: %.3f sec", to_secs(sbpl::clock::now() - start_t));
             num_iterations_ = round;
 
-            stat_->setTotalPlanningTime(MY_TIME_DIFF_S(MY_TIME_NOW, start_t));
+            stat_->setTotalPlanningTime(to_secs(sbpl::clock::now() - start_t));
             stat_->setFinalEps(-1.0);
             return LastTrackSuccess;
         }
@@ -203,15 +209,11 @@ int AdaptivePlanner::replan(
         ROS_INFO("=======================================");
         ROS_INFO("||          Iteration %03d            ||", round);
         ROS_INFO("=======================================");
-        MY_TIME_TYPE iter_start = MY_TIME_NOW;
-        MY_TIME_TYPE plan_start = MY_TIME_NOW;
-        MY_TIME_TYPE track_start;
+        auto iter_start = sbpl::clock::now();
+        auto plan_start = sbpl::clock::now();
 
-        double plan_time_s = 0;
-        double track_time_s = 0;
-
-        int p_Cost;		  //planning solution cost
-        int t_Cost;		  //tracking solution cost
+        int p_Cost; // planning solution cost
+        int t_Cost; // tracking solution cost
 
         //==================================== PLANNING =================================
         ROS_INFO("\t=======================================");
@@ -223,72 +225,72 @@ int AdaptivePlanner::replan(
         planner_->set_search_mode(false);
 
         adaptive_environment_->setPlanMode();
-        //add pending new spheres
+        // add pending new spheres
         ROS_INFO("Add %zd pending spheres...", new_sphere_locations.size());
-        for(int stateID : new_sphere_locations){
+        for (int stateID : new_sphere_locations) {
             adaptive_environment_->addSphere(stateID, &ModifiedStates);
         }
         new_sphere_locations.clear();
         planning_stateV.clear();
         planning_bRet = 0;
 
-        //PLANNING HERE!
-        t_elapsed_s = MY_TIME_DIFF_S(MY_TIME_NOW, start_t);
-        while(t_elapsed_s < allocated_time_secs){
-            ROS_INFO("Still have time (%.3fs)...planning", allocated_time_secs - t_elapsed_s);
-            MY_TIME_TYPE p_start = MY_TIME_NOW;
-            planning_bRet = planner_->replan(ad_plan_time_alloc, &planning_stateV, &p_Cost);
-            t_elapsed_s = MY_TIME_DIFF_S(MY_TIME_NOW, start_t);
-            if(!planning_bRet && MY_TIME_DIFF_S(MY_TIME_NOW, p_start) < 0.1*ad_plan_time_alloc){
+        // PLANNING HERE!
+        t_elapsed = sbpl::clock::now() - start_t;
+        while (t_elapsed < allowed_time) {
+            ROS_INFO("Still have time (%.3fs)...planning", to_secs(allowed_time - t_elapsed));
+            auto p_start = sbpl::clock::now();
+            planning_bRet = planner_->replan(to_secs(allowed_ad_plan_time), &planning_stateV, &p_Cost);
+            t_elapsed = sbpl::clock::now() - start_t;
+            if (!planning_bRet &&
+                sbpl::clock::now() - p_start < 0.1 * allowed_ad_plan_time)
+            {
                 ROS_WARN("Planning too quick! Probably stuck!");
                 break;
             }
-            if(planning_bRet) break;
+            if (planning_bRet) {
+                break;
+            }
         }
 
-        plan_time_s = MY_TIME_DIFF_S(MY_TIME_NOW, plan_start);
-        plan_time_total_s_ += plan_time_s;
-        stat_->addPlanningPhaseTime(plan_time_s);
+        auto plan_time = sbpl::clock::now() - plan_start;
+        plan_time_total_s_ += plan_time;
+        stat_->addPlanningPhaseTime(to_secs(plan_time));
 
-        ROS_INFO("Planner done in %.3fs...", plan_time_s);
+        ROS_INFO("Planner done in %.3fs...", to_secs(plan_time));
 
-        if(!planning_bRet || planning_stateV.size() == 0){
-            ROS_ERROR("Solution could not be found within the allowed time (%.3fs.) after %d iterations", ad_plan_time_alloc, round);
-#ifdef ADP_GRAPHICAL
+        if (!planning_bRet || planning_stateV.size() == 0) {
+            ROS_ERROR("Solution could not be found within the allowed time (%.3fs.) after %d iterations", to_secs(allowed_ad_plan_time), round);
             adaptive_environment_->visualizeEnvironment();
-#endif
             num_iterations_ = round;
             stat_->setFinalEps(-1.0);
             stat_->setSuccess(false);
             stat_->setNumIterations(num_iterations_+1);
             return planning_bRet;
         }
-        if(adaptive_environment_->isExecutablePath(planning_stateV)){
+        if (adaptive_environment_->isExecutablePath(planning_stateV)) {
             solution_stateIDs_V->clear();
-            for(unsigned int i = 0; i < planning_stateV.size(); i++){
+            for (unsigned int i = 0; i < planning_stateV.size(); i++) {
                 solution_stateIDs_V->push_back(planning_stateV[i]);
             }
-            ROS_INFO("Iteration Time: %.3f sec (avg: %.3f)", MY_TIME_DIFF_S(MY_TIME_NOW, iter_start), MY_TIME_DIFF_S(MY_TIME_NOW, start_t) / (round+1.0));
-            ROS_INFO("Done in: %.3f sec", MY_TIME_DIFF_S(MY_TIME_NOW, start_t));
+            ROS_INFO("Iteration Time: %.3f sec (avg: %.3f)", to_secs(sbpl::clock::now() - iter_start), to_secs(sbpl::clock::now() - start_t) / (round+1.0));
+            ROS_INFO("Done in: %.3f sec", to_secs(sbpl::clock::now() - start_t));
             num_iterations_ = round;
             stat_->setFinalEps(planner_->get_final_epsilon());
             stat_->setFinalPlanCost(p_Cost);
             stat_->setFinalTrackCost(p_Cost);
             stat_->setNumIterations(num_iterations_+1);
             stat_->setSuccess(true);
-            stat_->setTotalPlanningTime(MY_TIME_DIFF_S(MY_TIME_NOW, start_t));
+            stat_->setTotalPlanningTime(to_secs(sbpl::clock::now() - start_t));
             return true;
         }
-#ifdef ADP_GRAPHICAL
         adaptive_environment_->visualizeEnvironment();
         adaptive_environment_->visualizeStatePath(&planning_stateV, 0, 120, "planning_path");
-#endif
 
         //==================================== TRACKING ====================================
         ROS_INFO("\t=======================================");
         ROS_INFO("\t||          Tracking Phase           ||");
         ROS_INFO("\t=======================================");
-        track_start = MY_TIME_NOW;
+        auto track_start = sbpl::clock::now();
         adaptive_environment_->setTrackMode(planning_stateV, p_Cost, &TrkModifiedStates);
         tracker_->force_planning_from_scratch();
         tracker_->set_initialsolution_eps(tracking_eps_);
@@ -297,100 +299,103 @@ int AdaptivePlanner::replan(
         tracking_bRet = 0;
 
         //TRACKING HERE!!!
-        t_elapsed_s = MY_TIME_DIFF_S(MY_TIME_NOW, start_t);
+        t_elapsed = sbpl::clock::now() - start_t;
         int last_bestTrackedID = -1;
         int retries = 0;
-        // while(t_elapsed_s < allocated_time_secs)
+        // while(t_elapsed < allowed_time)
         {
-            ROS_INFO("Still have time (%.3fs)...tracking", allocated_time_secs - t_elapsed_s);
-            MY_TIME_TYPE p_start = MY_TIME_NOW;
-            ad_track_time_alloc = allocated_time_secs - t_elapsed_s;
-            tracking_bRet = tracker_->replan(ad_track_time_alloc, &tracking_stateV, &t_Cost);
-            t_elapsed_s = MY_TIME_DIFF_S(MY_TIME_NOW, start_t);
-            if(!tracking_bRet && MY_TIME_DIFF_S(MY_TIME_NOW, p_start) < 0.1*ad_track_time_alloc){
+            ROS_INFO("Still have time (%.3fs)...tracking", to_secs(allowed_time - t_elapsed));
+            auto p_start = sbpl::clock::now();
+            allowed_ad_track_time = allowed_time - t_elapsed;
+            tracking_bRet = tracker_->replan(to_secs(allowed_ad_track_time), &tracking_stateV, &t_Cost);
+            t_elapsed = sbpl::clock::now() - start_t;
+            if (!tracking_bRet &&
+                sbpl::clock::now() - p_start < 0.1 * allowed_ad_track_time)
+            {
                 ROS_WARN("Tracking too quick! Probably stuck!");
                 break;
             }
 
-            // if(tracking_bRet) {
-            //     break;
-            // } else {
-                int new_bestTrackedID = adaptive_environment_->getBestSeenState();
-                if(new_bestTrackedID != -1 && new_bestTrackedID == last_bestTrackedID){
-                    if(retries>=TRACK_RETRIES){
-                        ROS_WARN("No progress...giving up this tracking iteration");
-                        break;
-                    }
-                    retries++;
-                } else {
-                    last_bestTrackedID = new_bestTrackedID;
-                    retries=0;
-                // }
+//            if (tracking_bRet) {
+//                break;
+//            }
+
+            int new_bestTrackedID = adaptive_environment_->getBestSeenState();
+            if (new_bestTrackedID != -1 && new_bestTrackedID == last_bestTrackedID) {
+                if (retries >= TRACK_RETRIES) {
+                    ROS_WARN("No progress...giving up this tracking iteration");
+                    break;
+                }
+                retries++;
+            }
+            else {
+                last_bestTrackedID = new_bestTrackedID;
+                retries=0;
             }
         }
 
-        track_time_s = MY_TIME_DIFF_S(MY_TIME_NOW, track_start);
-        track_time_total_s_ += track_time_s;
-        stat_->addTrackingPhaseTime(track_time_s);
+        auto track_time = sbpl::clock::now() - track_start;
+        track_time_total_s_ += track_time;
+        stat_->addTrackingPhaseTime(to_secs(track_time));
 
         LastTrackPath.clear();
-        for(unsigned int i = 0; i < tracking_stateV.size(); i++){
+        for (unsigned int i = 0; i < tracking_stateV.size(); i++) {
             LastTrackPath.push_back(tracking_stateV[i]);
         }
         LastTrackSuccess = tracking_bRet;
 
-        ROS_INFO("Tracker done in %.3fs...", track_time_s);
+        ROS_INFO("Tracker done in %.3fs...", to_secs(track_time));
 
         ModifiedStates.clear();
-        ROS_INFO("[Planning] Time: %.3fs (%.1f%% of iter time)", plan_time_s, 100*plan_time_s / (plan_time_s + track_time_s));
-        ROS_INFO("[Tracking] Time: %.3fs (%.1f%% of iter time)", track_time_s, 100*track_time_s / (plan_time_s + track_time_s));
+        const auto iter_time = plan_time + track_time;
+        ROS_INFO("[Planning] Time: %.3fs (%.1f%% of iter time)", to_secs(plan_time), 100.0 * to_secs(plan_time) / to_secs(iter_time));
+        ROS_INFO("[Tracking] Time: %.3fs (%.1f%% of iter time)", to_secs(track_time), 100.0 * to_secs(track_time) / to_secs(iter_time));
 
-#ifdef ADP_GRAPHICAL
         adaptive_environment_->visualizeEnvironment();
         adaptive_environment_->visualizeStatePath(&tracking_stateV, 240, 300, "tracking_path");
-#endif
 
-        if(tracking_bRet && (t_Cost / (1.0f * p_Cost)) > tracking_eps_ * planning_eps_){
+        if (tracking_bRet && (t_Cost / (1.0f * p_Cost)) > tracking_eps_ * planning_eps_) {
             //tracking found a costly path
             ROS_INFO("Tracking succeeded - costly path found! tCost %d / pCost %d (eps: %.3f, target: %.3f)", t_Cost, p_Cost, (t_Cost/(double)p_Cost), tracking_eps_ * planning_eps_);
             adaptive_environment_->processCostlyPath(planning_stateV, tracking_stateV, &new_sphere_locations);
-            if(new_sphere_locations.size() == 0){
+            if (new_sphere_locations.size() == 0) {
                 ROS_ERROR("No new spheres added during this planning episode!!!");
                 throw SBPL_Exception();
             }
-        } else if (tracking_bRet && (t_Cost / (1.0f * p_Cost)) <= tracking_eps_ * planning_eps_ ) {
+        }
+        else if (tracking_bRet && (t_Cost / (1.0f * p_Cost)) <= tracking_eps_ * planning_eps_ ) {
             ROS_INFO("Tracking succeeded! - good path found! tCost %d / pCost %d (eps: %.3f, target: %.3f)", t_Cost, p_Cost, (t_Cost/(double)p_Cost), tracking_eps_ * planning_eps_);
-#ifdef ADP_GRAPHICAL
             adaptive_environment_->visualizeStatePath(&tracking_stateV, 0, 240, "tracking_path");
-#endif
             solution_stateIDs_V->clear();
-            for(unsigned int i = 0; i < tracking_stateV.size(); i++){
+            for (unsigned int i = 0; i < tracking_stateV.size(); i++) {
                 solution_stateIDs_V->push_back(tracking_stateV[i]);
             }
-            ROS_INFO("Iteration Time: %.3f sec (avg: %.3f)", MY_TIME_DIFF_S(MY_TIME_NOW, iter_start), MY_TIME_DIFF_S(MY_TIME_NOW, start_t) / (round+1.0));
-            ROS_INFO("Done in: %.3f sec", MY_TIME_DIFF_S(MY_TIME_NOW, start_t));
+            ROS_INFO("Iteration Time: %.3f sec (avg: %.3f)", to_secs(sbpl::clock::now() - iter_start), to_secs(sbpl::clock::now() - start_t) / (round+1.0));
+            ROS_INFO("Done in: %.3f sec", to_secs(sbpl::clock::now() - start_t));
             num_iterations_ = round;
             stat_->setFinalEps(planner_->get_final_epsilon() * tracker_->get_final_epsilon());
             stat_->setFinalPlanCost(p_Cost);
             stat_->setFinalTrackCost(t_Cost);
             stat_->setNumIterations(num_iterations_+1);
             stat_->setSuccess(true);
-            stat_->setTotalPlanningTime(MY_TIME_DIFF_S(MY_TIME_NOW, start_t));
+            stat_->setTotalPlanningTime(to_secs(sbpl::clock::now() - start_t));
             return true;
-        } else {
+        }
+        else {
             ROS_WARN("Tracking Failed!");
             //since tracking failed -- introduce new spheres
-            if(tracking_stateV.size() > 0){
+            if (tracking_stateV.size() > 0) {
                 //get the point of failure
                 int TrackFail_StateID = tracking_stateV[tracking_stateV.size()-1];
                 new_sphere_locations.push_back(TrackFail_StateID);
-            } else {
+            }
+            else {
                 ROS_ERROR("No new spheres added during this planning episode!!!");
                 throw SBPL_Exception();
             }
         }
-        ROS_INFO("Iteration Time: %.3f sec (avg: %.3f)", MY_TIME_DIFF_S(MY_TIME_NOW, iter_start), MY_TIME_DIFF_S(MY_TIME_NOW, start_t) / (round+1.0));
-        ROS_INFO("Total Time so far: %.3f sec", MY_TIME_DIFF_S(MY_TIME_NOW, start_t));
+        ROS_INFO("Iteration Time: %.3f sec (avg: %.3f)", to_secs(sbpl::clock::now() - iter_start), to_secs(sbpl::clock::now() - start_t) / (round+1.0));
+        ROS_INFO("Total Time so far: %.3f sec", to_secs(sbpl::clock::now() - start_t));
         round++;
     } while (true);
 
@@ -399,7 +404,7 @@ int AdaptivePlanner::replan(
     stat_->setFinalTrackCost(INFINITECOST);
     stat_->setNumIterations(round+1);
     stat_->setSuccess(false);
-    stat_->setTotalPlanningTime(MY_TIME_DIFF_S(MY_TIME_NOW, start_t));
+    stat_->setTotalPlanningTime(to_secs(sbpl::clock::now() - start_t));
 
     return tracking_bRet;
 }

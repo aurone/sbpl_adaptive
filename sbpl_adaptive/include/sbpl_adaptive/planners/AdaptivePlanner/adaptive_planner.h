@@ -1,9 +1,12 @@
 #ifndef ADIM_ADAPTIVE_PLANNER_H
 #define ADIM_ADAPTIVE_PLANNER_H
 
+#include <chrono>
+
 #include <sbpl_adaptive/macros.h>
 
-#define ADP_GRAPHICAL //enables calling of visualization functions from the environment
+// enables calling of visualization functions from the environment
+#define ADP_GRAPHICAL
 
 namespace adim {
 
@@ -103,8 +106,8 @@ private:
 
     int num_iterations_;
     double repair_time_;
-    double track_time_total_s_;
-    double plan_time_total_s_;
+    std::chrono::duration<double> track_time_total_s_;
+    std::chrono::duration<double> plan_time_total_s_;
 
     AdaptiveDiscreteSpaceInformation* adaptive_environment_;
 
