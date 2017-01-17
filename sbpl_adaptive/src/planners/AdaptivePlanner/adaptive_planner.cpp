@@ -264,8 +264,8 @@ int AdaptivePlanner::replan(
         ROS_INFO("Still have time (%.3fs)...tracking", to_secs(time_remaining()));
         allowed_ad_track_time = time_remaining();
         tracker_solution.clear();
-        int t_Cost;
-        int t_ret = tracker_->replan(to_secs(allowed_ad_track_time), &tracker_solution, &t_Cost);
+        int t_cost;
+        int t_ret = tracker_->replan(to_secs(allowed_ad_track_time), &tracker_solution, &t_cost);
 
         auto track_time = sbpl::clock::now() - track_start;
         stat_->addTrackingPhaseTime(to_secs(track_time));
@@ -283,43 +283,48 @@ int AdaptivePlanner::replan(
         adaptive_environment_->visualizeEnvironment();
         adaptive_environment_->visualizeStatePath(&tracker_solution, 240, 300, "tracking_path");
 
-        if (t_ret && (t_Cost / (1.0f * p_cost)) > tracking_eps_ * planning_eps_) {
-            // tracker found a costly path
-            ROS_INFO("Tracking succeeded - costly path found! tCost %d / pCost %d (eps: %.3f, target: %.3f)", t_Cost, p_cost, (t_Cost / (double)p_cost), tracking_eps_ * planning_eps_);
+        if (t_ret) {
+            const double target_eps = tracking_eps_ * planning_eps_;
+            const double cost_ratio = (double)t_cost / (double)p_cost;
+            if (cost_ratio <= target_eps) {
+                ROS_INFO("Tracking succeeded! - good path found! tCost %d / pCost %d (eps: %.3f, target: %.3f)", t_cost, p_cost, cost_ratio, target_eps);
+                adaptive_environment_->visualizeStatePath(&tracker_solution, 0, 240, "tracking_path");
+                *solution_stateIDs_V = tracker_solution;
+                ROS_INFO("Iteration Time: %.3f sec (avg: %.3f)", to_secs(iter_elapsed()), to_secs(time_elapsed()) / (round + 1.0));
+                ROS_INFO("Done in: %.3f sec", to_secs(time_elapsed()));
+                num_iterations_ = round;
+                stat_->setFinalEps(planner_->get_final_epsilon() * tracker_->get_final_epsilon());
+                stat_->setFinalPlanCost(p_cost);
+                stat_->setFinalTrackCost(t_cost);
+                stat_->setNumIterations(num_iterations_ + 1);
+                stat_->setSuccess(true);
+                stat_->setTotalPlanningTime(to_secs(time_elapsed()));
+                return true;
+            }
+
+            // introduce new spheres since tracker found a costly path
+            ROS_INFO("Tracking succeeded - costly path found! tCost %d / pCost %d (eps: %.3f, target: %.3f)", t_cost, p_cost, cost_ratio, target_eps);
             adaptive_environment_->processCostlyPath(planner_solution, tracker_solution, &new_sphere_locations);
             if (new_sphere_locations.empty()) {
                 ROS_ERROR("No new spheres added during this planning episode!!!");
                 throw SBPL_Exception();
             }
         }
-        else if (t_ret && (t_Cost / (1.0f * p_cost)) <= tracking_eps_ * planning_eps_ ) {
-            ROS_INFO("Tracking succeeded! - good path found! tCost %d / pCost %d (eps: %.3f, target: %.3f)", t_Cost, p_cost, (t_Cost / (double)p_cost), tracking_eps_ * planning_eps_);
-            adaptive_environment_->visualizeStatePath(&tracker_solution, 0, 240, "tracking_path");
-            *solution_stateIDs_V = tracker_solution;
-            ROS_INFO("Iteration Time: %.3f sec (avg: %.3f)", to_secs(iter_elapsed()), to_secs(time_elapsed()) / (round + 1.0));
-            ROS_INFO("Done in: %.3f sec", to_secs(time_elapsed()));
-            num_iterations_ = round;
-            stat_->setFinalEps(planner_->get_final_epsilon() * tracker_->get_final_epsilon());
-            stat_->setFinalPlanCost(p_cost);
-            stat_->setFinalTrackCost(t_Cost);
-            stat_->setNumIterations(num_iterations_ + 1);
-            stat_->setSuccess(true);
-            stat_->setTotalPlanningTime(to_secs(time_elapsed()));
-            return true;
-        }
         else {
             ROS_WARN("Tracking Failed!");
-            // since tracking failed -- introduce new spheres
-            if (!tracker_solution.empty()) {
-                //get the point of failure
-                int TrackFail_StateID = tracker_solution.back();
-                new_sphere_locations.push_back(TrackFail_StateID);
-            }
-            else {
+            if (tracker_solution.empty()) {
                 ROS_ERROR("No new spheres added during this planning episode!!!");
                 throw SBPL_Exception();
             }
+
+            // introduce new spheres at the point of failure since tracking
+            // failed, note that this requires the planner to return a partial
+            // solution rather than an empty path when a complete path to the
+            // goal was not found
+            int TrackFail_StateID = tracker_solution.back();
+            new_sphere_locations.push_back(TrackFail_StateID);
         }
+
         ROS_INFO("Iteration Time: %.3f sec (avg: %.3f)", to_secs(iter_elapsed()), to_secs(time_elapsed()) / (round + 1.0));
         ROS_INFO("Total Time so far: %.3f sec", to_secs(time_elapsed()));
         round++;
