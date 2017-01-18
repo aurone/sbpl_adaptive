@@ -30,6 +30,10 @@
 #ifndef SBPL_ADAPTIVE_ARAPLANNER_AD_H
 #define SBPL_ADAPTIVE_ARAPLANNER_AD_H
 
+// system includes
+#include <smpl/time.h>
+
+// project includes
 #include <sbpl_adaptive/macros.h>
 
 class CMDP;
@@ -117,7 +121,7 @@ private:
     ARASearchStateSpace_t* pSearchStateSpace_;
 
     int MaxMemoryCounter;
-    clock_t TimeStarted;
+    sbpl::clock::time_point TimeStarted;
 
     void Initialize_searchinfo(
         CMDPSTATE* state,

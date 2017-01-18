@@ -5,10 +5,11 @@
  *      Author: kalin
  */
 
-#ifndef SRC_SBPL_ADAPTIVE_INCLUDE_SBPL_ADAPTIVE_COMMON_H_
-#define SRC_SBPL_ADAPTIVE_INCLUDE_SBPL_ADAPTIVE_COMMON_H_
+#ifndef SBPL_ADAPTIVE_COMMON_H
+#define SBPL_ADAPTIVE_COMMON_H
 
 #include <math.h>
+#include <chrono>
 #include <string>
 
 #define ADP_USE_ROS_TIMERS //use ros::Time for timing
@@ -137,6 +138,12 @@ double Position3D::dist(const Position3D &ee1, const Position3D &ee2)
 
 void pause();
 bool prompt();
+
+template <class Rep, class Period>
+double to_secs(const std::chrono::duration<Rep, Period>& d)
+{
+    return std::chrono::duration_cast<std::chrono::duration<double>>(d).count();
+}
 
 } // namespace adim
 

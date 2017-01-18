@@ -7,12 +7,6 @@ using namespace std;
 
 namespace adim {
 
-template <class Rep, class Period>
-double to_secs(const std::chrono::duration<Rep, Period>& d)
-{
-    return std::chrono::duration_cast<std::chrono::duration<double>>(d).count();
-}
-
 AdaptivePlanner::AdaptivePlanner(
     AdaptiveDiscreteSpaceInformation* environment,
     bool bSearchForward)
