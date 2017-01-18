@@ -103,7 +103,7 @@ public:
     int getID() const { return dimID_; }
 
     void setID(int id){ dimID_ = id; }
-    
+
     const std::string getDescription() const { return sDescription_; }
 
     void addParentRepresentation(AdaptiveStateRepresentation *parent);

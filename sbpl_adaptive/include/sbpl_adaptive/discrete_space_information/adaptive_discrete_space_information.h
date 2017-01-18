@@ -26,17 +26,13 @@ public:
 
     virtual ~AdaptiveDiscreteSpaceInformation() { }
 
-    /// \name Interface Functions Called by ARAPlanner_AD
-    ///@{
-
     /// \brief used by the tracker to tell the environment which state is being
     /// expanded
     virtual void expandingState(int StateID) = 0;
 
-    ///@}
+    /// \brief gets the state ID of the 'best' state encountered during tracking
+    virtual int getBestSeenState() = 0;
 
-    /// \name Interface Functions Called by AdaptivePlanner
-    ///@{
     /// \brief sets the environment in adaptive planning mode
     virtual void setPlanMode() = 0;
 
@@ -60,21 +56,12 @@ public:
     virtual void processCostlyPath(
         const std::vector<int> &planning_path,
         const std::vector<int> &tracking_path,
-        std::vector<int>* new_sphere_locations) = 0;
+        std::vector<int> *new_sphere_locations) = 0;
 
     /// \brief resets the environment to its original state - no spheres, etc.
     virtual void reset() = 0;
-    ///@}
 
-    /// \name Interface Functions Called by ARAPlanner_AD and AdaptivePlanner
-    ///@{
-
-    /// \brief gets the state ID of the 'best' state encountered during tracking
-    virtual int getBestSeenState() = 0;
-
-    ///@}
-
-    /// \name Interface Functions Called by NOBODY
+    /// \name Interface Functions for TRAPlanner
     ///@{
 
     /// \brief adds a new sphere of radius rad at the state coordinates
@@ -82,26 +69,21 @@ public:
     /// states
     virtual void addSphere(int StateID, int &first_mod_step) = 0;
 
-    /// \brief gets the executable piece of a stateID path
-    virtual int getExecutablePiece(
-        const std::vector<int> &stateIDv,
-        std::vector<std::vector<double>> &traj) = 0;
+    void GetPreds(
+        int TargetStateID,
+        int expansionStep,
+        std::vector<int> *PredIDV,
+        std::vector<int> *CostV);
 
-    /// \brief used by the interleaving adaptive planner to check if the goal
-    /// has been reached
-    virtual bool isGoalReached() = 0;
-
-    virtual void advanceStartTo(
-        int StateID,
-        std::vector<int> *modStates=NULL) = 0;
+    void GetSuccs(
+        int SourceStateID,
+        int expansionStep,
+        std::vector<int> *SuccIDV,
+        std::vector<int> *CostV);
 
     ///@}
 
-    // Called in concrete environment classes?
     virtual void visualizeState(int sID, int scolor, std::string name);
-
-    /// \name Virtual Functions Called by AdaptivePlanner
-    ///@{
 
     virtual void visualizeStatePath(
         std::vector<int> *path,
@@ -111,97 +93,35 @@ public:
 
     virtual void visualizeEnvironment() { }
 
-    ///@}
+    /// \name Interface functions for multi-heuristic search
+    ///@{
 
     // get state dimension from environment for MHA
-    virtual void getDimID(int state_id, int &dimID){
+    virtual void getDimID(int state_id, int &dimID)
+    {
         SBPL_ERROR("Get dimID not implemented");
     }
 
-
-    /// \name Virtual Functions Called by NOBODY
-    ///@{
-
-    virtual bool stateIDPathToTraj(
-        std::vector<int> stateIDV,
-        std::vector<std::vector<double> > *traj);
-
-    virtual void visualizeTrajectory(
-        std::vector<std::vector<double> > &traj,
-        int scolor,
-        int ecolor,
-        std::string name);
-
-    virtual void visualizePath(std::vector<int> *path);
-
-    virtual void visualizeStates(
-        std::vector<int> *stateIDs,
-        int lcolor,
-        int hcolor,
-        std::string ns);
-
-    virtual void visualizeStates(
-        std::vector<int> *stateIDs,
-        std::vector<int> *colorsV,
-        std::string ns);
-
-    virtual void visualizeState(
-        std::string name,
-        std::vector<double> &coords,
-        int col);
-
-    ///@}
-
-    /// \name Called by NOBODY
-    ///@{
-
-    void GetPreds(
-        int TargetStateID,
-        int expansionStep,
-        std::vector<int>* PredIDV,
-        std::vector<int>* CostV);
-
-    void GetSuccs(
-        int SourceStateID,
-        int expansionStep,
-        std::vector<int>* SuccIDV,
-        std::vector<int>* CostV);
-
-    ///@}
-
-    // MHA - return anchor
+    // return anchor
     virtual Heuristic* getAnchorHeur()
     {
         SBPL_ERROR("Not implemented");
         return nullptr;
     }
 
-    // MHA - return other heurs
+    // return other heurs
     virtual Heuristic** getHeurs()
     {
         SBPL_ERROR("Not implemented");
         return nullptr;
     }
 
-    // MHA - return number of heurs
+    // return number of heurs
     virtual int getNumHeur()
     {
         SBPL_ERROR("Not implemented");
         return 0;
     }
-
-    /// \name Called by ARAPlanner_AD, TRAPlanner, and standard SBPL planners
-    ///@{
-
-    void GetPreds(
-        int TargetStateID,
-        std::vector<int>* PredIDV,
-        std::vector<int>* CostV);
-
-    void GetSuccs(
-        int SourceStateID,
-        std::vector<int>* SuccIDV,
-        std::vector<int>* CostV);
 
     ///@}
 
@@ -214,6 +134,20 @@ public:
 
     std::vector<int> getLastAdaptivePath() { return lastAdaptivePath_; }
 
+    /// \name Reimplemented Public Functions from DiscreteSpaceInformation
+    ///@{
+
+    void GetSuccs(
+        int SourceStateID,
+        std::vector<int>* SuccIDV,
+        std::vector<int>* CostV);
+
+    void GetPreds(
+        int TargetStateID,
+        std::vector<int>* PredIDV,
+        std::vector<int>* CostV);
+
+    ///@}
 
 protected:
 
@@ -295,8 +229,10 @@ protected:
 inline
 AdaptiveDiscreteSpaceInformation::AdaptiveDiscreteSpaceInformation() :
     trackMode(false),
+    getSuccTime(0),
     getPredTime(0),
-    getSuccTime(0)
+    lastAdaptivePath_(),
+    num_heur_(0)
 {
 }
 
@@ -378,46 +314,6 @@ void AdaptiveDiscreteSpaceInformation::visualizeState(
 }
 
 inline
-void AdaptiveDiscreteSpaceInformation::visualizeTrajectory(
-    std::vector<std::vector<double> > &traj,
-    int scolor,
-    int ecolor, std::string name)
-{
-    SBPL_ERROR("visualizeTrajectory not implemented!");
-}
-
-inline
-void AdaptiveDiscreteSpaceInformation::visualizePath(std::vector<int> *path)
-{
-    SBPL_ERROR("visualizePath not implemented for this envirnment!");
-}
-
-inline
-void AdaptiveDiscreteSpaceInformation::visualizeStates(
-    std::vector<int> *stateIDs,
-    int lcolor,
-    int hcolor,
-    std::string ns)
-{
-}
-
-inline
-void AdaptiveDiscreteSpaceInformation::visualizeStates(
-    std::vector<int> *stateIDs,
-    std::vector<int> *colorsV,
-    std::string ns)
-{
-}
-
-inline
-void AdaptiveDiscreteSpaceInformation::visualizeState(
-    std::string name,
-    std::vector<double> &coords,
-    int col)
-{
-}
-
-inline
 void AdaptiveDiscreteSpaceInformation::pause()
 {
     printf("Enter to continue...");
@@ -438,15 +334,6 @@ bool AdaptiveDiscreteSpaceInformation::prompt()
     if (inp == 'y' || inp == 'Y') {
         return true;
     }
-    return false;
-}
-
-inline
-bool AdaptiveDiscreteSpaceInformation::stateIDPathToTraj(
-    std::vector<int> stateIDV,
-    std::vector<std::vector<double> > *traj)
-{
-    SBPL_ERROR("stateIDPathToTraj not implemented for this environment!");
     return false;
 }
 
