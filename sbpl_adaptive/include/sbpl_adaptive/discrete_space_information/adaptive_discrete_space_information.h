@@ -8,7 +8,6 @@
 
 namespace adim {
 
-
 SBPL_CLASS_FORWARD(AdaptiveDiscreteSpaceInformation)
 
 /// \brief base class for environments defining planning graphs
