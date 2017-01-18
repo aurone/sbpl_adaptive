@@ -40,4 +40,26 @@ void AdaptiveSphere3D::print(const AdaptiveSphere3D &sphere)
     SBPL_INFO("AdaptiveSphere3D: dimID: %d, xyz(%.3f, %.3f, %.3f), rad:%.3f, nearRad: %.3f, costToGoal: %d", sphere.dimID, sphere.x, sphere.y, sphere.z, sphere.rad, sphere.near_rad, sphere.costToGoal);
 }
 
+void pause()
+{
+    printf("Enter to continue...");
+    char inp;
+    do {
+        inp = getchar();
+    } while (inp != '\n');
+}
+
+bool prompt()
+{
+    printf("[y/n]?");
+    char inp;
+    do {
+        inp = getchar();
+    } while(inp == '\n' || inp == '\r'); //skip enter and carriage return
+    if (inp == 'y' || inp == 'Y') {
+        return true;
+    }
+    return false;
+}
+
 } // namespace adim

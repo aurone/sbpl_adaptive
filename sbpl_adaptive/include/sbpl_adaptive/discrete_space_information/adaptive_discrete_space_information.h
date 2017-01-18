@@ -33,18 +33,8 @@ public:
     /// \brief gets the state ID of the 'best' state encountered during tracking
     virtual int getBestSeenState() = 0;
 
-    /// \brief sets the environment in adaptive planning mode
-    virtual void setPlanMode() = 0;
-
     /// \brief checks if the given stateID path is executable
     virtual bool isExecutablePath(const std::vector<int> &stateIDV) = 0;
-
-    /// \brief constructs a tunnel of width tunnelWidth around the path
-    /// specified by stateIDs_V and sets the environment in tracking mode
-    virtual void setTrackMode(
-        const std::vector<int> &stateIDs_V,
-        int cost,
-        std::vector<int> *ModStates = NULL) = 0;
 
     /// Adds a new sphere of radius rad at the state coordinates specified by
     /// StateID a list of modified stateIDs is returned in modifiedStates if not
@@ -125,12 +115,17 @@ public:
 
     ///@}
 
-    // useful to have for debugging
-    void pause();
+    /// \brief sets the environment in adaptive planning mode
+    void setPlanMode();
 
-    bool prompt();
+    /// \brief constructs a tunnel of width tunnelWidth around the path
+    /// specified by stateIDs_V and sets the environment in tracking mode
+    void setTrackMode(
+        const std::vector<int> &stateIDs_V,
+        int cost,
+        std::vector<int> *ModStates = NULL);
 
-    bool isInTrackingMode() { return trackMode; }
+    bool isInTrackingMode() const { return trackMode; }
 
     std::vector<int> getLastAdaptivePath() { return lastAdaptivePath_; }
 
@@ -161,18 +156,8 @@ protected:
     ///   environment mode when generating successor or predecessor states for
     ///   the planner
 
-    bool trackMode; ///< true - tracking, false - planning
-
-    /// time spent generating successors - for debugging
-    double getSuccTime;
-
-    /// time spent generating predecessors - for debugging
-    double getPredTime;
-
     std::vector<int> lastAdaptivePath_;
 
-    int num_heur_;
-
     /// \brief gets successors for tracking mode
     virtual void GetSuccs_Track(
         int SourceStateID,
@@ -224,15 +209,23 @@ protected:
         int expansion_step,
         std::vector<int>* PredIDV,
         std::vector<int>* CostV) = 0;
+
+    virtual void onSetPlanMode() { }
+
+    virtual void onSetTrackMode(
+        const std::vector<int> &stateIDs_V,
+        int cost,
+        std::vector<int> *ModStates) { }
+
+private:
+
+    bool trackMode; ///< true - tracking, false - planning
 };
 
 inline
 AdaptiveDiscreteSpaceInformation::AdaptiveDiscreteSpaceInformation() :
-    trackMode(false),
-    getSuccTime(0),
-    getPredTime(0),
     lastAdaptivePath_(),
-    num_heur_(0)
+    trackMode(false)
 {
 }
 
@@ -314,27 +307,20 @@ void AdaptiveDiscreteSpaceInformation::visualizeState(
 }
 
 inline
-void AdaptiveDiscreteSpaceInformation::pause()
+void AdaptiveDiscreteSpaceInformation::setPlanMode()
 {
-    printf("Enter to continue...");
-    char inp;
-    do {
-        inp = getchar();
-    } while (inp != '\n');
+    trackMode = false;
+    onSetPlanMode();
 }
 
 inline
-bool AdaptiveDiscreteSpaceInformation::prompt()
+void AdaptiveDiscreteSpaceInformation::setTrackMode(
+    const std::vector<int> &stateIDs_V,
+    int cost,
+    std::vector<int> *ModStates)
 {
-    printf("[y/n]?");
-    char inp;
-    do {
-        inp = getchar();
-    } while(inp == '\n' || inp == '\r'); //skip enter and carriage return
-    if (inp == 'y' || inp == 'Y') {
-        return true;
-    }
-    return false;
+    trackMode = true;
+    onSetTrackMode(stateIDs_V, cost, ModStates);
 }
 
 } // namespace adim

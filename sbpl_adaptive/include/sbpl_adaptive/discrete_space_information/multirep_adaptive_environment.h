@@ -47,7 +47,7 @@ public:
 
     MultiRepAdaptiveDiscreteSpaceInformation();
 
-    virtual ~MultiRepAdaptiveDiscreteSpaceInformation();
+    ~MultiRepAdaptiveDiscreteSpaceInformation();
 
     /// inserts a new hash entry into the hash table and updates its stateID
     /// accordingly returns the stateID
@@ -66,9 +66,9 @@ public:
     const T *envDataAs() const { return static_cast<const T *>(env_data_.get()); }
 
     bool RegisterFullDRepresentation(
-        AdaptiveStateRepresentationPtr fullD_representation);
+        const AdaptiveStateRepresentationPtr &fullD_representation);
 
-    bool RegisterRepresentation(AdaptiveStateRepresentationPtr rep);
+    bool RegisterRepresentation(const AdaptiveStateRepresentationPtr &rep);
 
     int GetFullDRepresentationID() { return fulld_representation_->getID(); }
 
@@ -94,13 +94,13 @@ public:
 
     void updateBestTracked(int StateID, int costToGoal);
 
-    virtual bool ProjectToFullD(
+    bool ProjectToFullD(
         const void *local_state_data,
         int fromID,
         std::vector<int> &proj_stateIDs,
         int adPathIdx = 0);
 
-    virtual bool Project(
+    bool Project(
         const void *hd_state_data,
         int fromID,
         int toID,
@@ -112,49 +112,49 @@ public:
 
     bool isExecutablePath(const std::vector<int> &stateIDV) override;
 
-    virtual void GetSuccs_Track(
+    void GetSuccs_Track(
         int SourceStateID,
         std::vector<int> *SuccIDV,
-        std::vector<int> *CostV);
+        std::vector<int> *CostV) override;
 
-    virtual void GetSuccs_Track(
-        int SourceStateID,
-        int expansion_step,
-        std::vector<int> *SuccIDV,
-        std::vector<int> *CostV);
-
-    virtual void GetSuccs_Plan(
-        int SourceStateID,
-        std::vector<int> *SuccIDV,
-        std::vector<int> *CostV);
-
-    virtual void GetSuccs_Plan(
+    void GetSuccs_Track(
         int SourceStateID,
         int expansion_step,
         std::vector<int> *SuccIDV,
-        std::vector<int> *CostV);
+        std::vector<int> *CostV) override;
 
-    virtual void GetPreds_Track(
+    void GetSuccs_Plan(
+        int SourceStateID,
+        std::vector<int> *SuccIDV,
+        std::vector<int> *CostV) override;
+
+    void GetSuccs_Plan(
+        int SourceStateID,
+        int expansion_step,
+        std::vector<int> *SuccIDV,
+        std::vector<int> *CostV) override;
+
+    void GetPreds_Track(
         int TargetStateID,
         std::vector<int> *PredIDV,
-        std::vector<int> *CostV);
+        std::vector<int> *CostV) override;
 
-    virtual void GetPreds_Track(
+    void GetPreds_Track(
         int TargetStateID,
         int expansion_step,
         std::vector<int> *PredIDV,
-        std::vector<int> *CostV);
+        std::vector<int> *CostV) override;
 
-    virtual void GetPreds_Plan(
+    void GetPreds_Plan(
         int TargetStateID,
         std::vector<int> *PredIDV,
-        std::vector<int> *CostV);
+        std::vector<int> *CostV) override;
 
-    virtual void GetPreds_Plan(
+    void GetPreds_Plan(
         int TargetStateID,
         int expansion_step,
         std::vector<int> *PredIDV,
-        std::vector<int> *CostV);
+        std::vector<int> *CostV) override;
 
     ///@}
 

@@ -40,7 +40,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
         SBPL_WARN("AdaptiveEnvironment_t::Project - Dimensionality ID %d is out of bounds!", toID);
         return false;
     }
-    if (trackMode && !representations_[toID]->isExecutable()) {
+    if (isInTrackingMode() && !representations_[toID]->isExecutable()) {
         SBPL_WARN("Can't project to non-executable type in tracking mode!");
         return false; //no projections to non-executable types in trackmode
     }
@@ -230,14 +230,14 @@ MultiRepAdaptiveDiscreteSpaceInformation::~MultiRepAdaptiveDiscreteSpaceInformat
 }
 
 bool MultiRepAdaptiveDiscreteSpaceInformation::RegisterFullDRepresentation(
-    AdaptiveStateRepresentationPtr rep)
+    const AdaptiveStateRepresentationPtr &rep)
 {
     fulld_representation_ = rep;
     return RegisterRepresentation(rep);
 }
 
 bool MultiRepAdaptiveDiscreteSpaceInformation::RegisterRepresentation(
-    AdaptiveStateRepresentationPtr rep)
+    const AdaptiveStateRepresentationPtr &rep)
 {
     for (int i = 0; i < representations_.size(); i++) {
         if (representations_[i]->getID() == rep->getID()) {

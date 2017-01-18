@@ -107,6 +107,9 @@ public:
 
 protected:
 
+    double getSuccTime;
+    double getPredTime;
+
     GenericCollisionChecker* l_cspace_;
     GenericCollisionChecker* h_cspace_;
     std::vector<short int> h_angle_mask_;

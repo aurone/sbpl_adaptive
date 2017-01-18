@@ -135,6 +135,9 @@ double Position3D::dist(const Position3D &ee1, const Position3D &ee2)
     return sqrt(dx * dx + dy * dy + dz * dz);
 }
 
+void pause();
+bool prompt();
+
 } // namespace adim
 
 #endif /* SRC_SBPL_ADAPTIVE_INCLUDE_SBPL_ADAPTIVE_COMMON_H_ */
