@@ -51,6 +51,12 @@ public:
         std::vector<int> *CostV,
         const void *env_data) = 0;
 
+    virtual void GetTrackSuccs(
+        int state_id,
+        std::vector<int> *succs,
+        std::vector<int> *costs,
+        const void *env_data) = 0;
+
     virtual void GetPreds(
         int stateID,
         std::vector<int> *PredV,
