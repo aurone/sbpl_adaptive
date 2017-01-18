@@ -47,7 +47,7 @@
 #include <sbpl_adaptive/SCVStat.h>
 #include <sbpl_adaptive/common.h>
 
-#include <sbpl_adaptive/discrete_space_information/adaptive_environment.h>
+#include <sbpl_adaptive/discrete_space_information/adaptive_discrete_space_information.h>
 
 #include <sbpl_adaptive/state.h>
 #include <sbpl_adaptive/representation.h>
