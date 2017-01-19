@@ -156,8 +156,6 @@ protected:
     ///   environment mode when generating successor or predecessor states for
     ///   the planner
 
-    std::vector<int> lastAdaptivePath_;
-
     /// \brief gets successors for tracking mode
     virtual void GetSuccs_Track(
         int SourceStateID,
@@ -220,12 +218,13 @@ protected:
 private:
 
     bool trackMode; ///< true - tracking, false - planning
+    std::vector<int> lastAdaptivePath_;
 };
 
 inline
 AdaptiveDiscreteSpaceInformation::AdaptiveDiscreteSpaceInformation() :
-    lastAdaptivePath_(),
-    trackMode(false)
+    trackMode(false),
+    lastAdaptivePath_()
 {
 }
 
@@ -320,6 +319,7 @@ void AdaptiveDiscreteSpaceInformation::setTrackMode(
     std::vector<int> *ModStates)
 {
     trackMode = true;
+    lastAdaptivePath_ = stateIDs_V;
     onSetTrackMode(stateIDs_V, cost, ModStates);
 }
 
