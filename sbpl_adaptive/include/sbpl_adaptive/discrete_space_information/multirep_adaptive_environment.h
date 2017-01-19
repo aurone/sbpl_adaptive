@@ -59,6 +59,7 @@ public:
 
     const void *getEnvDataPtr() { return env_data_.get(); }
 
+    // perform (unsafe) downcast to subclass-specific environment data
     template <class T>
     T *envDataAs() { return static_cast<T *>(env_data_.get()); }
 
