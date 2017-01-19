@@ -312,14 +312,28 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::isExecutablePath(
 {
     for (int stateID : stateIDV) {
         AdaptiveHashEntry *entry = GetState(stateID);
+        if (!entry) {
+            std::stringstream ss;
+            ss << __FUNCTION__ << ": no hash entry for state id " << stateID;
+            throw SBPL_Exception(ss.str());
+        }
+
         if (entry->dimID == -1) {
             SBPL_INFO("State %d is the metagoal", stateID);
             continue;
         }
+
+        if (entry->dimID < 0 || entry->dimID >= (int)representations_.size()) {
+            std::stringstream ss;
+            ss << __FUNCTION__ << ": dimID " << (int)entry->dimID << " is out of range";
+            throw SBPL_Exception(ss.str());
+        }
+
         if (!representations_[entry->dimID]->isExecutable()) {
             return false;
         }
     }
+
     return true;
 }
 
