@@ -50,7 +50,7 @@
 #include <sbpl_adaptive/discrete_space_information/adaptive_discrete_space_information.h>
 
 #include <sbpl_adaptive/state.h>
-#include <sbpl_adaptive/representation.h>
+#include <sbpl_adaptive/adaptive_state_representation.h>
 #include <sbpl_adaptive/discrete_space_information/multirep_adaptive_environment.h>
 
 #include <sbpl_adaptive/representation3D.h>

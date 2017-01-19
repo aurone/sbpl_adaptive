@@ -10,7 +10,7 @@
 
 #include <sbpl_adaptive/discrete_space_information/multirep_adaptive_3d/multirep_adaptive_3d.h>
 #include <sbpl_adaptive/macros.h>
-#include <sbpl_adaptive/representation.h>
+#include <sbpl_adaptive/adaptive_state_representation.h>
 
 namespace adim {
 

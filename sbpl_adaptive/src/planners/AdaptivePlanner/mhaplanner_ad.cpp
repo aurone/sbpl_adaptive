@@ -203,7 +203,7 @@ int MHAPlanner_AD::replan(
         CKey key;
         key.key[0] = compute_key(m_start_state, hidx);
         m_open[hidx].insertheap(&m_start_state->od[hidx].open_state, key);
-        SBPL_DEBUG("Inserted start state %d into search %d with f = %d", m_start_state->state_id, hidx, key.key[0]);
+        SBPL_DEBUG("Inserted start state %d into search %d with f = %ld", m_start_state->state_id, hidx, key.key[0]);
     }
 
     end_time = GetTime();
