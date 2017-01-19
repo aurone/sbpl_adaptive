@@ -102,6 +102,11 @@ public:
 
     virtual void toDisc(const void *cont_data, void *disc_data) const = 0;
 
+    virtual bool IsExecutableAction(int src_id, int dst_id) const
+    {
+        return isExecutable();
+    }
+
     void setFullDRepresentation(AdaptiveStateRepresentationPtr fullD_rep) { fullD_rep_ = fullD_rep; }
 
     bool isExecutable() const { return executable_; }
