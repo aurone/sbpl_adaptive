@@ -10,17 +10,17 @@ namespace adim {
 
 StopWatch_t::StopWatch_t()
 {
-    start_t = MY_TIME_NOW;
+    start_t = sbpl::clock::now();
 }
 
 double StopWatch_t::getElapsedSeconds()
 {
-    return MY_TIME_DIFF_S(MY_TIME_NOW, start_t);
+    return to_secs(sbpl::clock::now() - start_t);
 }
 
 void StopWatch_t::reset()
 {
-    start_t = MY_TIME_NOW;
+    start_t = sbpl::clock::now();
 }
 
 void StopWatch_t::print(const std::string& prefix)

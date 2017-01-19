@@ -8,29 +8,19 @@
 #ifndef SBPL_ADAPTIVE_COMMON_H
 #define SBPL_ADAPTIVE_COMMON_H
 
+// standard includes
 #include <math.h>
 #include <chrono>
 #include <string>
 
-#define ADP_USE_ROS_TIMERS //use ros::Time for timing
-
-#if defined(ROS_TIME_H_INCLUDED) && defined(ADP_USE_ROS_TIMERS)
-    #define MY_TIME_TYPE double
-    #define MY_TIME_NOW ros::Time::now().toSec()
-    #define MY_TIME_DIFF_S(now,last) (now - last)
-#else
-    #define MY_TIME_TYPE int
-    #define MY_TIME_NOW clock()
-    #define MY_TIME_DIFF_S(now,last) ((now - last)/(double) CLOCKS_PER_SEC)
-#endif
-
-#define MY_TIME_ELAPSED_S(since) (MY_TIME_DIFF_S(MY_TIME_NOW, since))
+// system includes
+#include <smpl/time.h>
 
 namespace adim {
 
 struct StopWatch_t
 {
-    MY_TIME_TYPE start_t;
+    sbpl::clock::time_point start_t;
 
     StopWatch_t();
     double getElapsedSeconds();
