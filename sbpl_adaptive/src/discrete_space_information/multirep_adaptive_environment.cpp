@@ -331,13 +331,11 @@ void MultiRepAdaptiveDiscreteSpaceInformation::GetSuccs_Track(
     SuccIDV->clear();
     CostV->clear();
     AdaptiveHashEntry *entry = GetState(SourceStateID);
-    //SBPL_INFO("GetSuccs_Track %d --> %d",SourceStateID, entry->dimID);
     if (!representations_[entry->dimID]->isExecutable()) {
         SBPL_ERROR("stateID [%d] has representation ID %d [%s], which is not executable. Cannot get tracking successors!", SourceStateID, entry->dimID, representations_[entry->dimID]->getDescription().c_str());
         throw SBPL_Exception();
     }
     representations_[entry->dimID]->GetTrackSuccs(SourceStateID, SuccIDV, CostV, env_data_.get());
-    //SBPL_INFO("Got %zu [%zu] successors", SuccIDV->size(), CostV->size());
 }
 
 void MultiRepAdaptiveDiscreteSpaceInformation::GetSuccs_Track(

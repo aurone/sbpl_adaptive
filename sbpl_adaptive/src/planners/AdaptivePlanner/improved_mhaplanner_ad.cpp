@@ -723,7 +723,7 @@ int Imp_MHAPlanner_AD::ImprovePath() {
       } else if (q_id != 0) {
         state = (MHAState *)heaps[q_id].getminheap();
       }
-      printf("Chose state %d, anchor_val %d\n", state->id, anchor_val);
+      printf("Chose state %d, anchor_val %ld\n", state->id, anchor_val);
       break;
     }
 
@@ -946,8 +946,8 @@ int Imp_MHAPlanner_AD::ImprovePath() {
     //get the min key for the next iteration
     min_key = heaps[0].getminkeyheap();
     anchor_val = max(anchor_val, min_key.key[0]);
-    printf("min_key =%d\n",min_key.key[0]);
-    printf("anchor_val =%d\n",anchor_val);
+    printf("min_key =%ld\n",min_key.key[0]);
+    printf("anchor_val =%ld\n",anchor_val);
   }
 
   search_expands += expands;

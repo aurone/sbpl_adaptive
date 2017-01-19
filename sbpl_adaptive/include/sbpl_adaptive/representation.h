@@ -104,13 +104,13 @@ public:
 
     void setFullDRepresentation(AdaptiveStateRepresentationPtr fullD_rep) { fullD_rep_ = fullD_rep; }
 
-    bool isExecutable() const { return bExecutable_; }
+    bool isExecutable() const { return executable_; }
 
     int getID() const { return dimID_; }
 
     void setID(int id){ dimID_ = id; }
 
-    const std::string getDescription() const { return sDescription_; }
+    const std::string getDescription() const { return description_; }
 
     void addParentRepresentation(AdaptiveStateRepresentation *parent);
 
@@ -137,13 +137,13 @@ protected:
 
     MultiRepAdaptiveDiscreteSpaceInformationPtr env_;
     int dimID_;
-    bool bExecutable_;
-    std::string sDescription_;
+    bool executable_;
+    std::string description_;
     AdaptiveStateRepresentationPtr fullD_rep_;
 
     // these form the abstraction hierarchy
-    std::vector<AdaptiveStateRepresentationPtr> parents; // less abstract representations
-    std::vector<AdaptiveStateRepresentationPtr> children; // more abstract representations
+    std::vector<AdaptiveStateRepresentationPtr> parents_; // less abstract representations
+    std::vector<AdaptiveStateRepresentationPtr> children_; // more abstract representations
 };
 
 inline
@@ -154,9 +154,8 @@ AdaptiveStateRepresentation::AdaptiveStateRepresentation(
 :
     env_(env),
     dimID_(-1),
-    bExecutable_(executable),
-    sDescription_(description)
-
+    executable_(executable),
+    description_(description)
 {
     sphere_radius_ = 1.0;
     near_radius_ = 1.0;
@@ -168,7 +167,7 @@ void AdaptiveStateRepresentation::addParentRepresentation(
     AdaptiveStateRepresentation *parent)
 {
     bool found = false;
-    for (auto rep : parents) {
+    for (auto rep : parents_) {
         if (rep.get() == parent) {
             found = true;
             break;
@@ -176,7 +175,7 @@ void AdaptiveStateRepresentation::addParentRepresentation(
     }
     if (!found) {
         SBPL_INFO("Added %s as parent representation to %s!", parent->getDescription().c_str(), this->getDescription().c_str());
-        parents.push_back(AdaptiveStateRepresentationPtr(parent));
+        parents_.push_back(AdaptiveStateRepresentationPtr(parent));
         parent->addChildRepresentation(this);
     }
 }
@@ -186,7 +185,7 @@ void AdaptiveStateRepresentation::addChildRepresentation(
     AdaptiveStateRepresentation *child)
 {
     bool found = false;
-    for (auto rep : children) {
+    for (auto rep : children_) {
         if (rep.get() == child) {
             found = true;
             break;
@@ -194,7 +193,7 @@ void AdaptiveStateRepresentation::addChildRepresentation(
     }
     if (!found) {
         SBPL_INFO("Added %s as child representation to %s!", child->getDescription().c_str(), this->getDescription().c_str());
-        children.push_back(AdaptiveStateRepresentationPtr(child));
+        children_.push_back(AdaptiveStateRepresentationPtr(child));
         child->addParentRepresentation(this);
     }
 }
@@ -207,7 +206,7 @@ void AdaptiveStateRepresentation::GetExecutableParents(
         executableParents.push_back(this);
     }
     else {
-        for (auto parent : parents) {
+        for (auto parent : parents_) {
             parent->GetExecutableParents(executableParents);
         }
     }
@@ -218,7 +217,7 @@ void AdaptiveStateRepresentation::getParentIDs(
     int stateID,
     std::vector<int> &IDs) const
 {
-    for (auto parent : parents) {
+    for (auto parent : parents_) {
         IDs.push_back(parent->getID());
     }
 }
@@ -228,7 +227,7 @@ void AdaptiveStateRepresentation::getChildIDs(
     int stateID,
     std::vector<int> &IDs) const
 {
-    for (auto child : children) {
+    for (auto child : children_) {
         IDs.push_back(child->getID());
     }
 }

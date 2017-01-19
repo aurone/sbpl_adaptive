@@ -127,7 +127,7 @@ public:
 
     bool isInTrackingMode() const { return trackMode; }
 
-    std::vector<int> getLastAdaptivePath() { return lastAdaptivePath_; }
+    const std::vector<int> &getLastAdaptivePath() { return lastAdaptivePath_; }
 
     /// \name Reimplemented Public Functions from DiscreteSpaceInformation
     ///@{
