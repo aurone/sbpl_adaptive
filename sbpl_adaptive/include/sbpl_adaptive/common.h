@@ -11,6 +11,7 @@
 // standard includes
 #include <math.h>
 #include <chrono>
+#include <ostream>
 #include <string>
 
 // system includes
@@ -35,14 +36,37 @@ struct AdaptiveSphere2D
     double x, y, rad, near_rad;
 };
 
+inline std::ostream &operator<<(std::ostream &o, const AdaptiveSphere2D &s)
+{
+    o << "{ dim: " << s.dimID <<
+            ", cost_to_goal: " << s.costToGoal <<
+            ", x: " << s.x <<
+            ", y: " << s.y <<
+            ", rad: " << s.rad <<
+            ", near_rad: " << s.near_rad <<
+            " }";
+    return o;
+}
+
 struct AdaptiveSphere3D
 {
     int dimID;
     int costToGoal;
     double x, y, z, rad, near_rad;
-
-    static void print(const AdaptiveSphere3D &sphere);
 };
+
+inline std::ostream &operator<<(std::ostream &o, const AdaptiveSphere3D &s)
+{
+    o << "{ dim: " << s.dimID <<
+            ", cost_to_goal: " << s.costToGoal <<
+            ", x: " << s.x <<
+            ", y: " << s.y <<
+            ", z: " << s.z <<
+            ", rad: " << s.rad <<
+            ", near_rad: " << s.near_rad <<
+            " }";
+    return o;
+}
 
 class AbstractGoal
 {

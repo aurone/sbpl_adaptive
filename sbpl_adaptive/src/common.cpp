@@ -35,11 +35,6 @@ void StopWatch_t::print(const std::string& prefix)
 #endif
 }
 
-void AdaptiveSphere3D::print(const AdaptiveSphere3D &sphere)
-{
-    SBPL_INFO("AdaptiveSphere3D: dimID: %d, xyz(%.3f, %.3f, %.3f), rad:%.3f, nearRad: %.3f, costToGoal: %d", sphere.dimID, sphere.x, sphere.y, sphere.z, sphere.rad, sphere.near_rad, sphere.costToGoal);
-}
-
 void pause()
 {
     printf("Enter to continue...");
