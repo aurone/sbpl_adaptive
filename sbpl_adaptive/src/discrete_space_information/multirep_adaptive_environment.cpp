@@ -40,10 +40,11 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
         SBPL_WARN("AdaptiveEnvironment_t::Project - Dimensionality ID %d is out of bounds!", toID);
         return false;
     }
-    if (isInTrackingMode() && !representations_[toID]->isExecutable()) {
-        SBPL_WARN("Can't project to non-executable type in tracking mode!");
-        return false; //no projections to non-executable types in trackmode
-    }
+
+//    if (isInTrackingMode() && !representations_[toID]->isExecutable()) {
+//        SBPL_WARN("Can't project to non-executable type in tracking mode!");
+//        return false; //no projections to non-executable types in trackmode
+//    }
 
     // optimization when toID is fullD: directly up-project to HD
     if (toID == fulld_representation_->getID()) {
@@ -345,10 +346,14 @@ void MultiRepAdaptiveDiscreteSpaceInformation::GetSuccs_Track(
     SuccIDV->clear();
     CostV->clear();
     AdaptiveHashEntry *entry = GetState(SourceStateID);
-    if (!representations_[entry->dimID]->isExecutable()) {
-        SBPL_ERROR("stateID [%d] has representation ID %d [%s], which is not executable. Cannot get tracking successors!", SourceStateID, entry->dimID, representations_[entry->dimID]->getDescription().c_str());
-        throw SBPL_Exception();
-    }
+//    if (!representations_[entry->dimID]->isExecutable()) {
+//        std::stringstream ss;
+//        ss << "stateID " << SourceStateID << " has representation ID " <<
+//                entry->dimID << " [" <<
+//                representations_[entry->dimID]->getDescription() <<
+//                "] which is not executable. Cannot get tracking successors";
+//        throw SBPL_Exception(ss.str());
+//    }
     representations_[entry->dimID]->GetTrackSuccs(SourceStateID, SuccIDV, CostV, env_data_.get());
 }
 
