@@ -92,6 +92,79 @@ void AdaptiveGrid3D::grid2world(
     wz = wz_;
 }
 
+void AdaptiveGrid3D::getBoundaryVisualizationPoints(
+    std::vector<geometry_msgs::Point> &points,
+    std::vector<std_msgs::ColorRGBA> &colors) const
+{
+    int x, y, z;
+    geometry_msgs::Point p;
+
+    size_t old_size = points.size();
+
+    for (x = 0; x < grid_sizes_[0]; ++x) {
+        y = 0, z = 0;
+        geometry_msgs::Point p;
+        grid2world(x, y, z, p.x, p.y, p.z);
+        points.push_back(p);
+
+        y = grid_sizes_[1] - 1, z = 0;
+        grid2world(x, y, z, p.x, p.y, p.z);
+        points.push_back(p);
+
+        y = 0, z = grid_sizes_[2] - 1;
+        grid2world(x, y, z, p.x, p.y, p.z);
+        points.push_back(p);
+
+        y = grid_sizes_[1] - 1, z = grid_sizes_[2] - 1;
+        grid2world(x, y, z, p.x, p.y, p.z);
+        points.push_back(p);
+    }
+
+    for (y = 1; y < grid_sizes_[1] - 1; ++y) {
+        x = 0, z = 0;
+        grid2world(x, y, z, p.x, p.y, p.z);
+        points.push_back(p);
+
+        x = grid_sizes_[0] - 1, z = 0;
+        grid2world(x, y, z, p.x, p.y, p.z);
+        points.push_back(p);
+
+        x = 0, z = grid_sizes_[2] - 1;
+        grid2world(x, y, z, p.x, p.y, p.z);
+        points.push_back(p);
+
+        x = grid_sizes_[0] - 1, z = grid_sizes_[2] - 1;
+        grid2world(x, y, z, p.x, p.y, p.z);
+        points.push_back(p);
+    }
+
+    for (z = 1; z < grid_sizes_[2] - 1; ++z) {
+        y = 0, x = 0;
+        grid2world(x, y, z, p.x, p.y, p.z);
+        points.push_back(p);
+
+        y = grid_sizes_[1] - 1, x = 0;
+        grid2world(x, y, z, p.x, p.y, p.z);
+        points.push_back(p);
+
+        y = 0, x = grid_sizes_[0] - 1;
+        grid2world(x, y, z, p.x, p.y, p.z);
+        points.push_back(p);
+
+        y = grid_sizes_[1] - 1, x = grid_sizes_[0] - 1;
+        grid2world(x, y, z, p.x, p.y, p.z);
+        points.push_back(p);
+    }
+
+    colors.reserve(colors.size() + points.size() - old_size);
+    for (size_t i = old_size; i < points.size(); ++i) {
+        std_msgs::ColorRGBA color;
+        color.a = 1.0f;
+        color.r = color.g = color.b = 0.5f;
+        colors.push_back(color);
+    }
+}
+
 double AdaptiveGrid3D::getDist2(
     int x1,
     int y1,
@@ -397,15 +470,15 @@ visualization_msgs::MarkerArray AdaptiveGrid3D::getVisualizations(
 {
     visualization_msgs::MarkerArray marker;
     marker.markers.resize(2);
-    marker.markers[0] = this->getAdaptiveGridVisualization(ns_prefix, throttle, scale);
-    marker.markers[1] = this->getCostToGoalGridVisualization(ns_prefix, throttle, scale);
+    marker.markers[0] = getAdaptiveGridVisualization(ns_prefix, throttle, scale);
+    marker.markers[1] = getCostToGoalGridVisualization(ns_prefix, throttle, scale);
     return marker;
 }
 
 visualization_msgs::Marker AdaptiveGrid3D::getAdaptiveGridVisualization(
     std::string ns_prefix,
-    int throttle/*=1*/,
-    double scale/*=-1*/)
+    int throttle,
+    double scale)
 {
     visualization_msgs::Marker marker;
     double m_scale = (scale <= 0) ? oc_grid_->getResolution() : scale;
@@ -415,71 +488,36 @@ visualization_msgs::Marker AdaptiveGrid3D::getAdaptiveGridVisualization(
     marker.id = 0;
     marker.type = visualization_msgs::Marker::CUBE_LIST;
     marker.action = visualization_msgs::Marker::ADD;
-    marker.pose.position.x = 0;
-    marker.pose.position.y = 0;
-    marker.pose.position.z = 0;
-    tf::Quaternion q = tf::Quaternion(tf::Vector3(1, 0, 0), 0);
-    q.normalize();
-    tf::quaternionTFToMsg(q, marker.pose.orientation);
-    marker.scale.x = m_scale;
-    marker.scale.y = m_scale;
-    marker.scale.z = m_scale;
-    marker.color.r = 1;
-    marker.color.g = 1;
-    marker.color.b = 1;
-    marker.color.a = 1;
+    marker.pose.position.x = marker.pose.position.y = marker.pose.position.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+    marker.pose.orientation.x = marker.pose.orientation.y = marker.pose.orientation.z = 0.0;
+    marker.scale.x = marker.scale.y = marker.scale.z = m_scale;
+    marker.color.r = 1.0f;
+    marker.color.g = 1.0f;
+    marker.color.b = 1.0f;
+    marker.color.a = 1.0f;
+    marker.lifetime = ros::Duration(0.0);
+    marker.frame_locked = false;
     for (int x = 0; x < grid_sizes_[0]; x += throttle) {
-        int boundary_x = 0;
-        if (x == 0 || x == grid_sizes_[0] - 1) {
-            boundary_x = 1;
-        }
-        else {
-            boundary_x = 0;
-        }
-        for (int y = 0; y < grid_sizes_[1]; y += throttle) {
-            int boundary_y = 0;
-            if (y == 0 || y == grid_sizes_[1] - 1) {
-                boundary_y = 1;
-            }
-            else {
-                boundary_y = 0;
-            }
-            for (int z = 0; z < grid_sizes_[2]; z += throttle) {
-                int boundary_z = 0;
-                if (z == 0 || z == grid_sizes_[2] - 1) {
-                    boundary_z = 1;
-                }
-                else {
-                    boundary_z = 0;
-                }
-
-                int dimID = getCellDim(trackMode_, x, y, z);
-                double hue = 360.0 * dimID / (double)max_dimID_;
-                double wx, wy, wz;
-                grid2world(x, y, z, wx, wy, wz);
-                geometry_msgs::Point p;
-                p.x = wx;
-                p.y = wy;
-                p.z = wz;
-                std_msgs::ColorRGBA col;
-                leatherman::msgHSVToRGB(hue, 1, 1, col);
-                if (dimID != ldID_) {
-                    marker.points.push_back(p);
-                    marker.colors.push_back(col);
-                }
-                int boundary = boundary_x + boundary_y + boundary_z;
-                if (boundary >= 2) {
-                    col.r = 0.5;
-                    col.g = 0.5;
-                    col.b = 0.5;
-                    col.a = 1.0;
-                    marker.points.push_back(p);
-                    marker.colors.push_back(col);
-                }
-            }
+    for (int y = 0; y < grid_sizes_[1]; y += throttle) {
+    for (int z = 0; z < grid_sizes_[2]; z += throttle) {
+        int dimID = getCellDim(trackMode_, x, y, z);
+        double hue = 360.0 * dimID / (double)max_dimID_;
+        double wx, wy, wz;
+        grid2world(x, y, z, wx, wy, wz);
+        geometry_msgs::Point p;
+        p.x = wx;
+        p.y = wy;
+        p.z = wz;
+        std_msgs::ColorRGBA col;
+        leatherman::msgHSVToRGB(hue, 1.0, 1.0, col);
+        if (dimID != ldID_) {
+            marker.points.push_back(p);
+            marker.colors.push_back(col);
         }
     }
-    marker.lifetime = ros::Duration(0.0);
+    }
+    }
     return marker;
 }
 
@@ -509,31 +547,31 @@ visualization_msgs::Marker AdaptiveGrid3D::getCostToGoalGridVisualization(
     marker.color.a = 1;
     if (max_costToGoal_ > 0) {
         for (size_t x = 0; x < (size_t)grid_sizes_[0]; x += throttle) {
-            for (size_t y = 0; y < (size_t)grid_sizes_[1]; y += throttle) {
-                for (size_t z = 0; z < (size_t)grid_sizes_[2]; z += throttle) {
-                    unsigned int idx = getCellCostToGoal( { (int)x, (int)y, (int)z });
+        for (size_t y = 0; y < (size_t)grid_sizes_[1]; y += throttle) {
+        for (size_t z = 0; z < (size_t)grid_sizes_[2]; z += throttle) {
+            unsigned int idx = getCellCostToGoal( { (int)x, (int)y, (int)z });
 
-                    if (idx > max_costToGoal_) {
-                        continue;
-                    }
-                    double hue = 360.0 * idx / (double)(max_costToGoal_);
-                    double wx, wy, wz;
-                    grid2world(x, y, z, wx, wy, wz);
-                    geometry_msgs::Point p;
-                    p.x = wx;
-                    p.y = wy;
-                    p.z = wz;
-                    std_msgs::ColorRGBA col;
-                    double r, g, b;
-                    leatherman::HSVtoRGB(&r, &g, &b, hue, 1.0, 1.0);
-                    col.r = r;
-                    col.g = g;
-                    col.b = b;
-                    col.a = 1.0;
-                    marker.points.push_back(p);
-                    marker.colors.push_back(col);
-                }
+            if (idx > max_costToGoal_) {
+                continue;
             }
+            double hue = 360.0 * idx / (double)(max_costToGoal_);
+            double wx, wy, wz;
+            grid2world(x, y, z, wx, wy, wz);
+            geometry_msgs::Point p;
+            p.x = wx;
+            p.y = wy;
+            p.z = wz;
+            std_msgs::ColorRGBA col;
+            double r, g, b;
+            leatherman::HSVtoRGB(&r, &g, &b, hue, 1.0, 1.0);
+            col.r = r;
+            col.g = g;
+            col.b = b;
+            col.a = 1.0;
+            marker.points.push_back(p);
+            marker.colors.push_back(col);
+        }
+        }
         }
     }
     marker.lifetime = ros::Duration(0.0);

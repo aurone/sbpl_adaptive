@@ -135,6 +135,10 @@ private:
 
     sbpl::OccupancyGridPtr oc_grid_;
 
+    void getBoundaryVisualizationPoints(
+        std::vector<geometry_msgs::Point> &points,
+        std::vector<std_msgs::ColorRGBA> &colors) const;
+
     static double getDist2(int x1, int y1, int z1, int x2, int y2, int z2);
 
     static double getDist(int x1, int y1, int z1, int x2, int y2, int z2);
