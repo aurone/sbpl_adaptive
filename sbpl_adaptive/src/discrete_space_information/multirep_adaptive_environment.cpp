@@ -311,28 +311,62 @@ AdaptiveHashEntry *MultiRepAdaptiveDiscreteSpaceInformation::GetState(
 bool MultiRepAdaptiveDiscreteSpaceInformation::isExecutablePath(
     const std::vector<int> &stateIDV)
 {
-    for (int stateID : stateIDV) {
-        AdaptiveHashEntry *entry = GetState(stateID);
-        if (!entry) {
+    if (stateIDV.size() < 2) {
+        ROS_WARN("Path is trivially executable");
+        return true;
+    }
+
+    AdaptiveHashEntry *prev_entry = GetState(stateIDV.front());
+
+    if (!prev_entry) {
+        std::stringstream ss;
+        ss << __FUNCTION__ << ": no hash entry for state id " << stateIDV.front();
+        throw SBPL_Exception(ss.str());
+    }
+
+    if (prev_entry->dimID < 0 ||
+        prev_entry->dimID >= (int)representations_.size())
+    {
+        std::stringstream ss;
+        ss << __FUNCTION__ << ": dimID " << (int)prev_entry->dimID << " is out of range";
+        throw SBPL_Exception(ss.str());
+    }
+
+    for (size_t i = 1; i < stateIDV.size(); ++i) {
+        int prev_id = stateIDV[i - 1];
+        int curr_id = stateIDV[i];
+
+        AdaptiveHashEntry *curr_entry = GetState(curr_id);
+        if (!curr_entry) {
             std::stringstream ss;
-            ss << __FUNCTION__ << ": no hash entry for state id " << stateID;
+            ss << __FUNCTION__ << ": no hash entry for state id " << curr_id;
             throw SBPL_Exception(ss.str());
         }
 
-        if (entry->dimID == -1) {
-            SBPL_INFO("State %d is the metagoal", stateID);
+        if (curr_entry->dimID == -1) {
+            SBPL_INFO("State %d is the metagoal", curr_id);
             continue;
         }
 
-        if (entry->dimID < 0 || entry->dimID >= (int)representations_.size()) {
+        if (curr_entry->dimID < 0 || curr_entry->dimID >= (int)representations_.size()) {
             std::stringstream ss;
-            ss << __FUNCTION__ << ": dimID " << (int)entry->dimID << " is out of range";
+            ss << __FUNCTION__ << ": dimID " << (int)curr_entry->dimID << " is out of range";
             throw SBPL_Exception(ss.str());
         }
 
-        if (!representations_[entry->dimID]->isExecutable()) {
-            return false;
+        if (curr_entry->dimID == prev_entry->dimID) {
+            const auto &rep = representations_[curr_entry->dimID];
+            if (!rep->IsExecutableAction(prev_id, curr_id)) {
+                return false;
+            }
         }
+        else {
+            const auto &prev_rep = representations_[prev_entry->dimID];
+            const auto &curr_rep = representations_[curr_entry->dimID];
+            ROS_WARN("Skip checking for executable projection from '%s' to '%s' for now", prev_rep->getDescription().c_str(), curr_rep->getDescription().c_str());
+        }
+
+        prev_entry = curr_entry;
     }
 
     return true;
