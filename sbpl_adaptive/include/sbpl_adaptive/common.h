@@ -11,6 +11,7 @@
 // standard includes
 #include <math.h>
 #include <chrono>
+#include <iomanip>
 #include <ostream>
 #include <string>
 
@@ -40,10 +41,10 @@ inline std::ostream &operator<<(std::ostream &o, const AdaptiveSphere2D &s)
 {
     o << "{ dim: " << s.dimID <<
             ", cost_to_goal: " << s.costToGoal <<
-            ", x: " << s.x <<
-            ", y: " << s.y <<
-            ", rad: " << s.rad <<
-            ", near_rad: " << s.near_rad <<
+            ", x: " << std::fixed << std::setprecision(3) << s.x <<
+            ", y: " << std::fixed << std::setprecision(3) << s.y <<
+            ", rad: " << std::fixed << std::setprecision(3) << s.rad <<
+            ", near_rad: " << std::fixed << std::setprecision(3) << s.near_rad <<
             " }";
     return o;
 }
@@ -59,11 +60,11 @@ inline std::ostream &operator<<(std::ostream &o, const AdaptiveSphere3D &s)
 {
     o << "{ dim: " << s.dimID <<
             ", cost_to_goal: " << s.costToGoal <<
-            ", x: " << s.x <<
-            ", y: " << s.y <<
-            ", z: " << s.z <<
-            ", rad: " << s.rad <<
-            ", near_rad: " << s.near_rad <<
+            ", x: " << std::fixed << std::setprecision(3) << s.x <<
+            ", y: " << std::fixed << std::setprecision(3) << s.y <<
+            ", z: " << std::fixed << std::setprecision(3) << s.z <<
+            ", rad: " << std::fixed << std::setprecision(3) << s.rad <<
+            ", near_rad: " << std::fixed << std::setprecision(3) << s.near_rad <<
             " }";
     return o;
 }
