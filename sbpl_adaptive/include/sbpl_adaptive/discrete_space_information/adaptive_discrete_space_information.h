@@ -318,9 +318,9 @@ void AdaptiveDiscreteSpaceInformation::setTrackMode(
     int cost,
     std::vector<int> *ModStates)
 {
+    onSetTrackMode(stateIDs_V, cost, ModStates);
     trackMode = true;
     lastAdaptivePath_ = stateIDs_V;
-    onSetTrackMode(stateIDs_V, cost, ModStates);
 }
 
 } // namespace adim
