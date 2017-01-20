@@ -22,7 +22,8 @@ SBPL_CLASS_FORWARD(MultiRepAdaptiveDiscreteSpaceInformation)
 
 SBPL_CLASS_FORWARD(AdaptiveStateRepresentation)
 
-class AdaptiveStateRepresentation
+class AdaptiveStateRepresentation :
+    public std::enable_shared_from_this<AdaptiveStateRepresentation>
 {
 public:
 
@@ -107,7 +108,10 @@ public:
         return isExecutable();
     }
 
-    void setFullDRepresentation(AdaptiveStateRepresentationPtr fullD_rep) { fullD_rep_ = fullD_rep; }
+    void setFullDRepresentation(const AdaptiveStateRepresentationPtr &fullD_rep)
+    {
+        fullD_rep_ = fullD_rep;
+    }
 
     bool isExecutable() const { return executable_; }
 
@@ -117,9 +121,9 @@ public:
 
     const std::string getDescription() const { return description_; }
 
-    void addParentRepresentation(AdaptiveStateRepresentation *parent);
+    void addParentRepresentation(const AdaptiveStateRepresentationPtr &parent);
 
-    void addChildRepresentation(AdaptiveStateRepresentation *child);
+    void addChildRepresentation(const AdaptiveStateRepresentationPtr &child);
 
     void GetExecutableParents(
         std::vector<const AdaptiveStateRepresentation*> &executableParents) const;
@@ -169,40 +173,42 @@ AdaptiveStateRepresentation::AdaptiveStateRepresentation(
 
 inline
 void AdaptiveStateRepresentation::addParentRepresentation(
-    AdaptiveStateRepresentation *parent)
+    const AdaptiveStateRepresentationPtr &parent)
 {
     bool found = false;
-    for (auto rep : parents_) {
-        if (rep.get() == parent) {
+    for (const auto &rep : parents_) {
+        if (rep == parent) {
             found = true;
             break;
         }
     }
     if (!found) {
-        SBPL_INFO("Added %s as parent representation to %s!", parent->getDescription().c_str(), this->getDescription().c_str());
-        parents_.push_back(AdaptiveStateRepresentationPtr(parent));
-        parent->addChildRepresentation(this);
+        SBPL_INFO("Added %s as parent representation to %s!", parent->getDescription().c_str(), getDescription().c_str());
+        parents_.push_back(parent);
+        parent->addChildRepresentation(shared_from_this());
     }
 }
 
 inline
 void AdaptiveStateRepresentation::addChildRepresentation(
-    AdaptiveStateRepresentation *child)
+    const AdaptiveStateRepresentationPtr &child)
 {
     bool found = false;
-    for (auto rep : children_) {
-        if (rep.get() == child) {
+    for (const auto &rep : children_) {
+        if (rep == child) {
             found = true;
             break;
         }
     }
     if (!found) {
-        SBPL_INFO("Added %s as child representation to %s!", child->getDescription().c_str(), this->getDescription().c_str());
-        children_.push_back(AdaptiveStateRepresentationPtr(child));
-        child->addParentRepresentation(this);
+        SBPL_INFO("Added %s as child representation to %s!", child->getDescription().c_str(), getDescription().c_str());
+        children_.push_back(child);
+        child->addParentRepresentation(shared_from_this());
     }
 }
 
+/// If executable, returns this representation, otherwise return the executable
+/// parents of its parents.
 inline
 void AdaptiveStateRepresentation::GetExecutableParents(
     std::vector<const AdaptiveStateRepresentation *> &executableParents) const
@@ -211,7 +217,7 @@ void AdaptiveStateRepresentation::GetExecutableParents(
         executableParents.push_back(this);
     }
     else {
-        for (auto parent : parents_) {
+        for (const auto &parent : parents_) {
             parent->GetExecutableParents(executableParents);
         }
     }
@@ -222,7 +228,7 @@ void AdaptiveStateRepresentation::getParentIDs(
     int stateID,
     std::vector<int> &IDs) const
 {
-    for (auto parent : parents_) {
+    for (const auto &parent : parents_) {
         IDs.push_back(parent->getID());
     }
 }
@@ -232,7 +238,7 @@ void AdaptiveStateRepresentation::getChildIDs(
     int stateID,
     std::vector<int> &IDs) const
 {
-    for (auto child : children_) {
+    for (const auto &child : children_) {
         IDs.push_back(child->getID());
     }
 }
