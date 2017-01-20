@@ -32,9 +32,10 @@ public:
     virtual std::vector<AdaptiveSphere3D> getUpgradeSpheresForState(
         int StateID) = 0;
 
-    virtual std::vector<AdaptiveSphere3D> getTunnelSpheresForState(
+    virtual void getTunnelSpheresForState(
         int StateID,
-        int costToGoal) = 0;
+        int costToGoal,
+        std::vector<AdaptiveSphere3D> &spheres) = 0;
 
     virtual std::vector<Position3D> getSpherePositionsForState(int StateID) = 0;
 
