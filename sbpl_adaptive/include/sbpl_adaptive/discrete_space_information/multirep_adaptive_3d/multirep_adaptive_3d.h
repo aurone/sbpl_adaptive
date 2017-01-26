@@ -20,7 +20,11 @@ class MultiRepAdaptiveDiscreteSpaceInformation3D :
 {
 public:
 
-    virtual int GetDimIDForPosition(Position3D p) = 0;
+    virtual bool IsDimEnabledAtPosition(const Position3D &p, int dim) const = 0;
+
+    virtual void GetEnabledDimsAtPosition(
+        const Position3D &p,
+        std::vector<int> &dims) const = 0;
 
     virtual int GetTrackingCostToGoalForPosition(Position3D p) = 0;
 
