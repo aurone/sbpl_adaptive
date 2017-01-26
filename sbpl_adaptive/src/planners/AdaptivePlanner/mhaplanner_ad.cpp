@@ -1,32 +1,3 @@
-/*
- * Copyright (c) 2015, Maxim Likhachev
- * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- * 
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the Carnegie Mellon University nor the names of its
- *       contributors may be used to endorse or promote products derived from
- *       this software without specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- */
-
 #include <assert.h>
 #include <stdlib.h>
 #include <time.h>
@@ -35,11 +6,7 @@
 #include <sbpl/utils/key.h>
 
 #include <sbpl_adaptive/headers.h>
-
-static double GetTime()
-{
-    return (double)clock() / (double)CLOCKS_PER_SEC;
-}
+#include <sbpl_adaptive/common.h>
 
 MHAPlanner_AD::MHAPlanner_AD(
     adim::AdaptiveDiscreteSpaceInformation* environment,
@@ -59,7 +26,7 @@ MHAPlanner_AD::MHAPlanner_AD(
     m_eps_mha(1.0),
     m_eps_satisfied((double)INFINITECOST),
     m_num_expansions(0),
-    m_elapsed(0.0),
+    m_elapsed(sbpl::clock::duration::zero()),
     m_call_number(0), // uninitialized
     m_start_state(NULL),
     m_goal_state(NULL),
@@ -184,11 +151,11 @@ int MHAPlanner_AD::replan(
 
     // reset time limits
     m_num_expansions = 0;
-    m_elapsed = 0.0;
+    m_elapsed = sbpl::clock::duration::zero();
 
-    double start_time, end_time;
+    sbpl::clock::time_point start_time, end_time;
 
-    start_time = GetTime();
+    start_time = sbpl::clock::now();
 
     ++m_call_number;
     reinit_state(m_goal_state);
@@ -206,13 +173,13 @@ int MHAPlanner_AD::replan(
         SBPL_DEBUG("Inserted start state %d into search %d with f = %ld", m_start_state->state_id, hidx, key.key[0]);
     }
 
-    end_time = GetTime();
-    m_elapsed += (end_time - start_time);
+    end_time = sbpl::clock::now();
+    m_elapsed += end_time - start_time;
 
-    while (!m_open[0].emptyheap() && !time_limit_reached()) { 
-        start_time = GetTime();
+    while (!m_open[0].emptyheap() && !time_limit_reached()) {
+        start_time = sbpl::clock::now();
         // special case for mha* without additional heuristics
-        if (num_heuristics() == 1) { 
+        if (num_heuristics() == 1) {
             if (m_goal_state->g <= get_minf(m_open[0])) {
                 m_eps_satisfied = m_eps * m_eps_mha;
                 extract_path(solution_stateIDs_V, solcost);
@@ -261,13 +228,13 @@ int MHAPlanner_AD::replan(
                 else {
                     MHASearchState* s =
                             state_from_open_state(m_open[0].getminheap());
-                    // SBPL_INFO("Expanding state %d  from search %d g : %d h : %d h_inadd : %d", s->state_id, 0, s->g, s->od[0].h, s->od[hidx].h);  
+                    // SBPL_INFO("Expanding state %d  from search %d g : %d h : %d h_inadd : %d", s->state_id, 0, s->g, s->od[0].h, s->od[hidx].h);
                     expand(s, 0);
                 }
             }
         }
-        end_time = GetTime();
-        m_elapsed += (end_time - start_time);
+        end_time = sbpl::clock::now();
+        m_elapsed += end_time - start_time;
     }
 
     if (m_open[0].emptyheap()) {
@@ -335,12 +302,12 @@ double MHAPlanner_AD::get_final_epsilon()
 
 double MHAPlanner_AD::get_final_eps_planning_time()
 {
-    return m_elapsed;
+    return adim::to_secs(m_elapsed);
 }
 
 double MHAPlanner_AD::get_initial_eps_planning_time()
 {
-    return m_elapsed;
+    return adim::to_secs(m_elapsed);
 }
 
 int MHAPlanner_AD::get_n_expands() const
@@ -445,7 +412,7 @@ bool MHAPlanner_AD::time_limit_reached() const
     if (m_params.return_first_solution) {
         return false;
     }
-    else if (m_params.max_time > 0.0 && m_elapsed >= m_params.max_time) {
+    else if (m_params.max_time > 0.0 && adim::to_secs(m_elapsed) >= m_params.max_time) {
         return true;
     }
     else if (m_max_expansions > 0 && m_num_expansions >= m_max_expansions) {
@@ -459,13 +426,13 @@ bool MHAPlanner_AD::time_limit_reached() const
 MHASearchState* MHAPlanner_AD::get_state(int state_id)
 {
     assert(state_id >= 0 && state_id < environment_->StateID2IndexMapping.size());
-    
+
     int* idxs = environment_->StateID2IndexMapping[state_id];
 
     /* Finding if state already created. This
-       is needed since planner and tracker 
+       is needed since planner and tracker
        lookup into the same StateID2IndexMapping
-       hence we have a different if condition */ 
+       hence we have a different if condition */
     std::vector<int>::iterator it = find(created_states_.begin(), created_states_.end(), state_id);
 
     if (it == created_states_.end()){
@@ -483,7 +450,7 @@ MHASearchState* MHAPlanner_AD::get_state(int state_id)
 
         // Pushing back newly created state
         created_states_.push_back(state_id);
-        
+
         return s;
     }
     else {
@@ -631,7 +598,7 @@ void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
                     for (int hidx : m_heuristic_list[dimID]){
                     // for (int hidx = 0; hidx < num_heuristics(); ++hidx){
                         if(hidx == 0)
-                            continue; 
+                            continue;
                         int fn = compute_key(succ_state, hidx);
                         if (fn <= m_eps_mha * fanchor) {
                             insert_or_update(succ_state, hidx, fn);
@@ -674,7 +641,7 @@ int MHAPlanner_AD::compute_heuristic(int state_id, int hidx)
             return m_hanchor->GetGoalHeuristic(state_id);
         }
         return heur;
-    }   
+    }
 }
 
 int MHAPlanner_AD::get_minf(CHeap& pq) const
