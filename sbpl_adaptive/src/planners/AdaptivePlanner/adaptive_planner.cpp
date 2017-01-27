@@ -422,13 +422,4 @@ int AdaptivePlanner::replan(
     return replan(params.max_time, params.repair_time, params.repair_time, solution_stateIDs_V, solcost);
 }
 
-int AdaptivePlanner::retrack_with_new_start(
-    vector<int>* solution_stateIDs_V,
-    int stateID)
-{
-    int t_cost;
-    tracker_->set_start(stateID);
-    int t_ret = tracker_->replan(20, solution_stateIDs_V, &t_cost);
-}
-
 } // namespace adim

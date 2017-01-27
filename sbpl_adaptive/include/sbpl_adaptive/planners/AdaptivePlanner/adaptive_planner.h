@@ -91,10 +91,6 @@ public:
         ReplanParams params,
         int* solcost) override;
 
-    int retrack_with_new_start(
-    std::vector<int>* solution_stateIDs_V,
-    int stateID);
-
     double get_solution_eps() const override;
 
     int get_n_expands() const override { return search_expands_; }
