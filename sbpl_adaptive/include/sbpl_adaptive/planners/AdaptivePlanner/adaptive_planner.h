@@ -91,6 +91,10 @@ public:
         ReplanParams params,
         int* solcost) override;
 
+    int retrack_with_new_start(
+    std::vector<int>* solution_stateIDs_V,
+    int stateID);
+
     double get_solution_eps() const override;
 
     int get_n_expands() const override { return search_expands_; }
@@ -136,6 +140,8 @@ private:
     // if true, then search until first solution only (see sbpl/planner.h for
     // search modes)
     bool search_until_first_solution_;
+
+    bool in_tracking_phase_;
 
     //MHA*
     Heuristic* plan_anc_heur_;
