@@ -72,6 +72,7 @@ AdaptivePlanner::AdaptivePlanner(
     final_eps_(-1.0),
     forward_search_(bSearchForward),
     search_until_first_solution_(true),
+    in_tracking_phase_(false),
     plan_anc_heur_(anc_heur),
     plan_heurs_(heurs),
     track_anc_heur_(anc_heur),
