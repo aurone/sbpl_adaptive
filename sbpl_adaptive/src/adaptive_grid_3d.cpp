@@ -5,11 +5,11 @@
  *      Author: Kalin Gochev
  */
 
-#include <sbpl_adaptive_components/sbpl_adaptive_grid3D.h>
+#include <sbpl_adaptive/adaptive_grid_3d.h>
 
 #include <leatherman/utils.h>
 
-#include <sbpl_adaptive_components/common.h>
+#include <sbpl_adaptive/common.h>
 
 namespace adim {
 

@@ -9,7 +9,7 @@
 #define _SBPL_EXPANSION_GRID3D_H_
 
 #include <sbpl/headers.h>
-#include <sbpl_adaptive_components/common.h>
+#include <sbpl_adaptive/common.h>
 #include <sbpl_adaptive_collision_checking/sbpl_collision_space.h>
 #include <visualization_msgs/MarkerArray.h>
 
@@ -18,6 +18,7 @@ namespace adim {
 class ExpansionGrid3D
 {
 private:
+
 	std::shared_ptr<adim::SBPLCollisionSpace> cspace_;
 
 protected:

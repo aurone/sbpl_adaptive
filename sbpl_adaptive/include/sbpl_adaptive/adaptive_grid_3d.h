@@ -1,12 +1,12 @@
 /*
- * sbpl_adaptive_grid3D.h
+ * adaptive_grid_3d.h
  *
  *  Created on: Nov 4, 2014
  *      Author: Kalin Gochev
  */
 
-#ifndef _SBPL_ADAPTIVE_GRID3D_H_
-#define _SBPL_ADAPTIVE_GRID3D_H_
+#ifndef SBPL_ADAPTIVE_ADAPTIVE_GRID_3D_H
+#define SBPL_ADAPTIVE_ADAPTIVE_GRID_3D_H
 
 // system includes
 #include <leatherman/utils.h>
@@ -18,7 +18,7 @@
 
 // project includes
 #include <sbpl_adaptive/macros.h>
-#include <sbpl_adaptive_components/sbpl_adaptive_grid.h>
+#include <sbpl_adaptive/adaptive_grid.h>
 
 namespace adim {
 

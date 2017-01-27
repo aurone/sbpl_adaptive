@@ -5,7 +5,7 @@
  *      Author: kalin
  */
 
-#include <sbpl_adaptive_components/sbpl_expansion_grid3D.h>
+#include <sbpl_adaptive/expansion_grid_3d.h>
 
 #include <Eigen/Dense>
 

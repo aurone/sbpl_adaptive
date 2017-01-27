@@ -40,8 +40,8 @@ include_directories(include)
 
 add_library(
     ${PROJECT_NAME}
-    src/sbpl_adaptive_grid3D.cpp
-    src/sbpl_expansion_grid3D.cpp)
+    src/adaptive_grid_3d.cpp
+    src/expansion_grid_3d.cpp)
 target_link_libraries(${PROJECT_NAME} sbpl_adaptive ${SBPL_LIBRARIES})
 
 install(
