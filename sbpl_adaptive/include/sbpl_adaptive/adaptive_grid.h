@@ -1,12 +1,7 @@
 /// \author Kalin Gochev
 
-#ifndef SBPL_ADAPTIVE_COMPONENTS_INCLUDE_SBPL_ADAPTIVE_COMPONENTS_SBPL_ADAPTIVE_GRID_H_
-#define SBPL_ADAPTIVE_COMPONENTS_INCLUDE_SBPL_ADAPTIVE_COMPONENTS_SBPL_ADAPTIVE_GRID_H_
-
-#include <vector>
-
-#include <sbpl_adaptive/headers.h>
-#include <sbpl_adaptive/macros.h>
+#ifndef SBPL_ADAPTIVE_ADAPTIVE_GRID_H
+#define SBPL_ADAPTIVE_ADAPTIVE_GRID_H
 
 namespace adim {
 

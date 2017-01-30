@@ -7,9 +7,10 @@
 
 #include <sbpl_adaptive/adaptive_grid_3d.h>
 
+// system includes
 #include <leatherman/utils.h>
-
-#include <sbpl_adaptive/common.h>
+#include <ros/console.h>
+#include <ros/time.h>
 
 namespace adim {
 
@@ -39,8 +40,6 @@ AdaptiveGrid3D::AdaptiveGrid3D(const sbpl::OccupancyGridPtr& grid) :
     default_cell.tDimID = InvalidDim;
     grid_.assign(grid_sizes_[0], grid_sizes_[1], grid_sizes_[2], default_cell);
 
-    SBPL_INFO("[ad_grid] Allocated grid of size %d x %d x %d in frame %s", grid_sizes_[0], grid_sizes_[1], grid_sizes_[2], oc_grid_->getReferenceFrame().c_str());
-    trackMode_ = false;
     max_dimID_ = 0;
     max_costToGoal_ = 0;
 }
@@ -221,8 +220,8 @@ void AdaptiveGrid3D::setPlanningMode()
 }
 
 void AdaptiveGrid3D::setTrackingMode(
-    const std::vector<adim::AdaptiveSphere3D> &tunnel,
-    std::vector<adim::Position3D> &modCells)
+    const std::vector<AdaptiveSphere3D> &tunnel,
+    std::vector<Position3D> &modCells)
 {
     trackMode_ = true;
     resetTrackingGrid();
@@ -278,7 +277,7 @@ void AdaptiveGrid3D::addSphere(
     int near_rad,
     int dimID,
     unsigned int costToGoal,
-    std::vector<adim::Position3D> &modCells)
+    std::vector<Position3D> &modCells)
 {
     int min_x = 0; int max_x = grid_sizes_[0] - 1;
     int min_y = 0; int max_y = grid_sizes_[1] - 1;
@@ -418,7 +417,7 @@ visualization_msgs::Marker AdaptiveGrid3D::getCostToGoalGridVisualization(
     marker.pose.position.x = 0;
     marker.pose.position.y = 0;
     marker.pose.position.z = 0;
-    tf::quaternionTFToMsg(tf::Quaternion::getIdentity(), marker.pose.orientation);
+    marker.pose.orientation.w = 1.0;
     marker.scale.x = m_scale;
     marker.scale.y = m_scale;
     marker.scale.z = m_scale;

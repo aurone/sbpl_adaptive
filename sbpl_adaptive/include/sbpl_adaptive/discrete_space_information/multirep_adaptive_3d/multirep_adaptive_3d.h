@@ -8,8 +8,15 @@
 #ifndef SBPL_ADAPTIVE_MULTIREP_ADAPTIVE_3D_H
 #define SBPL_ADAPTIVE_MULTIREP_ADAPTIVE_3D_H
 
-#include <sbpl_adaptive/headers.h>
-#include <sbpl_adaptive/macros.h>
+// standard includes
+#include <vector>
+
+// system includes
+#include <smpl/forward.h>
+
+// projects includes
+#include <sbpl_adaptive/common.h>
+#include <sbpl_adaptive/discrete_space_information/multirep_adaptive_environment.h>
 
 namespace adim {
 

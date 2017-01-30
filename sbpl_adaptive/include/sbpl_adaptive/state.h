@@ -5,8 +5,8 @@
  *      Author: kalin
  */
 
-#ifndef ADAPTIVE_PLANNING_SBPL_HUMANOID_PLANNER_INCLUDE_SBPL_HUMANOID_PLANNER_STATE_H_
-#define ADAPTIVE_PLANNING_SBPL_HUMANOID_PLANNER_INCLUDE_SBPL_HUMANOID_PLANNER_STATE_H_
+#ifndef SBPL_ADAPTIVE_STATE_H
+#define SBPL_ADAPTIVE_STATE_H
 
 #include <stdlib.h>
 
@@ -14,17 +14,17 @@ namespace adim {
 
 struct AdaptiveHashEntry
 {
-    size_t stateID;         //the state ID
-    size_t heur;            //the heuristic value
-    char dimID;             //the dimensionality ID
-    void *stateData;        //the state data specific to this dimensionality
+    size_t stateID;         // the state ID
+    size_t heur;            // the heuristic value
+    char dimID;             // the dimensionality ID
+    void *stateData;        // the state data specific to this dimensionality
 
-    template <class T> T* dataAs() {
-        return static_cast<T*>(stateData);
+    template <class T> T *dataAs() {
+        return static_cast<T *>(stateData);
     }
 
-    template <class T> const T* dataAs() const {
-        return static_cast<const T*>(stateData);
+    template <class T> const T *dataAs() const {
+        return static_cast<const T *>(stateData);
     }
 };
 

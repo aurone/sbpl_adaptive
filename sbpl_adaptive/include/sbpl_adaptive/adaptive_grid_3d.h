@@ -8,16 +8,26 @@
 #ifndef SBPL_ADAPTIVE_ADAPTIVE_GRID_3D_H
 #define SBPL_ADAPTIVE_ADAPTIVE_GRID_3D_H
 
+// standard includes
+#include <stdlib.h>
+#include <math.h>
+#include <algorithm>
+#include <string>
+#include <vector>
+
 // system includes
-#include <leatherman/utils.h>
-#include <ros/ros.h>
-#include <smpl/grid.h>
+#include <geometry_msgs/Point.h>
+#include <sbpl/sbpl_exception.h>
+#include <sbpl/utils/key.h>
 #include <smpl/occupancy_grid.h>
+#include <smpl/forward.h>
+#include <smpl/grid.h>
+#include <std_msgs/ColorRGBA.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 
 // project includes
-#include <sbpl_adaptive/macros.h>
+#include <sbpl_adaptive/common.h>
 #include <sbpl_adaptive/adaptive_grid.h>
 
 namespace adim {
@@ -115,14 +125,14 @@ public:
     ///@}
 
     void addPlanningSphere(
-        const adim::AdaptiveSphere3D &sphere,
-        std::vector<adim::Position3D> &modCells);
+        const AdaptiveSphere3D &sphere,
+        std::vector<Position3D> &modCells);
 
     void setPlanningMode();
 
     void setTrackingMode(
-        const std::vector<adim::AdaptiveSphere3D> &tunnel,
-        std::vector<adim::Position3D> &modCells);
+        const std::vector<AdaptiveSphere3D> &tunnel,
+        std::vector<Position3D> &modCells);
 
     unsigned int getCellCostToGoal(double wx, double wy, double wz) const;
 
@@ -180,13 +190,13 @@ private:
         int near_rad,
         int dimID,
         unsigned int costToGoal,
-        std::vector<adim::Position3D> &modCells);
+        std::vector<Position3D> &modCells);
 
     bool setCellNearDim(bool bTrackMode, size_t x, size_t y, size_t z, int dimID);
 
     void addTrackingSphere(
-        adim::AdaptiveSphere3D sphere,
-        std::vector<adim::Position3D> &modCells);
+        AdaptiveSphere3D sphere,
+        std::vector<Position3D> &modCells);
 
     void getOverlappingSpheres(
         size_t x, size_t y, size_t z,
@@ -423,8 +433,8 @@ bool AdaptiveGrid3D::dimEnabled(int gx, int gy, int gz, int dimID, bool mode) co
 
 inline
 void AdaptiveGrid3D::addPlanningSphere(
-    const adim::AdaptiveSphere3D &sphere,
-    std::vector<adim::Position3D> &modCells)
+    const AdaptiveSphere3D &sphere,
+    std::vector<Position3D> &modCells)
 {
     size_t gx, gy, gz;
     world2grid(sphere.x,sphere.y,sphere.z,gx,gy,gz);
@@ -485,8 +495,8 @@ bool AdaptiveGrid3D::isInBounds(double wx, double wy, double wz) const
 
 inline
 void AdaptiveGrid3D::addTrackingSphere(
-    adim::AdaptiveSphere3D sphere,
-    std::vector<adim::Position3D> &modCells)
+    AdaptiveSphere3D sphere,
+    std::vector<Position3D> &modCells)
 {
     size_t gx, gy, gz;
     world2grid(sphere.x, sphere.y, sphere.z, gx, gy, gz);
