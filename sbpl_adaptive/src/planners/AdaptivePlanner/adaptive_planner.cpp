@@ -1,9 +1,12 @@
+#include <sbpl_adaptive/planners/AdaptivePlanner/adaptive_planner.h>
 
-#include <sbpl_adaptive/headers.h>
-
+// system includes
 #include <smpl/time.h>
 
-using namespace std;
+// project includes
+#include <sbpl_adaptive/common.h>
+#include <sbpl_adaptive/planners/AdaptivePlanner/araplanner_ad.h>
+#include <sbpl_adaptive/planners/AdaptivePlanner/mhaplanner_ad.h>
 
 namespace adim {
 
@@ -392,7 +395,7 @@ void AdaptivePlanner::set_initialsolution_eps(double initialsolution_eps)
 }
 
 int AdaptivePlanner::replan(
-    vector<int>* solution_stateIDs_V,
+    std::vector<int>* solution_stateIDs_V,
     ReplanParams params, int* solcost)
 {
     set_initialsolution_eps(params.initial_eps);

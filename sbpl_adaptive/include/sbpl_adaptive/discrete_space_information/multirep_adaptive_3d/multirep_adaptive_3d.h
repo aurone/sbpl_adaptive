@@ -40,5 +40,4 @@ public:
 
 } // namespace adim
 
-
 #endif

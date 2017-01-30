@@ -2,6 +2,8 @@
 #define SBPL_ADAPTIVE_SBPL_ADAPTIVE_H
 
 #include <sbpl_adaptive/SCVStat.h>
+#include <sbpl_adaptive/adaptive_grid.h>
+#include <sbpl_adaptive/adaptive_grid_3d.h>
 #include <sbpl_adaptive/adaptive_state_representation.h>
 #include <sbpl_adaptive/common.h>
 #include <sbpl_adaptive/representation3D.h>

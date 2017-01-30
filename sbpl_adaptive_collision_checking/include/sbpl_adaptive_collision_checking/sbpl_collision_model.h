@@ -41,9 +41,6 @@
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/robot_state/robot_state.h>
-#ifdef __ROS_DISTRO_groovy__
-#include <moveit/robot_state/joint_state.h>
-#endif
 #include <moveit_msgs/RobotState.h>
 
 #include <eigen_conversions/eigen_kdl.h>
@@ -56,7 +53,7 @@
 #include <string>
 
 // system includes
-#include <sbpl_adaptive/macros.h>
+#include <smpl/forward.h>
 #include <std_msgs/ColorRGBA.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>

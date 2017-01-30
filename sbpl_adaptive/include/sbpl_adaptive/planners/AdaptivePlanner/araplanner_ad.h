@@ -31,16 +31,12 @@
 #define SBPL_ADAPTIVE_ARAPLANNER_AD_H
 
 // system includes
+#include <sbpl/headers.h>
+#include <smpl/forward.h>
 #include <smpl/time.h>
 
 // project includes
-#include <sbpl_adaptive/macros.h>
-
-class CMDP;
-class CMDPSTATE;
-class CMDPACTION;
-class CHeap;
-class CList;
+#include <sbpl_adaptive/discrete_space_information/adaptive_discrete_space_information.h>
 
 namespace adim {
 

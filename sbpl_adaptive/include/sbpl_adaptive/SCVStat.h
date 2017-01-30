@@ -15,7 +15,7 @@
 // system includes
 #include <smpl/forward.h>
 
-SBPL_CLASS_FORWARD(AdaptivePlannerCSVState_c)
+SBPL_CLASS_FORWARD(AdaptivePlannerCSVStat_c)
 
 class AdaptivePlannerCSVStat_c
 {

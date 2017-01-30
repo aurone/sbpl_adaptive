@@ -1,14 +1,15 @@
 #ifndef sbpl_MHAPlanner_AD_h
 #define sbpl_MHAPlanner_AD_h
 
+// standard includes
 #include <unordered_map>
 
-#include <sbpl/heuristics/heuristic.h>
-#include <sbpl/planners/planner.h>
-#include <sbpl/utils/heap.h>
-#include <sbpl_adaptive/headers.h>
-
+// system includes
+#include <sbpl/headers.h>
 #include <smpl/time.h>
+
+// project includes
+#include <sbpl_adaptive/discrete_space_information/adaptive_discrete_space_information.h>
 
 /*struct MHASearchState
 {

@@ -1,11 +1,15 @@
+#include <sbpl_adaptive/planners/AdaptivePlanner/mhaplanner_ad.h>
+
+// standard includes
 #include <assert.h>
 #include <stdlib.h>
 #include <time.h>
 #include <algorithm>
 
+// system includes
 #include <sbpl/utils/key.h>
 
-#include <sbpl_adaptive/headers.h>
+// project includes
 #include <sbpl_adaptive/common.h>
 
 MHAPlanner_AD::MHAPlanner_AD(
