@@ -40,7 +40,7 @@ AdaptiveGrid3D::AdaptiveGrid3D(const sbpl::OccupancyGridPtr& grid) :
     default_cell.tDimID = InvalidDim;
     grid_.assign(grid_sizes_[0], grid_sizes_[1], grid_sizes_[2], default_cell);
 
-    max_dimID_ = 0;
+    max_dimID_ = -1;
     max_costToGoal_ = 0;
 }
 
@@ -360,6 +360,11 @@ visualization_msgs::Marker AdaptiveGrid3D::getAdaptiveGridVisualization(
     int throttle,
     double scale)
 {
+    if (max_dimID_ == -1) {
+        // no dimensions assigned anywhere --> no visualizations
+        return visualization_msgs::Marker();
+    }
+
     visualization_msgs::Marker marker;
     double m_scale = scale * oc_grid_->resolution();
     marker.header.stamp = ros::Time::now();
