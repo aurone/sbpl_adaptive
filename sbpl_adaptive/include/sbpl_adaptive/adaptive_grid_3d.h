@@ -142,8 +142,6 @@ public:
 
     /// \name Visualization
     ///@{
-    int getCellDim(bool bTrackMode, size_t x, size_t y, size_t z) const;
-
     visualization_msgs::MarkerArray getVisualizations(
         std::string ns_prefix,
         int throttle = 1,

@@ -241,15 +241,6 @@ unsigned int AdaptiveGrid3D::getCellCostToGoal(int gx, int gy, int gz) const
     return grid_(gx, gy, gz).costToGoal;
 }
 
-int AdaptiveGrid3D::getCellDim(
-    bool bTrackMode,
-    size_t x,
-    size_t y,
-    size_t z) const
-{
-    return bTrackMode ? grid_(x, y, z).tDimID : grid_(x, y, z).pDimID;
-}
-
 void AdaptiveGrid3D::getOverlappingSpheres(
     size_t x,
     size_t y,
@@ -383,20 +374,41 @@ visualization_msgs::Marker AdaptiveGrid3D::getAdaptiveGridVisualization(
     for (int x = 0; x < grid_sizes_[0]; x += throttle) {
     for (int y = 0; y < grid_sizes_[1]; y += throttle) {
     for (int z = 0; z < grid_sizes_[2]; z += throttle) {
-        int dimID = getCellDim(trackMode_, x, y, z);
-        double hue = 360.0 * dimID / (double)max_dimID_;
+        std_msgs::ColorRGBA col;
+        for (int i = 0; i <= max_dimID_; ++i) {
+            if (dimEnabled(x, y, z, i, trackMode_)) {
+                double hue = 360.0 * i / (double)(max_dimID_ + 1);
+                std_msgs::ColorRGBA c;
+                leatherman::msgHSVToRGB(hue, 1.0, 1.0, c);
+                // additive color per dimension
+                col.r += c.r;
+                col.g += c.g;
+                col.b += c.b;
+
+            }
+        }
+
+        // normalize color
+        float m = col.r;
+        m = std::max(m, col.g);
+        m = std::max(m, col.b);
+        if (m == 0.0f) {
+            continue;
+        }
+        float minv = 1.0 / m;
+        col.r *= minv;
+        col.g *= minv;
+        col.b *= minv;
+        col.a = 1.0f;
+
         double wx, wy, wz;
         grid2world(x, y, z, wx, wy, wz);
         geometry_msgs::Point p;
         p.x = wx;
         p.y = wy;
         p.z = wz;
-        std_msgs::ColorRGBA col;
-        leatherman::msgHSVToRGB(hue, 1.0, 1.0, col);
-        if (dimID != InvalidDim) {
-            marker.points.push_back(p);
-            marker.colors.push_back(col);
-        }
+        marker.points.push_back(p);
+        marker.colors.push_back(col);
     }
     }
     }
