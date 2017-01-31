@@ -361,7 +361,7 @@ visualization_msgs::Marker AdaptiveGrid3D::getAdaptiveGridVisualization(
     double scale)
 {
     visualization_msgs::Marker marker;
-    double m_scale = (scale <= 0) ? oc_grid_->getResolution() : scale;
+    double m_scale = scale * oc_grid_->resolution();
     marker.header.stamp = ros::Time::now();
     marker.header.frame_id = oc_grid_->getReferenceFrame();
     marker.ns = ns_prefix + "_AdaptiveGrid3D";
@@ -372,10 +372,7 @@ visualization_msgs::Marker AdaptiveGrid3D::getAdaptiveGridVisualization(
     marker.pose.orientation.w = 1.0;
     marker.pose.orientation.x = marker.pose.orientation.y = marker.pose.orientation.z = 0.0;
     marker.scale.x = marker.scale.y = marker.scale.z = m_scale;
-    marker.color.r = 1.0f;
-    marker.color.g = 1.0f;
-    marker.color.b = 1.0f;
-    marker.color.a = 1.0f;
+    marker.color.r = marker.color.g = marker.color.b = marker.color.a = 1.0f;
     marker.lifetime = ros::Duration(0.0);
     marker.frame_locked = false;
     for (int x = 0; x < grid_sizes_[0]; x += throttle) {
@@ -407,7 +404,7 @@ visualization_msgs::Marker AdaptiveGrid3D::getCostToGoalGridVisualization(
     double scale)
 {
     visualization_msgs::Marker marker;
-    double m_scale = (scale <= 0) ? oc_grid_->getResolution() : scale;
+    double m_scale = scale * oc_grid_->resolution();
     marker.header.stamp = ros::Time::now();
     marker.header.frame_id = oc_grid_->getReferenceFrame();
     marker.ns = ns_prefix + "_AdaptiveGrid3D_indeces";

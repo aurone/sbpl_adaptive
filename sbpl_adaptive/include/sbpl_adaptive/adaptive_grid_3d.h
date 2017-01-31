@@ -147,17 +147,17 @@ public:
     visualization_msgs::MarkerArray getVisualizations(
         std::string ns_prefix,
         int throttle = 1,
-        double scale = -1);
+        double scale = 1.0);
 
     visualization_msgs::Marker getAdaptiveGridVisualization(
         std::string ns_prefix,
         int throttle = 1,
-        double scale = -1);
+        double scale = 1.0);
 
     visualization_msgs::Marker getCostToGoalGridVisualization(
         std::string ns_prefix,
         int throttle = 1,
-        double scale = 1);
+        double scale = 1.0);
     ///@}
 
 private:
