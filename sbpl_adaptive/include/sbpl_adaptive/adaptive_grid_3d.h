@@ -200,7 +200,7 @@ private:
         int dimID);
 
     void addTrackingSphere(
-        AdaptiveSphere3D sphere,
+        const AdaptiveSphere3D &sphere,
         std::vector<Position3D> &modCells);
 
     void getOverlappingSpheres(
@@ -520,7 +520,7 @@ bool AdaptiveGrid3D::isInBounds(double wx, double wy, double wz) const
 
 inline
 void AdaptiveGrid3D::addTrackingSphere(
-    AdaptiveSphere3D sphere,
+    const AdaptiveSphere3D &sphere,
     std::vector<Position3D> &modCells)
 {
     size_t gx, gy, gz;

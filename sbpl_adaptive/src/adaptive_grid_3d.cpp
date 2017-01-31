@@ -225,8 +225,8 @@ void AdaptiveGrid3D::setTrackingMode(
 {
     trackMode_ = true;
     resetTrackingGrid();
-    for (size_t i = 0; i < tunnel.size(); i++) {
-        addTrackingSphere(tunnel[i], modCells);
+    for (const AdaptiveSphere3D &sphere : tunnel) {
+        addTrackingSphere(sphere, modCells);
     }
 }
 
@@ -318,7 +318,7 @@ void AdaptiveGrid3D::addSphere(
                 grid2world(i, j, k, modp.x, modp.y, modp.z);
                 modCells.push_back(modp);
             }
-            setCellCostToGoal((int)i, (int)j, (int)k, costToGoal);
+            setCellCostToGoal(i, j, k, costToGoal);
         }
         else if (dist2 <= (rad + near_rad) * (rad + near_rad)) {
             //near sphere
