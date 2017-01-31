@@ -115,13 +115,13 @@ public:
 
     /// \name Wrappers around base functionality
     ///@{
-    bool enableDim(int gx, int gy, int gz, int dimID, bool mode);
-    bool disableDim(int gx, int gy, int gz, int dimID, bool mode);
+    bool enableDim(int gx, int gy, int gz, int dimID, bool tracking);
+    bool disableDim(int gx, int gy, int gz, int dimID, bool tracking);
 
-    bool enableNearDim(int gx, int gy, int gz, int dimID, bool mode);
-    bool disableNearDim(int gx, int gy, int gz, int dimID, bool mode);
+    bool enableNearDim(int gx, int gy, int gz, int dimID, bool tracking);
+    bool disableNearDim(int gx, int gy, int gz, int dimID, bool tracking);
 
-    bool dimEnabled(int gx, int gy, int gz, int dimID, bool mode) const;
+    bool dimEnabled(int gx, int gy, int gz, int dimID, bool tracking) const;
     ///@}
 
     void addPlanningSphere(
@@ -182,7 +182,7 @@ private:
         std::vector<std_msgs::ColorRGBA> &colors) const;
 
     void addSphere(
-        bool bTrackMode,
+        bool tracking,
         size_t x,
         size_t y,
         size_t z,
@@ -192,7 +192,12 @@ private:
         unsigned int costToGoal,
         std::vector<Position3D> &modCells);
 
-    bool setCellNearDim(bool bTrackMode, size_t x, size_t y, size_t z, int dimID);
+    bool setCellNearDim(
+        bool tracking,
+        size_t x,
+        size_t y,
+        size_t z,
+        int dimID);
 
     void addTrackingSphere(
         AdaptiveSphere3D sphere,
@@ -359,9 +364,14 @@ bool AdaptiveGrid3D::disableNearDimTracking(int gx, int gy, int gz, int dimID)
 }
 
 inline
-bool AdaptiveGrid3D::enableNearDim(int gx, int gy, int gz, int dimID, bool mode)
+bool AdaptiveGrid3D::enableNearDim(
+    int gx,
+    int gy,
+    int gz,
+    int dimID,
+    bool tracking)
 {
-    if (mode) {
+    if (tracking) {
         return enableNearDimTracking(gx, gy, gz, dimID);
     }
     else {
@@ -370,9 +380,14 @@ bool AdaptiveGrid3D::enableNearDim(int gx, int gy, int gz, int dimID, bool mode)
 }
 
 inline
-bool AdaptiveGrid3D::disableNearDim(int gx, int gy, int gz, int dimID, bool mode)
+bool AdaptiveGrid3D::disableNearDim(
+    int gx,
+    int gy,
+    int gz,
+    int dimID,
+    bool tracking)
 {
-    if (mode) {
+    if (tracking) {
         return disableNearDimTracking(gx, gy, gz, dimID);
     }
     else {
@@ -381,9 +396,9 @@ bool AdaptiveGrid3D::disableNearDim(int gx, int gy, int gz, int dimID, bool mode
 }
 
 inline
-bool AdaptiveGrid3D::enableDim(int gx, int gy, int gz, int dimID, bool mode)
+bool AdaptiveGrid3D::enableDim(int gx, int gy, int gz, int dimID, bool tracking)
 {
-    if (mode) {
+    if (tracking) {
         return enableDimTracking(gx, gy, gz, dimID);
     }
     else {
@@ -392,9 +407,14 @@ bool AdaptiveGrid3D::enableDim(int gx, int gy, int gz, int dimID, bool mode)
 }
 
 inline
-bool AdaptiveGrid3D::disableDim(int gx, int gy, int gz, int dimID, bool mode)
+bool AdaptiveGrid3D::disableDim(
+    int gx,
+    int gy,
+    int gz,
+    int dimID,
+    bool tracking)
 {
-    if (mode) {
+    if (tracking) {
         return disableDimTracking(gx, gy, gz, dimID);
     }
     else {
@@ -421,13 +441,18 @@ bool AdaptiveGrid3D::dimEnabledTracking(int gx, int gy, int gz, int dimID) const
 }
 
 inline
-bool AdaptiveGrid3D::dimEnabled(int gx, int gy, int gz, int dimID, bool mode) const
+bool AdaptiveGrid3D::dimEnabled(
+    int gx,
+    int gy,
+    int gz,
+    int dimID,
+    bool tracking) const
 {
-    if (mode) {
-        return dimEnabledPlanning(gx, gy, gz, dimID);
+    if (tracking) {
+        return dimEnabledTracking(gx, gy, gz, dimID);
     }
     else {
-        return dimEnabledTracking(gx, gy, gz, dimID);
+        return dimEnabledPlanning(gx, gy, gz, dimID);
     }
 }
 

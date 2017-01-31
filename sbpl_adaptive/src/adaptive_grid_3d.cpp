@@ -178,7 +178,7 @@ void AdaptiveGrid3D::setCellCostToGoal(
 }
 
 bool AdaptiveGrid3D::setCellNearDim(
-    bool bTrackMode,
+    bool tracking,
     size_t x,
     size_t y,
     size_t z,
@@ -186,7 +186,7 @@ bool AdaptiveGrid3D::setCellNearDim(
 {
     max_dimID_ = std::max(max_dimID_, dimID);
     bool changed;
-    if (bTrackMode) {
+    if (tracking) {
         changed = (grid_(x, y, z).tNearDimID != dimID);
         grid_(x, y, z).tNearDimID = dimID;
     }
@@ -269,7 +269,7 @@ void AdaptiveGrid3D::getOverlappingSpheres(
 }
 
 void AdaptiveGrid3D::addSphere(
-    bool bTrackMode,
+    bool tracking,
     size_t x,
     size_t y,
     size_t z,
@@ -283,7 +283,7 @@ void AdaptiveGrid3D::addSphere(
     int min_y = 0; int max_y = grid_sizes_[1] - 1;
     int min_z = 0; int max_z = grid_sizes_[2] - 1;
 
-    if (isInPlanningMode() && dimEnabled(x, y, z, dimID, bTrackMode)) {
+    if (isInPlanningMode() && dimEnabled(x, y, z, dimID, tracking)) {
         // HD at this location already
         std::vector<std::vector<int>> covering_spheres_;
         getOverlappingSpheres(x, y, z, dimID, covering_spheres_);
@@ -313,7 +313,7 @@ void AdaptiveGrid3D::addSphere(
 
         if (dist2 <= rad * rad) {
             // in sphere
-            if (enableDim(i, j, k, dimID, bTrackMode)) {
+            if (enableDim(i, j, k, dimID, tracking)) {
                 adim::Position3D modp;
                 grid2world(i, j, k, modp.x, modp.y, modp.z);
                 modCells.push_back(modp);
@@ -322,7 +322,7 @@ void AdaptiveGrid3D::addSphere(
         }
         else if (dist2 <= (rad + near_rad) * (rad + near_rad)) {
             //near sphere
-            if (enableNearDim(i, j, k, dimID, bTrackMode)) {
+            if (enableNearDim(i, j, k, dimID, tracking)) {
                 adim::Position3D modp;
                 grid2world(i, j, k, modp.x, modp.y, modp.z);
                 modCells.push_back(modp);
