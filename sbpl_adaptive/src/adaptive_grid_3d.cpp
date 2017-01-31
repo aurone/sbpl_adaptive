@@ -155,8 +155,11 @@ void AdaptiveGrid3D::resetTrackingGrid()
     for (int i = 0; i < grid_sizes_[0]; i++) {
     for (int j = 0; j < grid_sizes_[1]; j++) {
     for (int k = 0; k < grid_sizes_[2]; k++) {
-        //grid_(i, j, k).pDimID; //tracking grid becomes identical to planning grid
-        grid_(i, j, k).tDimID = InvalidDim;
+        // tracking grid becomes identical to planning grid
+        grid_(i, j, k).tDimID = grid_(i, j, k).pDimID;
+
+//        grid_(i, j, k).tDimID = InvalidDim;
+
         grid_(i, j, k).costToGoal = INFINITECOST;
     }
     }
