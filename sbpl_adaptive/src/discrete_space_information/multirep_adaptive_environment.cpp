@@ -55,7 +55,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
         bool bRes = representations_[fromID]->ProjectToFullD(state_data, proj_stateIDs, adPathIdx);
         ROS_DEBUG_NAMED(GPLOG, "Got %lu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
         if (!bRes) {
-            ROS_ERROR_NAMED(GPLOG, "Failed to project from [%s] to [%s]", representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
+            ROS_DEBUG_NAMED(GPLOG, "Failed to project from [%s] to [%s]", representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
         }
         return bRes;
     }
@@ -66,7 +66,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
         bool bRes = representations_[toID]->ProjectFromFullD(state_data, proj_stateIDs, adPathIdx);
         ROS_DEBUG_NAMED(GPLOG, "Got %lu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
         if (!bRes) {
-            ROS_ERROR_NAMED(GPLOG, "Failed to project from [%s] to [%s]", representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
+            ROS_DEBUG_NAMED(GPLOG, "Failed to project from [%s] to [%s]", representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
         }
         return bRes;
     }
@@ -75,7 +75,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
     std::vector<int> hd_proj_stateIDs;
     ROS_DEBUG_NAMED(GPLOG, "Projecting %d [%s] to FullD first! (adPathIdx=%d)", fromID, representations_[fromID]->getDescription().c_str(), adPathIdx);
     if (!ProjectToFullD(state_data, fromID, hd_proj_stateIDs, adPathIdx)) {
-        ROS_ERROR_NAMED(GPLOG, "Failed to project state data from representation %d [%s] to fullD representation", fromID, representations_[fromID]->getDescription().c_str());
+        ROS_DEBUG_NAMED(GPLOG, "Failed to project state data from representation %d [%s] to fullD representation", fromID, representations_[fromID]->getDescription().c_str());
         return false;
     }
     ROS_DEBUG_NAMED(GPLOG, "Got %lu FullD projections", hd_proj_stateIDs.size());
@@ -84,7 +84,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
         AdaptiveHashEntry *entry = GetState(hd_stateID);
         if (entry) {
             if (!representations_[toID]->ProjectFromFullD(entry->stateData, proj_stateIDs, adPathIdx)) {
-                ROS_ERROR_NAMED(GPLOG, "Failed to project HD state data to representation %d [%s]", toID, representations_[toID]->getDescription().c_str());
+                ROS_DEBUG_NAMED(GPLOG, "Failed to project HD state data to representation %d [%s]", toID, representations_[toID]->getDescription().c_str());
                 return false;
             }
         }
