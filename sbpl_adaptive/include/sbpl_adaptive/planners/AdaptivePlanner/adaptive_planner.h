@@ -140,6 +140,8 @@ private:
     // search modes)
     bool search_until_first_solution_;
 
+    bool in_tracking_phase_;
+
     //MHA*
     Heuristic* plan_anc_heur_;
     Heuristic** plan_heurs_;
