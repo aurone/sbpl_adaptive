@@ -106,6 +106,11 @@ public:
 
     virtual void toDisc(const void *cont_data, void *disc_data) const = 0;
 
+    virtual std::string StateToString(int state_id)
+    {
+        return std::to_string(state_id);
+    }
+
     virtual bool IsExecutableAction(int src_id, int dst_id) const
     {
         return isExecutable();
