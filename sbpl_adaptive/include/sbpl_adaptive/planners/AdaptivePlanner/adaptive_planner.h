@@ -1,12 +1,18 @@
 #ifndef ADIM_ADAPTIVE_PLANNER_H
 #define ADIM_ADAPTIVE_PLANNER_H
 
+// standard includes
+#include <memory>
 #include <chrono>
 
-#include <sbpl_adaptive/macros.h>
+// system includes
+#include <ros/console.h>
+#include <sbpl/headers.h>
+#include <smpl/forward.h>
 
-// enables calling of visualization functions from the environment
-#define ADP_GRAPHICAL
+// project includes
+#include <sbpl_adaptive/SCVStat.h>
+#include <sbpl_adaptive/discrete_space_information/adaptive_discrete_space_information.h>
 
 namespace adim {
 
@@ -60,7 +66,7 @@ public:
 
     bool saveStats(std::string name);
 
-    std::shared_ptr<AdaptivePlannerCSVStat_c> getStats() { return stat_; }
+    const AdaptivePlannerCSVStat_cPtr &getStats() { return stat_; }
 
     /// \name Required Public Functions from SBPLPlanner
     ///@{
@@ -112,13 +118,10 @@ private:
     std::unique_ptr<SBPLPlanner> planner_;
     std::unique_ptr<SBPLPlanner> tracker_;
 
-    std::shared_ptr<AdaptivePlannerCSVStat_c> stat_;
+    AdaptivePlannerCSVStat_cPtr stat_;
 
     int start_state_id_;
     int goal_state_id_;
-
-//    double new_sphere_rad_;
-//    double tunnel_width_;
 
     double time_per_retry_plan_;
     double time_per_retry_track_;
@@ -176,7 +179,7 @@ inline int AdaptivePlanner::replan(
 
 inline double AdaptivePlanner::get_solution_eps() const
 {
-    SBPL_WARN("get_solution_eps() not implemented for this planner!");
+    ROS_WARN("get_solution_eps() not implemented for this planner!");
     throw new SBPL_Exception();
     return -1.0;
 };
@@ -188,7 +191,7 @@ inline double AdaptivePlanner::get_final_epsilon()
 
 inline void AdaptivePlanner::costs_changed(StateChangeQuery const & stateChange)
 {
-    SBPL_WARN("costs_changed(...) NOT IMPLEMENTED FOR THIS PLANNER");
+    ROS_WARN("costs_changed(...) NOT IMPLEMENTED FOR THIS PLANNER");
 }
 
 inline void AdaptivePlanner::pause()

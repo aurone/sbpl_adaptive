@@ -5,7 +5,7 @@
  *      Author: kalin
  */
 
-#include <sbpl_adaptive_components/sbpl_expansion_grid3D.h>
+#include <sbpl_adaptive/expansion_grid_3d.h>
 
 #include <Eigen/Dense>
 
@@ -60,7 +60,9 @@ void ExpansionGrid3D::setExpansionStep(const adim::ModelCoords &model_coords, un
     }
 }
 
-unsigned int ExpansionGrid3D::getEarliestExpansionStep(std::vector<Cell3D> voxels){
+unsigned int ExpansionGrid3D::getEarliestExpansionStep(
+    const std::vector<Cell3D> &voxels)
+{
     unsigned int min_ = UINT_MAX;
     for(Cell3D voxel : voxels){
         if(!inGrid(voxel.x, voxel.y, voxel.z)) continue;

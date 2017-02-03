@@ -8,9 +8,20 @@
 #ifndef SBPL_ADAPTIVE_MULTIREP_ADAPTIVE_ENVIRONMENT_H
 #define SBPL_ADAPTIVE_MULTIREP_ADAPTIVE_ENVIRONMENT_H
 
-#include <sbpl_adaptive/headers.h>
+// standard includes
+#include <stdlib.h>
+#include <memory>
+#include <vector>
 
-#include <sbpl_adaptive/macros.h>
+// system includes
+#include <ros/console.h>
+#include <smpl/forward.h>
+
+// project includes
+#include <sbpl_adaptive/common.h>
+#include <sbpl_adaptive/state.h>
+#include <sbpl_adaptive/discrete_space_information/adaptive_discrete_space_information.h>
+#include <sbpl_adaptive/adaptive_state_representation.h>
 
 namespace adim {
 
@@ -246,7 +257,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::updateBestTracked(
     if (costToGoal < BestTracked_Cost) {
         BestTracked_Cost = costToGoal;
         BestTracked_StateID = StateID;
-        SBPL_INFO("BestSeenState: %d @ %d", BestTracked_StateID, BestTracked_Cost);
+        ROS_INFO("BestSeenState: %d @ %d", BestTracked_StateID, BestTracked_Cost);
     }
 }
 

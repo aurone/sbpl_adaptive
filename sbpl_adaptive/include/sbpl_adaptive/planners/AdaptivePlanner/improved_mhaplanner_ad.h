@@ -29,12 +29,17 @@
 #ifndef _MHA_PLANNER_H_
 #define _MHA_PLANNER_H_
 
-#include <sbpl/headers.h>
+// standard includes
 #include <queue>
+#include <string>
+
+// system includes
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
+#include <sbpl/headers.h>
 
-#include <string>
+// project includes
+#include <sbpl_adaptive/discrete_space_information/environment_mha.h>
 
 class MHALazyListElement;
 
