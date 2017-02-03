@@ -278,12 +278,7 @@ int AdaptivePlanner::replan(
         tracker_solution.clear();
         int t_cost;
         int t_ret = tracker_->replan(to_secs(allowed_ad_track_time), &tracker_solution, &t_cost);
-        if (tracker_solution.back() != goal_state_id_) {
-            in_tracking_phase_ = true;
-        }
-        else {
-            in_tracking_phase_ = false;
-        }
+
         auto track_time = sbpl::clock::now() - track_start;
         stat_->addTrackingPhaseTime(to_secs(track_time));
 
@@ -316,6 +311,12 @@ int AdaptivePlanner::replan(
                 stat_->setNumIterations(num_iterations_ + 1);
                 stat_->setSuccess(true);
                 stat_->setTotalPlanningTime(to_secs(time_elapsed()));
+                if (tracker_solution.back() != goal_state_id_) {
+                    in_tracking_phase_ = true;
+                }
+                else {
+                    in_tracking_phase_ = false;
+                }
                 return true;
             }
 
@@ -330,6 +331,7 @@ int AdaptivePlanner::replan(
         }
         else {
             ROS_WARN("Tracking Failed!");
+            in_tracking_phase_ = false;
             if (tracker_solution.empty()) {
                 ROS_ERROR("No new spheres added during this planning episode!!!");
                 throw SBPL_Exception();
