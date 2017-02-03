@@ -53,7 +53,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
     if (toID == fulld_representation_->getID()) {
         //fromID understands state_data
         bool bRes = representations_[fromID]->ProjectToFullD(state_data, proj_stateIDs, adPathIdx);
-        ROS_DEBUG_NAMED(GPLOG, "Got %lu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
+        ROS_DEBUG_NAMED(GPLOG, "Got %zu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
         if (!bRes) {
             ROS_DEBUG_NAMED(GPLOG, "Failed to project from [%s] to [%s]", representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
         }
@@ -64,7 +64,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
     if (fromID == fulld_representation_->getID()) {
         //state_data is hd toID understands it
         bool bRes = representations_[toID]->ProjectFromFullD(state_data, proj_stateIDs, adPathIdx);
-        ROS_DEBUG_NAMED(GPLOG, "Got %lu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
+        ROS_DEBUG_NAMED(GPLOG, "Got %zu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
         if (!bRes) {
             ROS_DEBUG_NAMED(GPLOG, "Failed to project from [%s] to [%s]", representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
         }
@@ -78,7 +78,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
         ROS_DEBUG_NAMED(GPLOG, "Failed to project state data from representation %d [%s] to fullD representation", fromID, representations_[fromID]->getDescription().c_str());
         return false;
     }
-    ROS_DEBUG_NAMED(GPLOG, "Got %lu FullD projections", hd_proj_stateIDs.size());
+    ROS_DEBUG_NAMED(GPLOG, "Got %zu FullD projections", hd_proj_stateIDs.size());
     ROS_DEBUG_NAMED(GPLOG, "Now projecting to %d [%s] (adPathIdx=%d)", toID, representations_[toID]->getDescription().c_str(), adPathIdx);
     for (int hd_stateID : hd_proj_stateIDs) {
         AdaptiveHashEntry *entry = GetState(hd_stateID);
@@ -90,12 +90,12 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
         }
         else {
             ROS_ERROR_NAMED(GPLOG, "Hmm... something is wrong here!");
-            ROS_ERROR_NAMED(GPLOG, "Could not get hash entry for HD state stateID %d", (int)hd_stateID);
+            ROS_ERROR_NAMED(GPLOG, "Could not get hash entry for HD state stateID %d", hd_stateID);
             pause();
             return false;
         }
     }
-    ROS_DEBUG_NAMED(GPLOG, "Got %lu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
+    ROS_DEBUG_NAMED(GPLOG, "Got %zu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
     return true;
 }
 
