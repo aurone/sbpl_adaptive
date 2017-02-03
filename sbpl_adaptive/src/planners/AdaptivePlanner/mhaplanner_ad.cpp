@@ -282,6 +282,9 @@ int MHAPlanner_AD::replan(
             SBPL_WARN("Reconstructing partial path!");
             MHASearchState* best_seen_state = get_state(best_state_id);
             extract_partial_path(solution_stateIDs_V, solcost, best_seen_state);
+            if (best_state_id == m_start_state->state_id) {
+                return 0;
+            }
             return 1;
         }
 
