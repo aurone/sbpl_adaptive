@@ -12,7 +12,7 @@
 #include <moveit_msgs/PlanningScene.h>
 #include <moveit_msgs/RobotState.h>
 #include <ros/ros.h>
-#include <sbpl_adaptive/macros.h>
+#include <smpl/forward.h>
 #include <smpl/occupancy_grid.h>
 #include <sbpl_geometry_utils/bounding_spheres.h>
 #include <sbpl_geometry_utils/interpolate.h>

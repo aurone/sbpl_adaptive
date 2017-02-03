@@ -5,12 +5,20 @@
  *      Author: kalin
  */
 
-#ifndef _ADAPTIVE_REPRESENTATION3D_H_
-#define _ADAPTIVE_REPRESENTATION3D_H_
+#ifndef SBPL_ADAPTIVE_ADAPTIVE_STATE_REPRESENTATION_3D_H
+#define SBPL_ADAPTIVE_ADAPTIVE_STATE_REPRESENTATION_3D_H
 
-#include <sbpl_adaptive/discrete_space_information/multirep_adaptive_3d/multirep_adaptive_3d.h>
-#include <sbpl_adaptive/macros.h>
+// standard includes
+#include <string>
+#include <vector>
+
+// system includes
+#include <smpl/forward.h>
+
+// project includes
 #include <sbpl_adaptive/adaptive_state_representation.h>
+#include <sbpl_adaptive/common.h>
+#include <sbpl_adaptive/discrete_space_information/multirep_adaptive_3d/multirep_adaptive_3d.h>
 
 namespace adim {
 
@@ -21,9 +29,9 @@ class AdaptiveStateRepresentation3D : public AdaptiveStateRepresentation
 public:
 
     AdaptiveStateRepresentation3D(
-        MultiRepAdaptiveDiscreteSpaceInformation3DPtr env,
+        const MultiRepAdaptiveDiscreteSpaceInformation3DPtr &env,
         bool executable,
-        std::string description);
+        const std::string &description);
 
     virtual ~AdaptiveStateRepresentation3D() { }
 
@@ -46,9 +54,9 @@ protected:
 
 inline
 AdaptiveStateRepresentation3D::AdaptiveStateRepresentation3D(
-    MultiRepAdaptiveDiscreteSpaceInformation3DPtr env,
+    const MultiRepAdaptiveDiscreteSpaceInformation3DPtr &env,
     bool executable,
-    std::string description)
+    const std::string &description)
 :
     AdaptiveStateRepresentation(env, executable, description),
     env3d_(env)

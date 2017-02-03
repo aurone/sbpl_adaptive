@@ -8,21 +8,21 @@
 #ifndef _SBPL_ADAPTIVE_SCVSTAT_H_
 #define _SBPL_ADAPTIVE_SCVSTAT_H_
 
+// standard includes
 #include <stdio.h>
-#include <stdlib.h>
 #include <string>
-#include <vector>
-#include <map>
 
-#include <sbpl_adaptive/macros.h>
+// system includes
+#include <smpl/forward.h>
 
-SBPL_CLASS_FORWARD(AdaptivePlannerCSVState_c)
+SBPL_CLASS_FORWARD(AdaptivePlannerCSVStat_c)
 
 class AdaptivePlannerCSVStat_c
 {
 public:
 
-    AdaptivePlannerCSVStat_c(){
+    AdaptivePlannerCSVStat_c()
+    {
         n_expansions = 0;
         n_expansions_low = 0;
         n_expansions_high = 0;
@@ -41,110 +41,69 @@ public:
 
     ~AdaptivePlannerCSVStat_c(){};
 
-    bool writeToFile(std::string name){
-        if(fileExists(name)){
+    bool writeToFile(const std::string &name)
+    {
+        if (fileExists(name)) {
             return appendToFile(name);
-        } else {
-            FILE* file = fopen(name.c_str(), "w");
-            if(!file) return false;
+        }
+        else {
+            FILE *file = fopen(name.c_str(), "w");
+            if (!file) {
+                return false;
+            }
             fprintf(file, "Success, Initial Eps, Planning Phase Time, Tracking Phase Time, Total Time, Num Iterations, Num Expansions LD, Num Expansions NearHD, Num Expansions HD, Num Expansions Track, Num Expansions Total, Final Plan Cost, Final Track Cost, Final Eps\n");
             fprintf(file, "%s, %.5f, %.5f, %.5f, %.5f, %u, %lu, %lu, %lu, %lu, %lu, %lu, %lu, %.5f\n",
-                (b_success)?std::string("True").c_str():std::string("False").c_str(), d_initial_eps,
-                        t_planning_phase, t_tracking_phase, t_total,
-                        n_iterations,
-                        n_expansions_low, n_expansions_near, n_expansions_high, n_expansions_track, n_expansions,
-                        cost_plan, cost_track,
-                        d_final_eps);
+                    (b_success) ? std::string("True").c_str() : std::string("False").c_str(), d_initial_eps, t_planning_phase, t_tracking_phase, t_total, n_iterations, n_expansions_low, n_expansions_near, n_expansions_high, n_expansions_track, n_expansions, cost_plan, cost_track, d_final_eps);
             fclose(file);
             return true;
         }
     }
 
-    bool appendToFile(std::string name){
-        if(!fileExists(name)){
+    bool appendToFile(const std::string &name)
+    {
+        if (!fileExists(name)) {
             return writeToFile(name);
-        } else {
+        }
+        else {
             FILE* file = fopen(name.c_str(), "a");
-            if(!file) return false;
-            //fprintf(file, "Success, Initial Eps, Planning Phase Time, Tracking Phase Time, Total Time, Num Iterations, Num Expansions LD, Num Expansions NearHD, Num Expansions HD, Num Expansions Track, Num Expansions Total, Final Plan Cost, Final Track Cost, Final Eps\n");
+            if (!file) {
+                return false;
+            }
+//            fprintf(file, "Success, Initial Eps, Planning Phase Time, Tracking Phase Time, Total Time, Num Iterations, Num Expansions LD, Num Expansions NearHD, Num Expansions HD, Num Expansions Track, Num Expansions Total, Final Plan Cost, Final Track Cost, Final Eps\n");
             fprintf(file, "%s, %.5f, %.5f, %.5f, %.5f, %u, %lu, %lu, %lu, %lu, %lu, %lu, %lu, %.5f\n",
-                (b_success)?std::string("True").c_str():std::string("False").c_str(), d_initial_eps,
-                        t_planning_phase, t_tracking_phase, t_total,
-                        n_iterations,
-                        n_expansions_low, n_expansions_near, n_expansions_high, n_expansions_track, n_expansions,
-                        cost_plan, cost_track,
-                        d_final_eps);
+                    (b_success) ? std::string("True").c_str() : std::string("False").c_str(), d_initial_eps, t_planning_phase, t_tracking_phase, t_total, n_iterations, n_expansions_low, n_expansions_near, n_expansions_high, n_expansions_track, n_expansions, cost_plan, cost_track, d_final_eps);
             fclose(file);
             return true;
         }
     }
 
-    bool fileExists(std::string name){
+    bool fileExists(const std::string &name)
+    {
         if (FILE *file = fopen(name.c_str(), "r")) {
             fclose(file);
             return true;
-        } else {
+        }
+        else {
             return false;
         }
     }
 
-    void recordLDExpansion(){
-        n_expansions_low++;
-        n_expansions++;
-    }
+    void recordLDExpansion() { n_expansions_low++; n_expansions++; }
+    void recordTrackExpansion() { n_expansions_track++; n_expansions++; }
+    void recordHDExpansion() { n_expansions_high++; n_expansions++; }
+    void recordNearHDExpansion() { n_expansions_near++; n_expansions++; }
+    void addPlanningPhaseTime(double t) { t_planning_phase += t; }
+    void addTrackingPhaseTime(double t) { t_tracking_phase += t; }
+    void setTotalPlanningTime(double t) { t_total = t; }
+    void setInitialEps(double e) { d_initial_eps = e; }
+    void setFinalEps(double e) { d_final_eps = e; }
+    void setFinalPlanCost(unsigned long c) { cost_plan = c; }
+    void setFinalTrackCost(unsigned long c) { cost_track = c; }
+    void setSuccess(bool success) { b_success = success; }
+    void setNumIterations(int n_iter) { n_iterations = n_iter; }
 
-    void recordTrackExpansion(){
-        n_expansions_track++;
-        n_expansions++;
-    }
-
-    void recordHDExpansion(){
-        n_expansions_high++;
-        n_expansions++;
-    }
-
-    void recordNearHDExpansion(){
-        n_expansions_near++;
-        n_expansions++;
-    }
-
-    void addPlanningPhaseTime(double t){
-        t_planning_phase += t;
-    }
-
-    void addTrackingPhaseTime(double t){
-        t_tracking_phase += t;
-    }
-
-    void setTotalPlanningTime(double t){
-        t_total = t;
-    }
-
-    void setInitialEps(double e){
-        d_initial_eps = e;
-    }
-
-    void setFinalEps(double e){
-        d_final_eps = e;
-    }
-
-    void setFinalPlanCost(unsigned long c){
-        cost_plan = c;
-    }
-
-    void setFinalTrackCost(unsigned long c){
-        cost_track = c;
-    }
-
-    void setSuccess(bool success){
-        b_success = success;
-    }
-
-    void setNumIterations(int n_iter){
-        n_iterations = n_iter;
-    }
-
-    void reset(){
+    void reset()
+    {
         n_expansions = 0;
         n_expansions_low = 0;
         n_expansions_high = 0;
@@ -162,26 +121,32 @@ public:
     }
 
 private:
-    //number of expansions
+
+    // number of expansions
     unsigned long n_expansions;
     unsigned long n_expansions_low;
     unsigned long n_expansions_near;
     unsigned long n_expansions_high;
     unsigned long n_expansions_track;
-    //planning times
+
+    // planning times
     double t_planning_phase;
     double t_tracking_phase;
     double t_total;
-    //num iterations
+
+    // num iterations
     unsigned int n_iterations;
     bool b_success;
-    //epsilon
+
+    // epsilon
     double d_final_eps;
     double d_initial_eps;
-    //cost
+
+    // cost
     unsigned long cost_track;
     unsigned long cost_plan;
-    //planner config ???
+
+    // planner config ???
 };
 
 #endif

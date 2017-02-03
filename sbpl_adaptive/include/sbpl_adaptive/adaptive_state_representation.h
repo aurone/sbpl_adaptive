@@ -5,15 +5,18 @@
  *      Author: kalin
  */
 
-#ifndef sbpl_adim_representation_h
-#define sbpl_adim_representation_h
+#ifndef SBPL_ADAPTIVE_REPRESENTATION_H
+#define SBPL_ADAPTIVE_REPRESENTATION_H
 
 // standard includes
+#include <stdio.h>
+#include <memory>
 #include <string>
 #include <vector>
 
 // project includes
-#include <sbpl_adaptive/macros.h>
+#include <ros/console.h>
+#include <smpl/forward.h>
 
 namespace adim {
 
@@ -28,9 +31,9 @@ class AdaptiveStateRepresentation :
 public:
 
     AdaptiveStateRepresentation(
-        MultiRepAdaptiveDiscreteSpaceInformationPtr env,
+        const MultiRepAdaptiveDiscreteSpaceInformationPtr &env,
         bool executable,
-        std::string description);
+        const std::string &description);
 
     virtual ~AdaptiveStateRepresentation() { };
 
@@ -103,6 +106,11 @@ public:
 
     virtual void toDisc(const void *cont_data, void *disc_data) const = 0;
 
+    virtual std::string StateToString(int state_id)
+    {
+        return std::to_string(state_id);
+    }
+
     virtual bool IsExecutableAction(int src_id, int dst_id) const
     {
         return isExecutable();
@@ -157,9 +165,9 @@ protected:
 
 inline
 AdaptiveStateRepresentation::AdaptiveStateRepresentation(
-    MultiRepAdaptiveDiscreteSpaceInformationPtr env,
+    const MultiRepAdaptiveDiscreteSpaceInformationPtr &env,
     bool executable,
-    std::string description)
+    const std::string &description)
 :
     env_(env),
     dimID_(-1),
@@ -183,7 +191,7 @@ void AdaptiveStateRepresentation::addParentRepresentation(
         }
     }
     if (!found) {
-        SBPL_INFO("Added %s as parent representation to %s!", parent->getDescription().c_str(), getDescription().c_str());
+        ROS_INFO("Added %s as parent representation to %s!", parent->getDescription().c_str(), getDescription().c_str());
         parents_.push_back(parent);
         parent->addChildRepresentation(shared_from_this());
     }
@@ -201,7 +209,7 @@ void AdaptiveStateRepresentation::addChildRepresentation(
         }
     }
     if (!found) {
-        SBPL_INFO("Added %s as child representation to %s!", child->getDescription().c_str(), getDescription().c_str());
+        ROS_INFO("Added %s as child representation to %s!", child->getDescription().c_str(), getDescription().c_str());
         children_.push_back(child);
         child->addParentRepresentation(shared_from_this());
     }

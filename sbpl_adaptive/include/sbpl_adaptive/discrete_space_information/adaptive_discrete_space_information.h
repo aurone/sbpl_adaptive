@@ -1,10 +1,16 @@
 #ifndef SBPL_ADAPTIVE_ADAPTIVE_ENVIRONMENT_H
 #define SBPL_ADAPTIVE_ADAPTIVE_ENVIRONMENT_H
 
-#include <sbpl/headers.h>
-#include <sbpl_adaptive/discrete_space_information/environment_mha.h>
+// standard includes
+#include <string>
+#include <vector>
 
-#include <sbpl_adaptive/macros.h>
+// system includes
+#include <sbpl/headers.h>
+#include <smpl/forward.h>
+
+// project includes
+#include <sbpl_adaptive/discrete_space_information/environment_mha.h>
 
 namespace adim {
 

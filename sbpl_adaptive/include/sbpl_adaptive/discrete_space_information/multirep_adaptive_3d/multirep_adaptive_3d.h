@@ -8,8 +8,15 @@
 #ifndef SBPL_ADAPTIVE_MULTIREP_ADAPTIVE_3D_H
 #define SBPL_ADAPTIVE_MULTIREP_ADAPTIVE_3D_H
 
-#include <sbpl_adaptive/headers.h>
-#include <sbpl_adaptive/macros.h>
+// standard includes
+#include <vector>
+
+// system includes
+#include <smpl/forward.h>
+
+// projects includes
+#include <sbpl_adaptive/common.h>
+#include <sbpl_adaptive/discrete_space_information/multirep_adaptive_environment.h>
 
 namespace adim {
 
@@ -20,7 +27,11 @@ class MultiRepAdaptiveDiscreteSpaceInformation3D :
 {
 public:
 
-    virtual int GetDimIDForPosition(Position3D p) = 0;
+    virtual bool IsDimEnabledAtPosition(const Position3D &p, int dim) const = 0;
+
+    virtual void GetEnabledDimsAtPosition(
+        const Position3D &p,
+        std::vector<int> &dims) const = 0;
 
     virtual int GetTrackingCostToGoalForPosition(Position3D p) = 0;
 
@@ -28,6 +39,5 @@ public:
 };
 
 } // namespace adim
-
 
 #endif

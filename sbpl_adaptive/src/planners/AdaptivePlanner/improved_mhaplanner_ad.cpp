@@ -26,8 +26,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#include <sbpl_adaptive/headers.h>
+#include <sbpl_adaptive/planners/AdaptivePlanner/improved_mhaplanner_ad.h>
+
+// system includes
 #include <boost/math/distributions.hpp>
+#include <ros/console.h>
+
 using namespace boost::math;
 using namespace std;
 using namespace imp_mhaplanner_ad;

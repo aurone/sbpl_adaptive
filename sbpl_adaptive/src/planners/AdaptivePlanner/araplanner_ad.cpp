@@ -27,7 +27,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <sbpl_adaptive/headers.h>
+#include <sbpl_adaptive/planners/AdaptivePlanner/araplanner_ad.h>
+
+// standard includes
+#include <assert.h>
+
+// project includes
+#include <sbpl_adaptive/common.h>
 
 #define ARAMDP_STATEID2IND_AD STATEID2IND_SLOT1
 #define ARA_AD_INCONS_LIST_ID 1

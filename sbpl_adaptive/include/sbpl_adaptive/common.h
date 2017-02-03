@@ -16,7 +16,9 @@
 #include <string>
 
 // system includes
+#include <leatherman/utils.h>
 #include <smpl/time.h>
+#include <std_msgs/ColorRGBA.h>
 
 namespace adim {
 
@@ -34,7 +36,10 @@ struct AdaptiveSphere2D
 {
     int dimID;
     int costToGoal;
-    double x, y, rad, near_rad;
+    double x;
+    double y;
+    double rad;
+    double near_rad;
 };
 
 inline std::ostream &operator<<(std::ostream &o, const AdaptiveSphere2D &s)
@@ -73,7 +78,6 @@ class AbstractGoal
 {
 };
 
-/** @brief struct that describes a basic pose constraint */
 struct Position3D
 {
     double x, y, z;
@@ -160,6 +164,80 @@ double to_secs(const std::chrono::duration<Rep, Period>& d)
     return std::chrono::duration_cast<std::chrono::duration<double>>(d).count();
 }
 
+struct Point3D
+{
+   double x;
+   double y;
+   double z;
+};
+
+struct Cell3D
+{
+    int x;
+    int y;
+    int z;
+};
+
+struct Sphere3D
+{
+    double x;
+    double y;
+    double z;
+    double rad;
+};
+
+struct CellSphere3D
+{
+    int x;
+    int y;
+    int z;
+    int rad;
+};
+
+struct Color
+{
+    double r;
+    double g;
+    double b;
+    double a;
+
+    Color(double r_, double g_, double b_) : r(r_), g(g_), b(b_), a(1) { }
+    Color(double r_, double g_, double b_, double a_) :
+        r(r_), g(g_), b(b_), a(a_) { }
+};
+
+inline
+Color colorFromHSV(double h, double s, double v)
+{
+    double r, g, b;
+    leatherman::HSVtoRGB(&r, &g, &b, h, s, v);
+    return Color(r, g, b);
+}
+
+inline
+std_msgs::ColorRGBA toColorMSG(Color col)
+{
+    std_msgs::ColorRGBA c;
+    c.r = col.r;
+    c.g = col.g;
+    c.b = col.b;
+    c.a = col.a;
+    return c;
+}
+
+inline
+std_msgs::ColorRGBA fromHSV(double h, double s, double v)
+{
+    double r, g, b;
+    leatherman::HSVtoRGB(&r, &g, &b, h, s, v);
+    std_msgs::ColorRGBA col;
+    col.r = r;
+    col.g = g;
+    col.b = b;
+    col.a = 1.0;
+    return col;
+}
+
 } // namespace adim
 
-#endif /* SRC_SBPL_ADAPTIVE_INCLUDE_SBPL_ADAPTIVE_COMMON_H_ */
+#endif

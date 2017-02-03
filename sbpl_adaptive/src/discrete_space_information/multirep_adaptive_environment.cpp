@@ -5,9 +5,12 @@
  *      Author: kalin
  */
 
-#include <sbpl_adaptive/headers.h>
+#include <sbpl_adaptive/discrete_space_information/multirep_adaptive_environment.h>
 
 namespace adim {
+
+static const char *GLOG = "mrep";
+static const char *GPLOG = "mrep.projection";
 
 /// \brief Return the HD states up-projected from a LD state
 bool MultiRepAdaptiveDiscreteSpaceInformation::ProjectToFullD(
@@ -17,7 +20,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::ProjectToFullD(
     int adPathIdx)
 {
     if (fromID >= representations_.size()) {
-        SBPL_ERROR("AdaptiveEnvironment_t::ProjectToFullD - Dimensionality ID %d is out of bounds!", fromID);
+        ROS_ERROR_NAMED(GLOG, "Dimensionality ID %d is out of bounds!", fromID);
         throw SBPL_Exception();
         return false;
     }
@@ -33,16 +36,16 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
     int adPathIdx)
 {
     if (toID >= (int)representations_.size() || toID < 0) {
-        SBPL_WARN("AdaptiveEnvironment_t::Project - Dimensionality ID %d is out of bounds!", toID);
+        ROS_WARN_NAMED(GLOG, "Dimensionality ID %d is out of bounds!", toID);
         return false;
     }
     if (fromID >= (int)representations_.size() || fromID < 0) {
-        SBPL_WARN("AdaptiveEnvironment_t::Project - Dimensionality ID %d is out of bounds!", toID);
+        ROS_WARN_NAMED(GLOG, "Dimensionality ID %d is out of bounds!", toID);
         return false;
     }
 
 //    if (isInTrackingMode() && !representations_[toID]->isExecutable()) {
-//        SBPL_WARN("Can't project to non-executable type in tracking mode!");
+//        ROS_WARN("Can't project to non-executable type in tracking mode!");
 //        return false; //no projections to non-executable types in trackmode
 //    }
 
@@ -50,9 +53,9 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
     if (toID == fulld_representation_->getID()) {
         //fromID understands state_data
         bool bRes = representations_[fromID]->ProjectToFullD(state_data, proj_stateIDs, adPathIdx);
-        SBPL_INFO("Got %lu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
+        ROS_DEBUG_NAMED(GPLOG, "Got %zu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
         if (!bRes) {
-            SBPL_ERROR("Failed to project from [%s] to [%s]", representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
+            ROS_DEBUG_NAMED(GPLOG, "Failed to project from [%s] to [%s]", representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
         }
         return bRes;
     }
@@ -61,38 +64,38 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
     if (fromID == fulld_representation_->getID()) {
         //state_data is hd toID understands it
         bool bRes = representations_[toID]->ProjectFromFullD(state_data, proj_stateIDs, adPathIdx);
-        SBPL_INFO("Got %lu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
+        ROS_DEBUG_NAMED(GPLOG, "Got %zu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
         if (!bRes) {
-            SBPL_ERROR("Failed to project from [%s] to [%s]", representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
+            ROS_DEBUG_NAMED(GPLOG, "Failed to project from [%s] to [%s]", representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
         }
         return bRes;
     }
 
     // project state to HD and project the hd-projections to a different LD
     std::vector<int> hd_proj_stateIDs;
-    SBPL_INFO("Projecting %d [%s] to FullD first! (adPathIdx=%d)", fromID, representations_[fromID]->getDescription().c_str(), adPathIdx);
+    ROS_DEBUG_NAMED(GPLOG, "Projecting %d [%s] to FullD first! (adPathIdx=%d)", fromID, representations_[fromID]->getDescription().c_str(), adPathIdx);
     if (!ProjectToFullD(state_data, fromID, hd_proj_stateIDs, adPathIdx)) {
-        SBPL_ERROR("Failed to project state data from representation %d [%s] to fullD representation", fromID, representations_[fromID]->getDescription().c_str());
+        ROS_DEBUG_NAMED(GPLOG, "Failed to project state data from representation %d [%s] to fullD representation", fromID, representations_[fromID]->getDescription().c_str());
         return false;
     }
-    SBPL_INFO("Got %lu FullD projections", hd_proj_stateIDs.size());
-    SBPL_INFO("Now projecting to %d [%s] (adPathIdx=%d)", toID, representations_[toID]->getDescription().c_str(), adPathIdx);
+    ROS_DEBUG_NAMED(GPLOG, "Got %zu FullD projections", hd_proj_stateIDs.size());
+    ROS_DEBUG_NAMED(GPLOG, "Now projecting to %d [%s] (adPathIdx=%d)", toID, representations_[toID]->getDescription().c_str(), adPathIdx);
     for (int hd_stateID : hd_proj_stateIDs) {
         AdaptiveHashEntry *entry = GetState(hd_stateID);
-        if (entry != NULL) {
+        if (entry) {
             if (!representations_[toID]->ProjectFromFullD(entry->stateData, proj_stateIDs, adPathIdx)) {
-                SBPL_ERROR("Failed to project HD state data to representation %d [%s]", toID, representations_[toID]->getDescription().c_str());
+                ROS_DEBUG_NAMED(GPLOG, "Failed to project HD state data to representation %d [%s]", toID, representations_[toID]->getDescription().c_str());
                 return false;
             }
         }
         else {
-            SBPL_ERROR("Hmm... something is wrong here!");
-            SBPL_ERROR("Could not get hash entry for HD state stateID %d", (int)hd_stateID);
+            ROS_ERROR_NAMED(GPLOG, "Hmm... something is wrong here!");
+            ROS_ERROR_NAMED(GPLOG, "Could not get hash entry for HD state stateID %d", hd_stateID);
             pause();
             return false;
         }
     }
-    SBPL_INFO("Got %lu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
+    ROS_DEBUG_NAMED(GPLOG, "Got %zu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
     return true;
 }
 
@@ -100,16 +103,16 @@ int MultiRepAdaptiveDiscreteSpaceInformation::SetGoalCoords(
     int dimID,
     const void *representation_specific_disc_data)
 {
-    SBPL_INFO("[AdaptiveEnvironment_t] setting goal coordinates");
+    ROS_INFO_NAMED(GLOG, "setting goal coordinates");
     int GoalID = representations_[dimID]->SetGoalCoords(representation_specific_disc_data);
     if (!representations_[dimID]->isExecutable()) {
-        SBPL_WARN("[AdaptiveEnvironment_t] the start representation is of non-executable type!");
+        ROS_WARN_NAMED(GLOG, "the start representation is of non-executable type!");
     }
     if (GoalID == -1) {
         return -1;
     }
     this->data_.goalHashEntry = GetState(GoalID);
-    SBPL_INFO("[AdaptiveEnvironment_t] start set %d", GoalID);
+    ROS_INFO_NAMED(GLOG, "start set %d", GoalID);
     return GoalID;
 }
 
@@ -117,17 +120,17 @@ int MultiRepAdaptiveDiscreteSpaceInformation::SetGoalConfig(
     int dimID,
     const void *representation_specific_cont_data)
 {
-    SBPL_INFO("[AdaptiveEnvironment_t] setting goal configuration");
+    ROS_INFO_NAMED(GLOG, "setting goal configuration");
     int GoalID = representations_[dimID]->SetGoalConfig(
             representation_specific_cont_data);
     if (!representations_[dimID]->isExecutable()) {
-        SBPL_WARN("[AdaptiveEnvironment_t] the start representation is of non-executable type!");
+        ROS_WARN_NAMED(GLOG, "the start representation is of non-executable type!");
     }
     if (GoalID == -1) {
         return -1;
     }
     this->data_.goalHashEntry = GetState(GoalID);
-    SBPL_INFO("[AdaptiveEnvironment_t] start set %d", GoalID);
+    ROS_INFO_NAMED(GLOG, "start set %d", GoalID);
     return GoalID;
 }
 
@@ -135,17 +138,17 @@ int MultiRepAdaptiveDiscreteSpaceInformation::SetStartCoords(
     int dimID,
     const void *representation_specific_disc_data)
 {
-    SBPL_INFO("[AdaptiveEnvironment_t] setting start coordinates");
+    ROS_INFO_NAMED(GLOG, "setting start coordinates");
     int StartID = representations_[dimID]->SetStartCoords(
             representation_specific_disc_data);
     if (!representations_[dimID]->isExecutable()) {
-        SBPL_WARN("[AdaptiveEnvironment_t] the start representation is of non-executable type!");
+        ROS_WARN_NAMED(GLOG, "the start representation is of non-executable type!");
     }
     if (StartID == -1) {
         return -1;
     }
     this->data_.startHashEntry = GetState(StartID);
-    SBPL_INFO("[AdaptiveEnvironment_t] start set %d", StartID);
+    ROS_INFO_NAMED(GLOG, "start set %d", StartID);
     return StartID;
 }
 
@@ -153,17 +156,17 @@ int MultiRepAdaptiveDiscreteSpaceInformation::SetStartConfig(
     int dimID,
     const void *representation_specific_cont_data)
 {
-    SBPL_INFO("[AdaptiveEnvironment_t] setting start configuration");
+    ROS_INFO_NAMED(GLOG, "setting start configuration");
     int StartID = representations_[dimID]->SetStartConfig(
             representation_specific_cont_data);
     if (!representations_[dimID]->isExecutable()) {
-        SBPL_WARN("[AdaptiveEnvironment_t] the start representation is of non-executable type!");
+        ROS_WARN_NAMED(GLOG, "the start representation is of non-executable type!");
     }
     if (StartID == -1) {
         return -1;
     }
     this->data_.startHashEntry = GetState(StartID);
-    SBPL_INFO("[AdaptiveEnvironment_t] start set %d", StartID);
+    ROS_INFO_NAMED(GLOG, "start set %d", StartID);
     return StartID;
 }
 
@@ -179,7 +182,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::InsertMetaGoalHashEntry(
     //don't insert it into hash table because it does not fit any dimensionality ID -- only way to get to it is by ID or by data_.goalHashEntry ptr
     /* check if everything ok */
     if (entry->stateID != StateID2IndexMapping.size()) {
-        SBPL_ERROR("ERROR in AdaptiveEnvironment_t::InsertHashEntry function: last state has incorrect stateID");
+        ROS_ERROR_NAMED(GLOG, "last state has incorrect stateID");
         throw SBPL_Exception();
     }
     /* make room and insert planner data */
@@ -195,7 +198,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::InsertMetaGoalHashEntry(
 int MultiRepAdaptiveDiscreteSpaceInformation::SetAbstractGoal(
     AbstractGoal *goal)
 {
-    SBPL_INFO("Setting abstract goal...");
+    ROS_INFO_NAMED(GLOG, "Setting abstract goal...");
     data_.goaldata = goal;
     // create a fake metagoal
     AdaptiveHashEntry *entry = new AdaptiveHashEntry;
@@ -203,7 +206,7 @@ int MultiRepAdaptiveDiscreteSpaceInformation::SetAbstractGoal(
     entry->stateData = NULL;
     InsertMetaGoalHashEntry(entry);
     data_.goalHashEntry = entry;
-    SBPL_INFO("Metagoal ID: %zu --> %d", entry->stateID, entry->dimID);
+    ROS_INFO_NAMED(GLOG, "Metagoal ID: %zu --> %d", entry->stateID, entry->dimID);
     return entry->stateID;
 }
 
@@ -242,8 +245,8 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::RegisterRepresentation(
 {
     for (int i = 0; i < representations_.size(); i++) {
         if (representations_[i]->getID() == rep->getID()) {
-            SBPL_ERROR("Failed to register new representation (%s) with ID (%d) -- duplicate ID registered already", rep->getDescription().c_str(), rep->getID());
-            SBPL_ERROR("Duplicate (%d)(%s)", representations_[i]->getID(), representations_[i]->getDescription().c_str());
+            ROS_ERROR_NAMED(GLOG, "Failed to register new representation (%s) with ID (%d) -- duplicate ID registered already", rep->getDescription().c_str(), rep->getID());
+            ROS_ERROR_NAMED(GLOG, "Duplicate (%d)(%s)", representations_[i]->getID(), representations_[i]->getDescription().c_str());
             return false;
         }
     }
@@ -256,7 +259,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::RegisterRepresentation(
 
     data_.HashTables.push_back(HashTable);
 
-    SBPL_INFO("Registered representation %d '%s'", rep->getID(), rep->getDescription().c_str());
+    ROS_INFO_NAMED(GLOG, "Registered representation %d '%s'", rep->getID(), rep->getDescription().c_str());
 
     return true;
 }
@@ -276,7 +279,7 @@ size_t MultiRepAdaptiveDiscreteSpaceInformation::InsertHashEntry(
     /* insert into hash table in corresponding bin */
 
     if (entry->dimID >= data_.HashTables.size()) {
-        SBPL_ERROR("ERROR in AdaptiveEnvironment_t::InsertHashEntry function: dimID %d does not have a hash table!", entry->dimID);
+        ROS_ERROR_NAMED(GLOG, "dimID %d does not have a hash table!", entry->dimID);
         throw SBPL_Exception();
     }
 
@@ -284,7 +287,7 @@ size_t MultiRepAdaptiveDiscreteSpaceInformation::InsertHashEntry(
 
     /* check if everything ok */
     if (entry->stateID != StateID2IndexMapping.size()) {
-        SBPL_ERROR("ERROR in AdaptiveEnvironment_t::InsertHashEntry function: last state has incorrect stateID");
+        ROS_ERROR_NAMED(GLOG, "last state has incorrect stateID");
         throw SBPL_Exception();
     }
 
@@ -302,7 +305,7 @@ AdaptiveHashEntry *MultiRepAdaptiveDiscreteSpaceInformation::GetState(
     size_t stateID)
 {
     if (stateID >= data_.StateID2HashEntry.size()) {
-        SBPL_ERROR("stateID [%zu] out of range [%zu]", stateID, data_.StateID2HashEntry.size());
+        ROS_ERROR("stateID [%zu] out of range [%zu]", stateID, data_.StateID2HashEntry.size());
         throw SBPL_Exception();
     }
     return data_.StateID2HashEntry[stateID];
@@ -311,28 +314,62 @@ AdaptiveHashEntry *MultiRepAdaptiveDiscreteSpaceInformation::GetState(
 bool MultiRepAdaptiveDiscreteSpaceInformation::isExecutablePath(
     const std::vector<int> &stateIDV)
 {
-    for (int stateID : stateIDV) {
-        AdaptiveHashEntry *entry = GetState(stateID);
-        if (!entry) {
+    if (stateIDV.size() < 2) {
+        ROS_WARN_NAMED(GLOG, "Path is trivially executable");
+        return true;
+    }
+
+    AdaptiveHashEntry *prev_entry = GetState(stateIDV.front());
+
+    if (!prev_entry) {
+        std::stringstream ss;
+        ss << __FUNCTION__ << ": no hash entry for state id " << stateIDV.front();
+        throw SBPL_Exception(ss.str());
+    }
+
+    if (prev_entry->dimID < 0 ||
+        prev_entry->dimID >= (int)representations_.size())
+    {
+        std::stringstream ss;
+        ss << __FUNCTION__ << ": dimID " << (int)prev_entry->dimID << " is out of range";
+        throw SBPL_Exception(ss.str());
+    }
+
+    for (size_t i = 1; i < stateIDV.size(); ++i) {
+        int prev_id = stateIDV[i - 1];
+        int curr_id = stateIDV[i];
+
+        AdaptiveHashEntry *curr_entry = GetState(curr_id);
+        if (!curr_entry) {
             std::stringstream ss;
-            ss << __FUNCTION__ << ": no hash entry for state id " << stateID;
+            ss << __FUNCTION__ << ": no hash entry for state id " << curr_id;
             throw SBPL_Exception(ss.str());
         }
 
-        if (entry->dimID == -1) {
-            SBPL_INFO("State %d is the metagoal", stateID);
+        if (curr_entry->dimID == -1) {
+            ROS_INFO_NAMED(GLOG, "State %d is the metagoal", curr_id);
             continue;
         }
 
-        if (entry->dimID < 0 || entry->dimID >= (int)representations_.size()) {
+        if (curr_entry->dimID < 0 || curr_entry->dimID >= (int)representations_.size()) {
             std::stringstream ss;
-            ss << __FUNCTION__ << ": dimID " << (int)entry->dimID << " is out of range";
+            ss << __FUNCTION__ << ": dimID " << (int)curr_entry->dimID << " is out of range";
             throw SBPL_Exception(ss.str());
         }
 
-        if (!representations_[entry->dimID]->isExecutable()) {
-            return false;
+        if (curr_entry->dimID == prev_entry->dimID) {
+            const auto &rep = representations_[curr_entry->dimID];
+            if (!rep->IsExecutableAction(prev_id, curr_id)) {
+                return false;
+            }
         }
+        else {
+            const auto &prev_rep = representations_[prev_entry->dimID];
+            const auto &curr_rep = representations_[curr_entry->dimID];
+            ROS_WARN_NAMED(GLOG, "Skip checking for executable projection from '%s' to '%s' for now", prev_rep->getDescription().c_str(), curr_rep->getDescription().c_str());
+        }
+
+        prev_entry = curr_entry;
     }
 
     return true;
@@ -363,7 +400,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::GetSuccs_Track(
     std::vector<int> *SuccIDV,
     std::vector<int> *CostV)
 {
-    SBPL_ERROR("GetSuccs_Track with exp_step not implemented---defaulting");
+    ROS_ERROR_NAMED(GLOG, "GetSuccs_Track with exp_step not implemented---defaulting");
     GetSuccs_Track(SourceStateID, SuccIDV, CostV);
 }
 
@@ -376,7 +413,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::GetSuccs_Plan(
     CostV->clear();
     AdaptiveHashEntry *entry = GetState(SourceStateID);
     representations_[entry->dimID]->GetSuccs(SourceStateID, SuccIDV, CostV, env_data_.get());
-    //SBPL_INFO("%d -> Got %zu [%zu] successors", SourceStateID, SuccIDV->size(), CostV->size());
+    //ROS_INFO_NAMED(GLOG, "%d -> Got %zu [%zu] successors", SourceStateID, SuccIDV->size(), CostV->size());
 }
 
 void MultiRepAdaptiveDiscreteSpaceInformation::GetSuccs_Plan(
@@ -386,7 +423,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::GetSuccs_Plan(
     std::vector<int> *CostV)
 {
     //TODO GetSuccs_Plan
-    SBPL_ERROR("GetSuccs_Plan with exp_step not implemented---defaulting");
+    ROS_ERROR_NAMED(GLOG, "GetSuccs_Plan with exp_step not implemented---defaulting");
     GetSuccs_Plan(SourceStateID, SuccIDV, CostV);
 }
 
@@ -397,7 +434,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::GetPreds_Track(
 {
     AdaptiveHashEntry *entry = GetState(TargetStateID);
     if (!representations_[entry->dimID]->isExecutable()) {
-        SBPL_ERROR("stateID [%d] has representation ID %d [%s], which is not executable. Cannot get tracking successors!", TargetStateID, entry->dimID, representations_[entry->dimID]->getDescription().c_str());
+        ROS_ERROR_NAMED(GLOG, "stateID [%d] has representation ID %d [%s], which is not executable. Cannot get tracking successors!", TargetStateID, entry->dimID, representations_[entry->dimID]->getDescription().c_str());
         throw SBPL_Exception();
     }
     representations_[entry->dimID]->GetPreds(TargetStateID, PredIDV, CostV, env_data_.get());
@@ -409,7 +446,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::GetPreds_Track(
     std::vector<int> *PredIDV,
     std::vector<int> *CostV)
 {
-    SBPL_ERROR("GetPreds_Track with exp_step not implemented---defaulting");
+    ROS_ERROR_NAMED(GLOG, "GetPreds_Track with exp_step not implemented---defaulting");
     GetPreds_Track(TargetStateID, PredIDV, CostV);
 }
 
@@ -428,7 +465,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::GetPreds_Plan(
     std::vector<int> *PredIDV,
     std::vector<int> *CostV)
 {
-    SBPL_ERROR("GetPreds_Plan with exp_step not implemented---defaulting");
+    ROS_ERROR_NAMED(GLOG, "GetPreds_Plan with exp_step not implemented---defaulting");
     GetPreds_Plan(TargetStateID, PredIDV, CostV);
 }
 

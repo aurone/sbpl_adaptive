@@ -1,9 +1,12 @@
+#include <sbpl_adaptive/planners/AdaptivePlanner/adaptive_planner.h>
 
-#include <sbpl_adaptive/headers.h>
-
+// system includes
 #include <smpl/time.h>
 
-using namespace std;
+// project includes
+#include <sbpl_adaptive/common.h>
+#include <sbpl_adaptive/planners/AdaptivePlanner/araplanner_ad.h>
+#include <sbpl_adaptive/planners/AdaptivePlanner/mhaplanner_ad.h>
 
 namespace adim {
 
@@ -201,8 +204,7 @@ int AdaptivePlanner::replan(
         auto plan_start = sbpl::clock::now();
         auto plan_time = sbpl::clock::now() - plan_start;
         int p_cost;
-        if (!in_tracking_phase_)    //skip planning
-        {
+        if (!in_tracking_phase_) {  //skip planning
             ROS_INFO("  =======================================");
             ROS_INFO("  ||          Planning Phase           ||");
             ROS_INFO("  =======================================");
@@ -221,15 +223,15 @@ int AdaptivePlanner::replan(
 
             ROS_INFO("Still have time (%.3fs)...planning", to_secs(time_remaining()));
             planner_solution.clear();
-            
+
             int p_ret = planner_->replan(
                     to_secs(allowed_ad_plan_time), &planner_solution, &p_cost);
 
-            
+
             stat_->addPlanningPhaseTime(to_secs(plan_time));
 
             ROS_INFO("Planner done in %.3fs...", to_secs(plan_time));
-        
+
             if (!p_ret || planner_solution.empty()) {
                 // TODO: an empty solution may be the correct solution and should
                 // report success and a correct suboptimality bound
@@ -258,7 +260,7 @@ int AdaptivePlanner::replan(
             }
             adaptive_environment_->visualizeEnvironment();
             adaptive_environment_->visualizeStatePath(&planner_solution, 0, 120, "planning_path");
-        
+
         // TODO: return false if no time remaining to run the tracker 
             adaptive_environment_->setTrackMode(planner_solution, p_cost, &TrkModifiedStates);
         }
@@ -284,7 +286,7 @@ int AdaptivePlanner::replan(
         last_tracker_ret = t_ret;
 
         ROS_INFO("Tracker done in %.3fs...", to_secs(track_time));
-    
+
         ModifiedStates.clear();
         const auto iter_time = plan_time + track_time;
         ROS_INFO("[Planning] Time: %.3fs (%.1f%% of iter time)", to_secs(plan_time), 100.0 * to_secs(plan_time) / to_secs(iter_time));
@@ -325,7 +327,7 @@ int AdaptivePlanner::replan(
                 ROS_ERROR("No new spheres added during this planning episode!!!");
                 throw SBPL_Exception();
             }
-            
+
         }
         else {
             ROS_WARN("Tracking Failed!");
@@ -342,7 +344,7 @@ int AdaptivePlanner::replan(
             int TrackFail_StateID = tracker_solution.back();
             new_sphere_locations.push_back(TrackFail_StateID);
         }
-    
+
         ROS_INFO("Iteration Time: %.3f sec (avg: %.3f)", to_secs(iter_elapsed()), to_secs(time_elapsed()) / (round + 1.0));
         ROS_INFO("Total Time so far: %.3f sec", to_secs(time_elapsed()));
         round++;
@@ -416,7 +418,7 @@ void AdaptivePlanner::set_initialsolution_eps(double initialsolution_eps)
 }
 
 int AdaptivePlanner::replan(
-    vector<int>* solution_stateIDs_V,
+    std::vector<int>* solution_stateIDs_V,
     ReplanParams params, int* solcost)
 {
     set_initialsolution_eps(params.initial_eps);
