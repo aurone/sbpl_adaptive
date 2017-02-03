@@ -312,6 +312,7 @@ int AdaptivePlanner::replan(
                 stat_->setSuccess(true);
                 stat_->setTotalPlanningTime(to_secs(time_elapsed()));
                 in_tracking_phase_ = tracker_solution.back() != goal_state_id_;
+                return true;
             }
 
             // introduce new spheres since tracker found a costly path
