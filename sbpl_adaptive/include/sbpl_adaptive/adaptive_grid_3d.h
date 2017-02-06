@@ -167,6 +167,7 @@ private:
 
     // used to keep track of state type (LD, NearLD, HD)
     sbpl::Grid3<AdaptiveGridCell> grid_;
+    AdaptiveGridCell invalid_cell_;
 
     int max_dimID_;
     unsigned int max_costToGoal_;
@@ -478,8 +479,7 @@ inline
 const AdaptiveGridCell &AdaptiveGrid3D::getCell(int gx, int gy, int gz) const
 {
     if (!isInBounds(gx, gy, gz)) {
-        SBPL_ERROR("Coordinates out of bounds %d, %d, %d", gx, gy, gz);
-        throw SBPL_Exception();
+        return invalid_cell_;
     }
     else {
         return grid_(gx, gy, gz);

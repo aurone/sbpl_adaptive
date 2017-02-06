@@ -40,6 +40,8 @@ AdaptiveGrid3D::AdaptiveGrid3D(const sbpl::OccupancyGridPtr& grid) :
     default_cell.tDimID = InvalidDim;
     grid_.assign(grid_sizes_[0], grid_sizes_[1], grid_sizes_[2], default_cell);
 
+    invalid_cell_ = default_cell;
+
     max_dimID_ = -1;
     max_costToGoal_ = 0;
 }
@@ -56,10 +58,6 @@ void AdaptiveGrid3D::world2grid(
 {
     int cx, cy, cz;
     oc_grid_->worldToGrid(wx, wy, wz, cx, cy, cz);
-    if (!isInBounds(cx, cy, cz)) {
-        ROS_WARN("World position %.3f %.3f %.3f [%d %d %d] out of bounds!", wx, wy, wz, cx, cy, cz);
-        throw SBPL_Exception();
-    }
     gx = (size_t)cx;
     gy = (size_t)cy;
     gz = (size_t)cz;
@@ -238,10 +236,9 @@ unsigned int AdaptiveGrid3D::getCellCostToGoal(int gx, int gy, int gz) const
     if (!trackMode_) {
         return 0;
     }
-    if (!isInBounds(gx, gy, gz)) {
-        return INFINITECOST;
-    }
-    return grid_(gx, gy, gz).costToGoal;
+
+    // returns invalid cell cost to goal for out of bounds cells
+    return getCell(gx, gy, gz).costToGoal;
 }
 
 void AdaptiveGrid3D::getOverlappingSpheres(
