@@ -32,7 +32,7 @@
 
 namespace adim {
 
-#define ADAPTIVE_GRID_EXCLUSIVE 1
+#define ADAPTIVE_GRID_EXCLUSIVE 0
 
 SBPL_CLASS_FORWARD(AdaptiveGrid3D)
 
