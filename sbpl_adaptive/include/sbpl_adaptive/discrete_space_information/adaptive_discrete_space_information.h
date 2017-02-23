@@ -89,17 +89,6 @@ public:
 
     virtual void visualizeEnvironment() { }
 
-    /// \name Interface functions for multi-heuristic search
-    ///@{
-
-    // get state dimension from environment for MHA
-    virtual void getDimID(int state_id, int &dimID)
-    {
-        SBPL_ERROR("Get dimID not implemented");
-    }
-
-    ///@}
-
     /// \brief sets the environment in adaptive planning mode
     void setPlanMode();
 

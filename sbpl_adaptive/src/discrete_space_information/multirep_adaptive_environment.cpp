@@ -311,6 +311,15 @@ AdaptiveHashEntry *MultiRepAdaptiveDiscreteSpaceInformation::GetState(
     return data_.StateID2HashEntry[stateID];
 }
 
+int MultiRepAdaptiveDiscreteSpaceInformation::GetDimID(size_t stateID)
+{
+    if (stateID >= data_.StateID2HashEntry.size()) {
+        ROS_ERROR("stateID [%zu] out of range [%zu]", stateID, data_.StateID2HashEntry.size());
+        throw SBPL_Exception();
+    }
+    return (int)data_.StateID2HashEntry[stateID]->dimID;
+}
+
 bool MultiRepAdaptiveDiscreteSpaceInformation::isExecutablePath(
     const std::vector<int> &stateIDV)
 {

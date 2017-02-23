@@ -33,20 +33,22 @@ SBPLPlanner *ADMHAPlannerAllocator::make(
     MultiRepAdaptiveDiscreteSpaceInformation* mrep_space =
             dynamic_cast<MultiRepAdaptiveDiscreteSpaceInformation*>(space);
     if (!mrep_space) {
+        ROS_ERROR("AdaptiveDiscreteSpaceInformation must be a MultiRepAdaptiveDiscreteSpaceInformation");
         return nullptr;
     }
 
-    return new MHAPlanner_AD(space, aheur_, heurs_, h_count_);
+    return new MHAPlanner_AD(mrep_space, aheur_, heurs_, h_count_);
 }
 
 MHAPlanner_AD::MHAPlanner_AD(
-    adim::AdaptiveDiscreteSpaceInformation* environment,
+    MultiRepAdaptiveDiscreteSpaceInformation* space,
     Heuristic* hanchor,
     Heuristic** heurs,
     int hcount)
 :
     SBPLPlanner(),
 //    environment_(environment),
+    space_(space),
     m_hanchor(hanchor),
     m_heurs(heurs),
     m_hcount(hcount),
@@ -66,7 +68,7 @@ MHAPlanner_AD::MHAPlanner_AD(
     set_heur_(false),
     created_states_()
 {
-    environment_ = environment;
+    environment_ = space;
 
     m_open = new CHeap[hcount + 1];
 
@@ -172,7 +174,7 @@ int MHAPlanner_AD::replan(
     SBPL_INFO("  MHA Epsilon: %0.3f", m_initial_eps_mha);
     SBPL_INFO("  Max Expansions: %d", m_max_expansions);
 
-    environment_->EnsureHeuristicsUpdated(true); // TODO: support backwards search
+    space_->EnsureHeuristicsUpdated(true); // TODO: support backwards search
 
     // TODO: pick up from where last search left off and detect lazy
     // reinitializations
@@ -196,8 +198,7 @@ int MHAPlanner_AD::replan(
     m_start_state->g = 0;
 
     // insert start state into all heaps with key(start, i) as priority
-    int dimID;
-    environment_->getDimID(m_start_state->state_id, dimID);
+    int dimID = space_->GetDimID(m_start_state->state_id);
     for (int hidx : m_heuristic_list[dimID]) {
 //    for (int hidx = 0; hidx < num_heuristics(); ++hidx) {
         CKey key;
@@ -226,7 +227,7 @@ int MHAPlanner_AD::replan(
 
         for (int hidx = 1; hidx < num_heuristics(); ++hidx) {
 
-            if (environment_->isInTrackingMode() && hidx != num_heuristics() - 1) {
+            if (space_->isInTrackingMode() && hidx != num_heuristics() - 1) {
                 ROS_INFO("Env in tracking mode, forget about lower dim heuristics");
                 continue;
             }
@@ -275,7 +276,7 @@ int MHAPlanner_AD::replan(
     if (time_limit_reached()) {
         SBPL_DEBUG("Time limit reached");
 
-        int best_state_id = environment_->getBestSeenState();
+        int best_state_id = space_->getBestSeenState();
         SBPL_INFO("Best stateID: %d", best_state_id);
         if(best_state_id >= 0){
             SBPL_WARN("Reconstructing partial path!");
@@ -337,12 +338,12 @@ double MHAPlanner_AD::get_final_epsilon()
 
 double MHAPlanner_AD::get_final_eps_planning_time()
 {
-    return adim::to_secs(m_elapsed);
+    return to_secs(m_elapsed);
 }
 
 double MHAPlanner_AD::get_initial_eps_planning_time()
 {
-    return adim::to_secs(m_elapsed);
+    return to_secs(m_elapsed);
 }
 
 int MHAPlanner_AD::get_n_expands() const
@@ -447,7 +448,7 @@ bool MHAPlanner_AD::time_limit_reached() const
     if (m_params.return_first_solution) {
         return false;
     }
-    else if (m_params.max_time > 0.0 && adim::to_secs(m_elapsed) >= m_params.max_time) {
+    else if (m_params.max_time > 0.0 && to_secs(m_elapsed) >= m_params.max_time) {
         return true;
     }
     else if (m_max_expansions > 0 && m_num_expansions >= m_max_expansions) {
@@ -460,9 +461,9 @@ bool MHAPlanner_AD::time_limit_reached() const
 
 MHASearchState* MHAPlanner_AD::get_state(int state_id)
 {
-    assert(state_id >= 0 && state_id < environment_->StateID2IndexMapping.size());
+    assert(state_id >= 0 && state_id < space_->StateID2IndexMapping.size());
 
-    int* idxs = environment_->StateID2IndexMapping[state_id];
+    int* idxs = space_->StateID2IndexMapping[state_id];
 
     /* Finding if state already created. This
        is needed since planner and tracker
@@ -503,7 +504,7 @@ void MHAPlanner_AD::clear()
         // unmap graph to search state
         MHASearchState* search_state = m_search_states[i];
         const int state_id = m_search_states[i]->state_id;
-        int* idxs = environment_->StateID2IndexMapping[state_id];
+        int* idxs = space_->StateID2IndexMapping[state_id];
         idxs[MHAMDP_STATEID2IND] = -1;
 
         // free search state
@@ -526,8 +527,7 @@ void MHAPlanner_AD::init_state(
     state->state_id = state_id;
     state->closed_in_anc = false;
     state->closed_in_add = false;
-    int dimID;
-    environment_->getDimID(state_id, dimID);
+    int dimID = space_->GetDimID(state_id);
     for (int i : m_heuristic_list[dimID]) {
     // for (int i = 0; i < num_heuristics(); i++) {
         state->od[i].open_state.heapindex = 0;
@@ -548,8 +548,7 @@ void MHAPlanner_AD::reinit_state(MHASearchState* state)
         state->closed_in_anc = false;
         state->closed_in_add = false;
 
-        int dimID;
-        environment_->getDimID(state->state_id, dimID);
+        int dimID = space_->GetDimID(state->state_id);
         for (int i : m_heuristic_list[dimID]) {
         // for (int i = 0; i < num_heuristics(); i++) {
             state->od[i].open_state.heapindex = 0;
@@ -578,7 +577,7 @@ int MHAPlanner_AD::compute_key(MHASearchState* state, int hidx)
 void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
 {
     SBPL_DEBUG("Expanding state %d in search %d", state->state_id, hidx);
-    environment_->expandingState(state->state_id);
+    space_->expandingState(state->state_id);
 
     assert(!closed_in_add_search(state) || !closed_in_anc_search(state));
 
@@ -598,8 +597,7 @@ void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
     // }
 
     // remove s from all open lists based on dimID
-    int dimID;
-    environment_->getDimID(state->state_id, dimID);
+    int dimID = space_->GetDimID(state->state_id);
     for (int i : m_heuristic_list[dimID]){
     // for (int i = 0; i < num_heuristics(); ++i){
         if (m_open[i].inheap(&state->od[i].open_state)) {
@@ -609,7 +607,7 @@ void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
 
     std::vector<int> succ_ids;
     std::vector<int> costs;
-    environment_->GetSuccs(state->state_id, &succ_ids, &costs);
+    space_->GetSuccs(state->state_id, &succ_ids, &costs);
     assert(succ_ids.size() == costs.size());
 
     for (size_t sidx = 0; sidx < succ_ids.size(); ++sidx)  {
@@ -629,7 +627,7 @@ void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
                 SBPL_DEBUG("  Update in search %d with f = %d", 0, fanchor);
 
                 if (!closed_in_add_search(succ_state)) {
-                    environment_->getDimID(succ_state->state_id, dimID);
+                    int dimID = space_->GetDimID(succ_state->state_id);
                     for (int hidx : m_heuristic_list[dimID]){
                     // for (int hidx = 0; hidx < num_heuristics(); ++hidx){
                         if(hidx == 0)

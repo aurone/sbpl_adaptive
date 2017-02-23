@@ -11,6 +11,7 @@
 // project includes
 #include <sbpl_adaptive/discrete_space_information/adaptive_discrete_space_information.h>
 #include <sbpl_adaptive/planners/AdaptivePlanner/adaptive_planner.h>
+#include <sbpl_adaptive/discrete_space_information/multirep_adaptive_environment.h>
 
 namespace adim {
 
@@ -36,7 +37,7 @@ class MHAPlanner_AD : public SBPLPlanner
 public:
 
     MHAPlanner_AD(
-            adim::AdaptiveDiscreteSpaceInformation* environment,
+            MultiRepAdaptiveDiscreteSpaceInformation* space,
             Heuristic* hanchor,
             Heuristic** heurs,
             int hcount);
@@ -137,6 +138,8 @@ public:
 
 private:
 
+    MultiRepAdaptiveDiscreteSpaceInformation *space_;
+
     // Related objects
     Heuristic* m_hanchor;
     Heuristic** m_heurs;
@@ -149,7 +152,7 @@ private:
     double m_eps;           ///< current w_1
     double m_eps_mha;       ///< current w_2
 
-    adim::AdaptiveDiscreteSpaceInformation* environment_;
+    AdaptiveDiscreteSpaceInformation* environment_;
 
     /// suboptimality bound satisfied by the last search
     double m_eps_satisfied;

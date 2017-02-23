@@ -65,6 +65,7 @@ public:
     size_t InsertHashEntry(AdaptiveHashEntry *entry, size_t binID);
 
     AdaptiveHashEntry *GetState(size_t stateID);
+    int GetDimID(size_t stateID);
 
     const EnvStateData *getEnvStateDataPtr() { return &data_; }
 
