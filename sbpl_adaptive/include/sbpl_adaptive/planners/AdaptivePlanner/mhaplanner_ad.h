@@ -10,8 +10,9 @@
 
 // project includes
 #include <sbpl_adaptive/discrete_space_information/adaptive_discrete_space_information.h>
-#include <sbpl_adaptive/planners/AdaptivePlanner/adaptive_planner.h>
 #include <sbpl_adaptive/discrete_space_information/multirep_adaptive_environment.h>
+#include <sbpl_adaptive/heuristics/multirep_heuristic.h>
+#include <sbpl_adaptive/planners/AdaptivePlanner/adaptive_planner.h>
 
 namespace adim {
 
@@ -19,7 +20,7 @@ class ADMHAPlannerAllocator : public PlannerAllocator
 {
 public:
 
-    ADMHAPlannerAllocator(Heuristic *aheur, Heuristic **heurs, int h_count);
+    ADMHAPlannerAllocator(MultiRepHeuristic *aheur, MultiRepHeuristic **heurs, int h_count);
 
     SBPLPlanner *make(
         AdaptiveDiscreteSpaceInformation *space,
@@ -27,8 +28,8 @@ public:
 
 private:
 
-    Heuristic *aheur_;
-    Heuristic **heurs_;
+    MultiRepHeuristic *aheur_;
+    MultiRepHeuristic **heurs_;
     int h_count_;
 };
 
@@ -38,8 +39,8 @@ public:
 
     MHAPlanner_AD(
             MultiRepAdaptiveDiscreteSpaceInformation* space,
-            Heuristic* hanchor,
-            Heuristic** heurs,
+            MultiRepHeuristic* hanchor,
+            MultiRepHeuristic** heurs,
             int hcount);
 
     virtual ~MHAPlanner_AD();
@@ -141,8 +142,8 @@ private:
     MultiRepAdaptiveDiscreteSpaceInformation *space_;
 
     // Related objects
-    Heuristic* m_hanchor;
-    Heuristic** m_heurs;
+    MultiRepHeuristic* m_hanchor;
+    MultiRepHeuristic** m_heurs;
     int m_hcount;           ///< number of additional heuristics used
 
     ReplanParams m_params;

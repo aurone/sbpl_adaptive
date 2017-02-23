@@ -85,6 +85,8 @@ public:
 
     int GetFullDRepresentationID() { return fulld_representation_->getID(); }
 
+    int NumRepresentations() const { return (int)representations_.size(); }
+
     AdaptiveStateRepresentation *GetFullDRepresentation();
     const AdaptiveStateRepresentation *GetFullDRepresentation() const;
 

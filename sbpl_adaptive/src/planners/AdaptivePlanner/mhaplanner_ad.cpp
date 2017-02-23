@@ -16,8 +16,8 @@
 namespace adim {
 
 ADMHAPlannerAllocator::ADMHAPlannerAllocator(
-    Heuristic *aheur,
-    Heuristic **heurs,
+    MultiRepHeuristic *aheur,
+    MultiRepHeuristic **heurs,
     int h_count)
 :
     aheur_(aheur),
@@ -42,8 +42,8 @@ SBPLPlanner *ADMHAPlannerAllocator::make(
 
 MHAPlanner_AD::MHAPlanner_AD(
     MultiRepAdaptiveDiscreteSpaceInformation* space,
-    Heuristic* hanchor,
-    Heuristic** heurs,
+    MultiRepHeuristic* hanchor,
+    MultiRepHeuristic** heurs,
     int hcount)
 :
     SBPLPlanner(),
@@ -82,12 +82,34 @@ MHAPlanner_AD::MHAPlanner_AD(
     m_params.repair_time = 0.0;
 
     // map from representation id to the indices of heuristics that apply to it
-    m_heuristic_list[-1] = {0};
-    m_heuristic_list[0] = {0,1};
-    m_heuristic_list[1] = {0,1};
-    m_heuristic_list[2] = {0};
-    m_heuristic_list[3] = {0};
-    m_heuristic_list[4] = {0};
+    m_heuristic_list[-1] = { 0 };
+
+    for (int i = 0; i < space->NumRepresentations(); ++i) {
+        // anchor heuristic should apply to every representation
+        m_heuristic_list[i].push_back(0);
+        for (int j = 0; j < hcount; ++j) {
+            if (heurs[j]->IsDefinedForRepresentation(i)) {
+                m_heuristic_list[i].push_back(j + 1);
+            }
+        }
+    }
+
+    ROS_INFO("Representation -> Heuristic Mapping:");
+    for (const auto &entry : m_heuristic_list) {
+        std::stringstream ss;
+        ss << entry.first << ": [ ";
+        for (size_t i = 0; i < entry.second.size(); ++i) {
+            ss << entry.second[i];
+            if (i != entry.second.size() - 1) {
+                ss << ", ";
+            }
+            else {
+                ss << ' ';
+            }
+        }
+        ss << ']';
+        ROS_INFO("  %s", ss.str().c_str());
+    }
 
     /// Four Modes:
     ///     Search Until Solution Bounded
