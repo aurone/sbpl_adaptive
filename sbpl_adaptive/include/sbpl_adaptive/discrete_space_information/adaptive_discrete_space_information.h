@@ -24,7 +24,7 @@ SBPL_CLASS_FORWARD(AdaptiveDiscreteSpaceInformation)
 /// doesn't know anything about the actual state variables. Environment, on the
 /// other hand, maintains a mapping from stateID to actual state variables
 /// (coordinates) using StateID2IndexMapping array
-class AdaptiveDiscreteSpaceInformation : virtual public EnvironmentMHA //DiscreteSpaceInformation
+class AdaptiveDiscreteSpaceInformation : public DiscreteSpaceInformation
 {
 public:
 
@@ -96,27 +96,6 @@ public:
     virtual void getDimID(int state_id, int &dimID)
     {
         SBPL_ERROR("Get dimID not implemented");
-    }
-
-    // return anchor
-    virtual Heuristic* getAnchorHeur()
-    {
-        SBPL_ERROR("Not implemented");
-        return nullptr;
-    }
-
-    // return other heurs
-    virtual Heuristic** getHeurs()
-    {
-        SBPL_ERROR("Not implemented");
-        return nullptr;
-    }
-
-    // return number of heurs
-    virtual int getNumHeur()
-    {
-        SBPL_ERROR("Not implemented");
-        return 0;
     }
 
     ///@}
