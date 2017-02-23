@@ -11,6 +11,33 @@
 
 // project includes
 #include <sbpl_adaptive/common.h>
+#include <sbpl_adaptive/discrete_space_information/multirep_adaptive_environment.h>
+
+namespace adim {
+
+ADMHAPlannerAllocator::ADMHAPlannerAllocator(
+    Heuristic *aheur,
+    Heuristic **heurs,
+    int h_count)
+:
+    aheur_(aheur),
+    heurs_(heurs),
+    h_count_(h_count)
+{
+}
+
+SBPLPlanner *ADMHAPlannerAllocator::make(
+    AdaptiveDiscreteSpaceInformation*space,
+    bool forward_search) const
+{
+    MultiRepAdaptiveDiscreteSpaceInformation* mrep_space =
+            dynamic_cast<MultiRepAdaptiveDiscreteSpaceInformation*>(space);
+    if (!mrep_space) {
+        return nullptr;
+    }
+
+    return new MHAPlanner_AD(space, aheur_, heurs_, h_count_);
+}
 
 MHAPlanner_AD::MHAPlanner_AD(
     adim::AdaptiveDiscreteSpaceInformation* environment,
@@ -52,12 +79,14 @@ MHAPlanner_AD::MHAPlanner_AD(
     m_params.max_time = 0.0;
     m_params.repair_time = 0.0;
 
+    // map from representation id to the indices of heuristics that apply to it
     m_heuristic_list[-1] = {0};
     m_heuristic_list[0] = {0,1};
     m_heuristic_list[1] = {0,1};
     m_heuristic_list[2] = {0};
     m_heuristic_list[3] = {0};
     m_heuristic_list[4] = {0};
+
     /// Four Modes:
     ///     Search Until Solution Bounded
     ///     Search Until Solution Unbounded
@@ -170,7 +199,7 @@ int MHAPlanner_AD::replan(
     int dimID;
     environment_->getDimID(m_start_state->state_id, dimID);
     for (int hidx : m_heuristic_list[dimID]) {
-    // for (int hidx = 0; hidx < num_heuristics(); ++hidx) {
+//    for (int hidx = 0; hidx < num_heuristics(); ++hidx) {
         CKey key;
         key.key[0] = compute_key(m_start_state, hidx);
         m_open[hidx].insertheap(&m_start_state->od[hidx].open_state, key);
@@ -197,8 +226,7 @@ int MHAPlanner_AD::replan(
 
         for (int hidx = 1; hidx < num_heuristics(); ++hidx) {
 
-            if(environment_->isInTrackingMode() && hidx != num_heuristics() - 1 )
-            {
+            if (environment_->isInTrackingMode() && hidx != num_heuristics() - 1) {
                 ROS_INFO("Env in tracking mode, forget about lower dim heuristics");
                 continue;
             }
@@ -717,3 +745,5 @@ bool MHAPlanner_AD::closed_in_any_search(MHASearchState* state) const
 {
     return state->closed_in_anc || state->closed_in_add;
 }
+
+} // namespace adim

@@ -10,25 +10,26 @@
 
 // project includes
 #include <sbpl_adaptive/discrete_space_information/adaptive_discrete_space_information.h>
+#include <sbpl_adaptive/planners/AdaptivePlanner/adaptive_planner.h>
 
-/*struct MHASearchState
+namespace adim {
+
+class ADMHAPlannerAllocator : public PlannerAllocator
 {
-    int call_number;
-    int state_id;
-    int g;
-    MHASearchState* bp;
+public:
 
-    bool closed_in_anc;
-    bool closed_in_add;
+    ADMHAPlannerAllocator(Heuristic *aheur, Heuristic **heurs, int h_count);
 
-    struct HeapData
-    {
-        AbstractSearchState open_state;
-        int h;
-    };
+    SBPLPlanner *make(
+        AdaptiveDiscreteSpaceInformation *space,
+        bool forward_search) const override;
 
-    HeapData od[1]; // overallocated for additional n heuristics
-};*/
+private:
+
+    Heuristic *aheur_;
+    Heuristic **heurs_;
+    int h_count_;
+};
 
 class MHAPlanner_AD : public SBPLPlanner
 {
@@ -196,5 +197,7 @@ private:
     bool closed_in_add_search(MHASearchState* state) const;
     bool closed_in_any_search(MHASearchState* state) const;
 };
+
+} // namespace adim
 
 #endif

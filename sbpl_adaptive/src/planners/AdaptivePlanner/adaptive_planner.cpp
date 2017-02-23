@@ -10,53 +10,15 @@
 
 namespace adim {
 
-AdaptivePlanner::AdaptivePlanner(
-    AdaptiveDiscreteSpaceInformation* environment,
-    bool bSearchForward)
-:
-    num_iterations_(0),
-    repair_time_(0.0),
-    adaptive_environment_(environment),
-    planner_(),
-    tracker_(),
-    stat_(),
-    start_state_id_(-1),
-    goal_state_id_(-1),
-    time_per_retry_plan_(5.0),
-    time_per_retry_track_(5.0),
-    target_eps_(-1.0),
-    planning_eps_(-1.0),
-    tracking_eps_(-1.0),
-    final_eps_planning_time_(-1.0),
-    final_eps_(-1.0),
-    forward_search_(bSearchForward),
-    search_until_first_solution_(true),
-    in_tracking_phase_(false),
-    plan_anc_heur_(nullptr),
-    plan_heurs_(nullptr),
-    track_anc_heur_(nullptr),
-    track_heurs_(nullptr),
-    num_heur_(0),
-    search_expands_(0)
+PlannerAllocator::~PlannerAllocator()
 {
-    ROS_INFO("Create adaptive planner...");
-
-    stat_.reset(new AdaptivePlannerCSVStat_c());
-
-    ROS_INFO("Initialize planners...");
-    planner_.reset(new ARAPlanner(adaptive_environment_, forward_search_));
-    planner_->set_search_mode(false);
-    tracker_.reset(new ARAPlanner_AD(adaptive_environment_, forward_search_));
-    tracker_->set_search_mode(false);
-    ROS_INFO("done!");
 }
 
 AdaptivePlanner::AdaptivePlanner(
-    AdaptiveDiscreteSpaceInformation* environment,
-    bool bSearchForward,
-    Heuristic* anc_heur,
-    Heuristic** heurs,
-    int num_heur)
+    AdaptiveDiscreteSpaceInformation *environment,
+    const PlannerAllocator &plan_search_alloc,
+    const PlannerAllocator &track_search_alloc,
+    bool forward_search)
 :
     num_iterations_(0),
     repair_time_(0.0),
@@ -69,28 +31,22 @@ AdaptivePlanner::AdaptivePlanner(
     time_per_retry_plan_(5.0),
     time_per_retry_track_(5.0),
     target_eps_(-1.0),
-    planning_eps_(100.0),
-    tracking_eps_(100.0),
+    planning_eps_(1.0),
+    tracking_eps_(1.0),
     final_eps_planning_time_(-1.0),
     final_eps_(-1.0),
-    forward_search_(bSearchForward),
+    forward_search_(forward_search),
     search_until_first_solution_(true),
     in_tracking_phase_(false),
-    plan_anc_heur_(anc_heur),
-    plan_heurs_(heurs),
-    track_anc_heur_(anc_heur),
-    track_heurs_(heurs),
-    num_heur_(num_heur),
     search_expands_(0)
 {
-    ROS_INFO("Create adaptive planner...");
-
-    stat_.reset(new AdaptivePlannerCSVStat_c());
+    stat_.reset(new AdaptivePlannerCSVStat_c);
 
     ROS_INFO("Initialize planners...");
-    planner_.reset(new MHAPlanner_AD(adaptive_environment_, plan_anc_heur_, plan_heurs_, num_heur_));
+    planner_.reset(plan_search_alloc.make(environment, forward_search));
     planner_->set_search_mode(false);
-    tracker_.reset(new MHAPlanner_AD(adaptive_environment_, track_anc_heur_, track_heurs_, num_heur_));
+
+    tracker_.reset(track_search_alloc.make(environment, forward_search));
     tracker_->set_search_mode(false);
     ROS_INFO("done!");
 }
@@ -140,8 +96,7 @@ int AdaptivePlanner::replan(
     std::vector<int> planner_solution;
     std::vector<int> tracker_solution;
 
-    if (!in_tracking_phase_)    // some initializations
-    {    
+    if (!in_tracking_phase_) {  // some initializations
         if (planner_->set_start(start_state_id_) == 0) {
             ROS_ERROR("ERROR: planner failed to set start state");
             throw SBPL_Exception();

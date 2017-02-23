@@ -18,20 +18,26 @@ namespace adim {
 
 SBPL_CLASS_FORWARD(AdaptivePlanner)
 
+class PlannerAllocator
+{
+public:
+
+    virtual ~PlannerAllocator();
+
+    virtual SBPLPlanner *make(
+        AdaptiveDiscreteSpaceInformation *space,
+        bool forward_search) const = 0;
+};
+
 class AdaptivePlanner : public SBPLPlanner
 {
 public:
 
     AdaptivePlanner(
-        AdaptiveDiscreteSpaceInformation* environment,
-        bool bforwardsearch);
-
-    AdaptivePlanner(
-        AdaptiveDiscreteSpaceInformation* environment,
-        bool bSearchForward,
-        Heuristic* anc_heur,
-        Heuristic** heurs,
-        int num_heur);
+        AdaptiveDiscreteSpaceInformation *space,
+        const PlannerAllocator &plan_search_alloc,
+        const PlannerAllocator &track_search_alloc,
+        bool forward_search);
 
     ~AdaptivePlanner();
 
@@ -141,13 +147,6 @@ private:
     bool search_until_first_solution_;
 
     bool in_tracking_phase_;
-
-    //MHA*
-    Heuristic* plan_anc_heur_;
-    Heuristic** plan_heurs_;
-    Heuristic* track_anc_heur_;
-    Heuristic** track_heurs_;
-    int num_heur_;
 
     unsigned int search_expands_;
 };

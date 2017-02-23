@@ -37,8 +37,18 @@
 
 // project includes
 #include <sbpl_adaptive/discrete_space_information/adaptive_discrete_space_information.h>
+#include <sbpl_adaptive/planners/AdaptivePlanner/adaptive_planner.h>
 
 namespace adim {
+
+class ADARAPlannerAllocator : public PlannerAllocator
+{
+public:
+
+    SBPLPlanner *make(
+        AdaptiveDiscreteSpaceInformation *space,
+        bool forward_search) const override;
+};
 
 SBPL_CLASS_FORWARD(ARAPlanner_AD)
 
