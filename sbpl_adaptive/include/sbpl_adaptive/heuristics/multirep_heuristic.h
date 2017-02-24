@@ -36,7 +36,7 @@ public:
 
     bool IsDefinedForRepresentation(int dim_id) const override { return true; }
 
-private:
+protected:
 
     MultiRepAdaptiveDiscreteSpaceInformation *space_;
 };
