@@ -248,12 +248,6 @@ int MHAPlanner_AD::replan(
         }
 
         for (int hidx = 1; hidx < num_heuristics(); ++hidx) {
-
-            if (space_->isInTrackingMode() && hidx != num_heuristics() - 1) {
-                ROS_INFO("Env in tracking mode, forget about lower dim heuristics");
-                continue;
-            }
-
             if (m_open[0].emptyheap()) {
                 printf("Anchor empty\n");
                 break;
