@@ -64,7 +64,7 @@ public:
     /// accordingly returns the stateID
     size_t InsertHashEntry(AdaptiveHashEntry *entry, size_t binID);
 
-    AdaptiveHashEntry *GetState(size_t stateID);
+    AdaptiveHashEntry *GetState(size_t stateID) const;
     int GetDimID(size_t stateID);
 
     const EnvStateData *getEnvStateDataPtr() { return &data_; }
@@ -100,9 +100,9 @@ public:
     template <typename T> T *GetRepresentation(int dimID);
     template <typename T> const T *GetRepresentation(int dimID) const;
 
-    int SetStartCoords(int dimID, const void *representation_specific_data);
+    int SetStartCoords(int dimID, const adim::AdaptiveState *state);
     int SetStartConfig(int dimID, const void *representation_specific_data);
-    int SetGoalCoords(int dimID, const void *goal_representation_specific_discrete_data);
+    int SetGoalCoords(int dimID, const adim::AdaptiveState *state);
     int SetGoalConfig(int dimID, const void *goal_representation_specific_continuous_data);
 
     int SetAbstractGoal(AbstractGoal *abstract_goal);
@@ -110,13 +110,13 @@ public:
     void updateBestTracked(int StateID, int costToGoal);
 
     bool ProjectToFullD(
-        const void *local_state_data,
+        const adim::AdaptiveState *local_state_data,
         int fromID,
         std::vector<int> &proj_stateIDs,
         int adPathIdx = 0);
 
     bool Project(
-        const void *hd_state_data,
+        const adim::AdaptiveState *hd_state_data,
         int fromID,
         int toID,
         std::vector<int> &proj_stateIDs,

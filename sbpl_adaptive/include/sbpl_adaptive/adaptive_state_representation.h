@@ -14,9 +14,12 @@
 #include <string>
 #include <vector>
 
-// project includes
+// system includes includes
 #include <ros/console.h>
 #include <smpl/forward.h>
+
+// project includes
+#include <sbpl_adaptive/state.h>
 
 namespace adim {
 
@@ -38,12 +41,12 @@ public:
     virtual ~AdaptiveStateRepresentation() { };
 
     // return the state ID of the created start state
-    virtual int SetStartCoords(const void *disc_data) = 0;
+    virtual int SetStartCoords(const AdaptiveState *disc_data) = 0;
 
     virtual int SetStartConfig(const void *cont_data) = 0;
 
-    // return the state ID of the created start state
-    virtual int SetGoalCoords(const void *disc_data) = 0;
+    // return the state ID of the created goal state
+    virtual int SetGoalCoords(const AdaptiveState *disc_data) = 0;
 
     virtual int SetGoalConfig(const void *cont_data) = 0;
 
@@ -73,7 +76,7 @@ public:
         FILE* fOut = stdout) const = 0;
 
     virtual void PrintStateData(
-        const void *state_data,
+        const AdaptiveState *state_data,
         bool bVerbose,
         FILE* fOut = stdout) const = 0;
 
@@ -85,26 +88,26 @@ public:
         std::string ns,
         int &viz_idx) const = 0;
 
-    virtual bool IsValidStateData(const void *disc_data) const = 0;
+    virtual bool IsValidStateData(const AdaptiveState *state) const = 0;
 
     virtual bool IsValidConfig(const void *cont_data) const = 0;
 
     virtual bool ProjectToFullD(
-        const void *ld_state_data,
+        const AdaptiveState *ld_state_data,
         std::vector<int> &hd_projStateIDs,
         int adPathIdx = 0) = 0;
 
     virtual bool ProjectFromFullD(
-        const void *hd_state_data,
+        const AdaptiveState *hd_state_data,
         std::vector<int> &ld_projStateIDs,
         int adPathIdx = 0) = 0;
 
     // free the stateData ptr in the AdaptiveHashEntry
     virtual void deleteStateData(int stateID) = 0;
 
-    virtual void toCont(const void *disc_data, void *cont_data) const = 0;
+    virtual void toCont(const AdaptiveState *state, void *cont_data) const = 0;
 
-    virtual void toDisc(const void *cont_data, void *disc_data) const = 0;
+    virtual void toDisc(const void *cont_data, AdaptiveState *state) const = 0;
 
     virtual std::string StateToString(int state_id)
     {

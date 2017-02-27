@@ -14,7 +14,7 @@ static const char *GPLOG = "mrep.projection";
 
 /// \brief Return the HD states up-projected from a LD state
 bool MultiRepAdaptiveDiscreteSpaceInformation::ProjectToFullD(
-    const void *local_state_data,
+    const AdaptiveState *state,
     int fromID,
     std::vector<int> &proj_stateIDs,
     int adPathIdx)
@@ -24,12 +24,12 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::ProjectToFullD(
         throw SBPL_Exception();
         return false;
     }
-    return representations_[fromID]->ProjectToFullD(local_state_data, proj_stateIDs, adPathIdx);
+    return representations_[fromID]->ProjectToFullD(state, proj_stateIDs, adPathIdx);
 }
 
 /// \brief Project a state to a set of states in another dimension
 bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
-    const void *state_data,
+    const AdaptiveState *state,
     int fromID,
     int toID,
     std::vector<int> &proj_stateIDs,
@@ -51,8 +51,8 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
 
     // optimization when toID is fullD: directly up-project to HD
     if (toID == fulld_representation_->getID()) {
-        //fromID understands state_data
-        bool bRes = representations_[fromID]->ProjectToFullD(state_data, proj_stateIDs, adPathIdx);
+        //fromID understands state
+        bool bRes = representations_[fromID]->ProjectToFullD(state, proj_stateIDs, adPathIdx);
         ROS_DEBUG_NAMED(GPLOG, "Got %zu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
         if (!bRes) {
             ROS_DEBUG_NAMED(GPLOG, "Failed to project from [%s] to [%s]", representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
@@ -62,8 +62,8 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
 
     // optimization when fromID is fullD: directly down-project to LD
     if (fromID == fulld_representation_->getID()) {
-        //state_data is hd toID understands it
-        bool bRes = representations_[toID]->ProjectFromFullD(state_data, proj_stateIDs, adPathIdx);
+        //state is hd toID understands it
+        bool bRes = representations_[toID]->ProjectFromFullD(state, proj_stateIDs, adPathIdx);
         ROS_DEBUG_NAMED(GPLOG, "Got %zu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
         if (!bRes) {
             ROS_DEBUG_NAMED(GPLOG, "Failed to project from [%s] to [%s]", representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
@@ -74,7 +74,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
     // project state to HD and project the hd-projections to a different LD
     std::vector<int> hd_proj_stateIDs;
     ROS_DEBUG_NAMED(GPLOG, "Projecting %d [%s] to FullD first! (adPathIdx=%d)", fromID, representations_[fromID]->getDescription().c_str(), adPathIdx);
-    if (!ProjectToFullD(state_data, fromID, hd_proj_stateIDs, adPathIdx)) {
+    if (!ProjectToFullD(state, fromID, hd_proj_stateIDs, adPathIdx)) {
         ROS_DEBUG_NAMED(GPLOG, "Failed to project state data from representation %d [%s] to fullD representation", fromID, representations_[fromID]->getDescription().c_str());
         return false;
     }
@@ -101,10 +101,10 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
 
 int MultiRepAdaptiveDiscreteSpaceInformation::SetGoalCoords(
     int dimID,
-    const void *representation_specific_disc_data)
+    const AdaptiveState *state)
 {
     ROS_INFO_NAMED(GLOG, "setting goal coordinates");
-    int GoalID = representations_[dimID]->SetGoalCoords(representation_specific_disc_data);
+    int GoalID = representations_[dimID]->SetGoalCoords(state);
     if (!representations_[dimID]->isExecutable()) {
         ROS_WARN_NAMED(GLOG, "the start representation is of non-executable type!");
     }
@@ -136,11 +136,10 @@ int MultiRepAdaptiveDiscreteSpaceInformation::SetGoalConfig(
 
 int MultiRepAdaptiveDiscreteSpaceInformation::SetStartCoords(
     int dimID,
-    const void *representation_specific_disc_data)
+    const AdaptiveState *state)
 {
     ROS_INFO_NAMED(GLOG, "setting start coordinates");
-    int StartID = representations_[dimID]->SetStartCoords(
-            representation_specific_disc_data);
+    int StartID = representations_[dimID]->SetStartCoords(state);
     if (!representations_[dimID]->isExecutable()) {
         ROS_WARN_NAMED(GLOG, "the start representation is of non-executable type!");
     }
@@ -302,7 +301,7 @@ size_t MultiRepAdaptiveDiscreteSpaceInformation::InsertHashEntry(
 }
 
 AdaptiveHashEntry *MultiRepAdaptiveDiscreteSpaceInformation::GetState(
-    size_t stateID)
+    size_t stateID) const
 {
     if (stateID >= data_.StateID2HashEntry.size()) {
         ROS_ERROR("stateID [%zu] out of range [%zu]", stateID, data_.StateID2HashEntry.size());

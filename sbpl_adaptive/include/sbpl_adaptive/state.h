@@ -13,7 +13,7 @@
 
 namespace adim {
 
-#define STATE_CAST_DEBUG 1
+#define STATE_CAST_DEBUG 0
 
 struct AdaptiveState
 {
@@ -23,6 +23,26 @@ struct AdaptiveState
 #endif
 };
 
+template <typename T>
+T *state_cast(AdaptiveState *state)
+{
+#if STATE_CAST_DEBUG
+    T *s = dynamic_cast<T *>(state);
+    if (!s) {
+        throw std::runtime_error("bad cast");
+    }
+    return s;
+#else
+    return static_cast<T *>(state);
+#endif
+}
+
+template <typename T>
+const T *state_cast(const AdaptiveState *state)
+{
+    return state_cast<T>(const_cast<AdaptiveState *>(state));
+}
+
 struct AdaptiveHashEntry
 {
     size_t stateID;           // the state ID
@@ -31,31 +51,13 @@ struct AdaptiveHashEntry
     AdaptiveState *stateData; // the state data specific to this dimensionality
 
     template <class T>
-    T *dataAs()
-    {
-#if STATE_CAST_DEBUG
-        T *state = dynamic_cast<T *>(stateData);
-        if (!state) {
-          throw std::runtime_error("bad cast");
-        }
-        return state;
-#else
-        return static_cast<T *>(stateData);
-#endif
+    T *dataAs() {
+        return state_cast<T>(stateData);
     }
 
     template <class T>
-    const T *dataAs() const
-    {
-#if STATE_CAST_DEBUG
-        const T *state = dynamic_cast<const T *>(stateData);
-        if (!state) {
-          throw std::runtime_error("bad cast");
-        }
-        return state;
-#else
-        return static_cast<const T *>(stateData);
-#endif
+    const T *dataAs() const {
+        return state_cast<T>(const_cast<const AdaptiveState *>(stateData));
     }
 };
 
