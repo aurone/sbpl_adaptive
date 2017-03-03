@@ -23,7 +23,7 @@ public:
 
     AdaptivePlannerCSVStat_c()
     {
-        n_expansions = 0;
+       	n_expansions = 0;
         n_expansions_low = 0;
         n_expansions_high = 0;
         n_expansions_near = 0;
@@ -94,6 +94,8 @@ public:
     void recordNearHDExpansion() { n_expansions_near++; n_expansions++; }
     void addPlanningPhaseTime(double t) { t_planning_phase += t; }
     void addTrackingPhaseTime(double t) { t_tracking_phase += t; }
+
+    void setPlanningPhaseTime(double t) { t_planning_phase = t; }
     void setTotalPlanningTime(double t) { t_total = t; }
     void setInitialEps(double e) { d_initial_eps = e; }
     void setFinalEps(double e) { d_final_eps = e; }
@@ -101,6 +103,7 @@ public:
     void setFinalTrackCost(unsigned long c) { cost_track = c; }
     void setSuccess(bool success) { b_success = success; }
     void setNumIterations(int n_iter) { n_iterations = n_iter; }
+    void setFinalExpands(unsigned long n_expands){n_expansions = n_expands;}
 
     void reset()
     {
@@ -120,7 +123,8 @@ public:
         b_success = false;
     }
 
-private:
+//private:
+public:
 
     // number of expansions
     unsigned long n_expansions;

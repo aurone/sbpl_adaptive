@@ -205,6 +205,11 @@ int AdaptivePlanner::replan(
                 ROS_INFO("Iteration Time: %.3f sec (avg: %.3f)", to_secs(iter_elapsed()), to_secs(time_elapsed()) / (round + 1.0));
                 ROS_INFO("Done in: %.3f sec", to_secs(time_elapsed()));
                 num_iterations_ = round;
+
+                stat_->setInitialEps(planner_->get_initial_eps());
+                stat_->setFinalExpands(planner_->get_n_expands());
+                stat_->setPlanningPhaseTime(planner_->get_final_eps_planning_time());
+
                 stat_->setFinalEps(planner_->get_final_epsilon());
                 stat_->setFinalPlanCost(p_cost);
                 stat_->setFinalTrackCost(p_cost);
