@@ -72,8 +72,6 @@ public:
 
     bool saveStats(std::string name);
 
-    const AdaptivePlannerCSVStat_cPtr &getStats() { return stat_; }
-
     /// \name Required Public Functions from SBPLPlanner
     ///@{
     int replan(
@@ -108,6 +106,13 @@ public:
     int get_n_expands() const override { return search_expands_; }
 
     double get_final_eps_planning_time() override { return final_eps_planning_time_; }
+
+    double get_planning_time() { return stat_->getPlanningPhaseTime(); }
+    double get_tracking_time() { return stat_->getTrackingPhaseTime(); }
+    double get_total_time() { return stat_->getTotalTime(); }
+    unsigned long get_planning_cost() { return stat_->getPlanCost(); }
+    unsigned long get_tracking_cost() { return stat_->getTrackingCost(); }
+    unsigned long get_plan_size() { return stat_->getPlanSize(); }
 
     double get_final_epsilon() override;
 

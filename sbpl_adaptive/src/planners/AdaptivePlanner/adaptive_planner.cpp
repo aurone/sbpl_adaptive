@@ -182,7 +182,7 @@ int AdaptivePlanner::replan(
             int p_ret = planner_->replan(
                     to_secs(allowed_ad_plan_time), &planner_solution, &p_cost);
 
-
+            plan_time = sbpl::clock::now() - plan_start;
             stat_->addPlanningPhaseTime(to_secs(plan_time));
 
             ROS_INFO("Planner done in %.3fs...", to_secs(plan_time));
@@ -206,16 +206,13 @@ int AdaptivePlanner::replan(
                 ROS_INFO("Done in: %.3f sec", to_secs(time_elapsed()));
                 num_iterations_ = round;
 
-                stat_->setInitialEps(planner_->get_initial_eps());
-                stat_->setFinalExpands(planner_->get_n_expands());
-                stat_->setPlanningPhaseTime(planner_->get_final_eps_planning_time());
-
                 stat_->setFinalEps(planner_->get_final_epsilon());
                 stat_->setFinalPlanCost(p_cost);
                 stat_->setFinalTrackCost(p_cost);
                 stat_->setNumIterations(num_iterations_ + 1);
                 stat_->setSuccess(true);
                 stat_->setTotalPlanningTime(to_secs(sbpl::clock::now() - start_t));
+                stat_->setPlanSize(solution_stateIDs_V->size());
                 return true;
             }
             adaptive_environment_->visualizeEnvironment();
@@ -272,6 +269,7 @@ int AdaptivePlanner::replan(
                 stat_->setSuccess(true);
                 stat_->setTotalPlanningTime(to_secs(time_elapsed()));
                 in_tracking_phase_ = tracker_solution.back() != goal_state_id_;
+                stat_->setPlanSize(solution_stateIDs_V->size());
                 return true;
             }
 

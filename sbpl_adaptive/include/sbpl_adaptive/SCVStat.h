@@ -95,7 +95,6 @@ public:
     void addPlanningPhaseTime(double t) { t_planning_phase += t; }
     void addTrackingPhaseTime(double t) { t_tracking_phase += t; }
 
-    void setPlanningPhaseTime(double t) { t_planning_phase = t; }
     void setTotalPlanningTime(double t) { t_total = t; }
     void setInitialEps(double e) { d_initial_eps = e; }
     void setFinalEps(double e) { d_final_eps = e; }
@@ -103,7 +102,14 @@ public:
     void setFinalTrackCost(unsigned long c) { cost_track = c; }
     void setSuccess(bool success) { b_success = success; }
     void setNumIterations(int n_iter) { n_iterations = n_iter; }
-    void setFinalExpands(unsigned long n_expands){n_expansions = n_expands;}
+    void setPlanSize(unsigned long sz) { plan_size = sz; }
+
+    double getPlanningPhaseTime() { return t_planning_phase; }
+    double getTrackingPhaseTime() { return t_tracking_phase; }
+    double getTotalTime() { return t_total; }
+    unsigned long getPlanCost() { return cost_plan; }
+    unsigned long getTrackingCost() { return cost_track; }
+    unsigned long getPlanSize() { return plan_size; }
 
     void reset()
     {
@@ -121,10 +127,11 @@ public:
         cost_plan = 0;
         cost_track = 0;
         b_success = false;
+        plan_size = 0;
     }
 
-//private:
-public:
+private:
+//public:
 
     // number of expansions
     unsigned long n_expansions;
@@ -149,6 +156,8 @@ public:
     // cost
     unsigned long cost_track;
     unsigned long cost_plan;
+
+    unsigned long plan_size;
 
     // planner config ???
 };
