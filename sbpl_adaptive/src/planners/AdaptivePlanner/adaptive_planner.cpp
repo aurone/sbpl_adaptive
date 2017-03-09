@@ -69,10 +69,7 @@ int AdaptivePlanner::replan(
 
     int round = 0;
 
-    std::chrono::duration<double> allowed_ad_plan_time(allocated_time_per_retry_plan_);
-    std::chrono::duration<double> allowed_ad_track_time(allocated_time_per_retry_track_);
-
-    ROS_INFO("Retry time limits: (Planning: %.4f) (Tracking: %.4f)", to_secs(allowed_ad_plan_time), to_secs(allowed_ad_track_time));
+    ROS_INFO("Retry time limits: (Planning: %.4f) (Tracking: %.4f)", allocated_time_per_retry_plan_, allocated_time_per_retry_track_);
 
     ROS_INFO("Set start and goal for planner and tracker_...");
 
@@ -179,8 +176,11 @@ int AdaptivePlanner::replan(
             ROS_INFO("Still have time (%.3fs)...planning", to_secs(time_remaining()));
             planner_solution.clear();
 
+            double allowed_plan_time = allocated_time_per_retry_plan_;
+            allowed_plan_time = std::min(allowed_plan_time, to_secs(time_remaining()));
+            allowed_plan_time = std::max(allowed_plan_time, 0.0);
             int p_ret = planner_->replan(
-                    to_secs(allowed_ad_plan_time), &planner_solution, &p_cost);
+                    allowed_plan_time, &planner_solution, &p_cost);
 
             plan_time = sbpl::clock::now() - plan_start;
             stat_->addPlanningPhaseTime(to_secs(plan_time));
@@ -190,7 +190,7 @@ int AdaptivePlanner::replan(
             if (!p_ret || planner_solution.empty()) {
                 // TODO: an empty solution may be the correct solution and should
                 // report success and a correct suboptimality bound
-                ROS_ERROR("Solution could not be found within the allowed time (%.3fs.) after %d iterations", to_secs(allowed_ad_plan_time), round);
+                ROS_ERROR("Solution could not be found within the allowed time (%.3fs.) after %d iterations", allowed_plan_time, round);
                 adaptive_environment_->visualizeEnvironment();
                 num_iterations_ = round;
                 stat_->setFinalEps(-1.0);
@@ -231,10 +231,12 @@ int AdaptivePlanner::replan(
         tracker_->set_search_mode(false);
 
         ROS_INFO("Still have time (%.3fs)...tracking", to_secs(time_remaining()));
-        allowed_ad_track_time = time_remaining();
+        double allowed_track_time = allocated_time_per_retry_track_;
+        allowed_track_time = std::min(allowed_track_time, to_secs(time_remaining()));
+        allowed_track_time = std::max(allowed_track_time, 0.0);
         tracker_solution.clear();
         int t_cost;
-        int t_ret = tracker_->replan(to_secs(allowed_ad_track_time), &tracker_solution, &t_cost);
+        int t_ret = tracker_->replan(allowed_track_time, &tracker_solution, &t_cost);
 
         auto track_time = sbpl::clock::now() - track_start;
         stat_->addTrackingPhaseTime(to_secs(track_time));
