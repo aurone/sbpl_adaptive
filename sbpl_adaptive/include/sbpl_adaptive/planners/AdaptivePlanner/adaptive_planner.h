@@ -9,6 +9,7 @@
 #include <ros/console.h>
 #include <sbpl/headers.h>
 #include <smpl/forward.h>
+#include <smpl/time.h>
 
 // project includes
 #include <sbpl_adaptive/SCVStat.h>
@@ -68,8 +69,6 @@ public:
     /// \brief prints out the search path into a file
     void print_searchpath(FILE* fOut);
 
-    void pause();
-
     bool saveStats(std::string name);
 
     /// \name Required Public Functions from SBPLPlanner
@@ -121,46 +120,87 @@ public:
 
 private:
 
-    int num_iterations_;
-    double repair_time_;
-
     AdaptiveDiscreteSpaceInformation* adaptive_environment_;
 
     std::unique_ptr<SBPLPlanner> planner_;
     std::unique_ptr<SBPLPlanner> tracker_;
 
-    AdaptivePlannerCSVStat_cPtr stat_;
+    bool forward_search_; // true -> forwards, false -> backwards
 
-    int start_state_id_;
-    int goal_state_id_;
-
+    /// \name Timing Parameters
+    ///@{
     double time_per_retry_plan_;
     double time_per_retry_track_;
+    bool search_until_first_solution_; // true -> stop at first solution
+    ///@}
 
+    /// \name Search Parameters
+    ///@{
     double target_eps_;
     double planning_eps_;
     double tracking_eps_;
+    ///@}
 
+    /// \name Query
+    ///@{
+    int start_state_id_;
+    int goal_state_id_;
+    ///@}
+
+    /// \name Statistics
+    ///@{
+    AdaptivePlannerCSVStat_cPtr stat_;
     double final_eps_planning_time_;
     double final_eps_;
-
-    // if true, then search proceeds forward, otherwise backward
-    bool forward_search_;
-
-    // if true, then search until first solution only (see sbpl/planner.h for
-    // search modes)
-    bool search_until_first_solution_;
-
-    bool in_tracking_phase_;
-
     unsigned int search_expands_;
+    int num_iterations_;
+
+    ///@}
+
+    /// \name Search State
+    ///@{
+    enum PlanMode { PLANNING = 0, TRACKING } plan_mode_;
+    int iteration_;
+    std::vector<int> plan_sol_;
+    int plan_cost_;
+    std::vector<int> track_sol_;
+    int track_cost_;
+    std::vector<int> pending_spheres_;
+    ///@}
+
+    // time consumed by the current iteration
+    sbpl::clock::duration iter_elapsed_;
+
+    // time consumed by the planning phase of the current iteration
+    sbpl::clock::duration plan_elapsed_;
+
+    // time consumed by the tracking phase of the current iteration
+    sbpl::clock::duration track_elapsed_;
+
+    // time consumed on the current query
+    sbpl::clock::duration time_elapsed_;
+
+    /// \name Variables for Resumable Searching
+    ///@{
+    int last_start_state_id_;
+    int last_goal_state_id_;
+    int last_plan_iter_;
+    int last_track_iter_;
+    ///@}
+
+    bool onPlanningState(const sbpl::clock::duration time_remaining, std::vector<int> &sol);
+    bool onTrackingState(const sbpl::clock::duration time_remaining, std::vector<int> &sol);
 };
 
 inline int AdaptivePlanner::replan(
     double allocated_time_secs,
     std::vector<int>* solution_stateIDs_V)
 {
-    return replan(allocated_time_secs, time_per_retry_plan_, time_per_retry_track_, solution_stateIDs_V);
+    return replan(
+            allocated_time_secs,
+            time_per_retry_plan_,
+            time_per_retry_track_,
+            solution_stateIDs_V);
 }
 
 inline int AdaptivePlanner::replan(
@@ -168,7 +208,11 @@ inline int AdaptivePlanner::replan(
     std::vector<int>* solution_stateIDs_V,
     int* cost)
 {
-    return replan(allocated_time_secs, time_per_retry_plan_, time_per_retry_track_, solution_stateIDs_V, cost);
+    return replan(
+            allocated_time_secs,
+            time_per_retry_plan_,
+            time_per_retry_track_,
+            solution_stateIDs_V, cost);
 }
 
 inline int AdaptivePlanner::replan(
@@ -178,7 +222,11 @@ inline int AdaptivePlanner::replan(
     std::vector<int>* solution_stateIDs_V)
 {
     int solcost = 0;
-    return replan(allocated_time_secs, allocated_time_per_retry_plan_, allocated_time_per_retry_track_, solution_stateIDs_V, &solcost);
+    return replan(
+            allocated_time_secs,
+            allocated_time_per_retry_plan_,
+            allocated_time_per_retry_track_,
+            solution_stateIDs_V, &solcost);
 }
 
 inline double AdaptivePlanner::get_solution_eps() const
@@ -196,16 +244,6 @@ inline double AdaptivePlanner::get_final_epsilon()
 inline void AdaptivePlanner::costs_changed(StateChangeQuery const & stateChange)
 {
     ROS_WARN("costs_changed(...) NOT IMPLEMENTED FOR THIS PLANNER");
-}
-
-inline void AdaptivePlanner::pause()
-{
-    printf("Enter to continue...");
-    char inp;
-    do {
-        inp = getchar();
-    }
-    while (inp != '\n');
 }
 
 inline bool AdaptivePlanner::saveStats(std::string name)
