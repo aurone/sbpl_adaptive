@@ -162,6 +162,8 @@ private:
     sbpl::clock::duration m_elapsed;    ///< current amount of seconds
 
     int m_call_number;
+    int m_last_start_state_id;
+    int m_last_goal_state_id;
 
     bool set_heur_;
 

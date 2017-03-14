@@ -66,7 +66,9 @@ MHAPlanner_AD::MHAPlanner_AD(
     m_search_states(),
     m_open(NULL),
     set_heur_(false),
-    created_states_()
+    created_states_(),
+    m_last_start_state_id(-1),
+    m_last_goal_state_id(-1)
 {
     environment_ = space;
 
@@ -178,8 +180,50 @@ int MHAPlanner_AD::replan(
     ReplanParams params,
     int* solcost)
 {
+    if (!m_start_state) {
+        SBPL_ERROR("Start state is not set");
+        return 0;
+    }
+    if (!m_goal_state) {
+        SBPL_ERROR("Goal state is not set");
+        return 0;
+    }
+
     if (!check_params(m_params)) { // errors printed within
         return 0;
+    }
+
+    if (m_start_state->state_id != m_last_start_state_id ||
+        m_goal_state->state_id != m_last_goal_state_id)
+    {
+        // TODO: the search doesn't need to reinitialize when the goal state
+        // changes
+        reinit_search();
+
+        ++m_call_number;
+
+        space_->EnsureHeuristicsUpdated(true); // TODO: support backwards search
+
+        reinit_state(m_goal_state);
+        reinit_state(m_start_state);
+        m_start_state->g = 0;
+
+        // insert start state into all heaps with key(start, i) as priority
+        int dimID = space_->GetDimID(m_start_state->state_id);
+        for (int hidx : m_heuristic_list[dimID]) {
+            //    for (int hidx = 0; hidx < num_heuristics(); ++hidx) {
+            CKey key;
+            key.key[0] = compute_key(m_start_state, hidx);
+            m_open[hidx].insertheap(&m_start_state->od[hidx].open_state, key);
+            SBPL_DEBUG("Inserted start state %d into search %d with f = %ld", m_start_state->state_id, hidx, key.key[0]);
+        }
+
+        m_eps = m_params.initial_eps;
+        m_eps_mha = m_initial_eps_mha;
+        m_eps_satisfied = (double)INFINITECOST;
+
+        m_last_start_state_id = m_start_state->state_id;
+        m_last_goal_state_id = m_goal_state->state_id;
     }
 
     // m_params = params;
@@ -196,16 +240,6 @@ int MHAPlanner_AD::replan(
     SBPL_INFO("  MHA Epsilon: %0.3f", m_initial_eps_mha);
     SBPL_INFO("  Max Expansions: %d", m_max_expansions);
 
-    space_->EnsureHeuristicsUpdated(true); // TODO: support backwards search
-
-    // TODO: pick up from where last search left off and detect lazy
-    // reinitializations
-    reinit_search();
-
-    m_eps = m_params.initial_eps;
-    m_eps_mha = m_initial_eps_mha;
-    m_eps_satisfied = (double)INFINITECOST;
-
     // reset time limits
     m_num_expansions = 0;
     m_elapsed = sbpl::clock::duration::zero();
@@ -213,21 +247,6 @@ int MHAPlanner_AD::replan(
     sbpl::clock::time_point start_time, end_time;
 
     start_time = sbpl::clock::now();
-
-    ++m_call_number;
-    reinit_state(m_goal_state);
-    reinit_state(m_start_state);
-    m_start_state->g = 0;
-
-    // insert start state into all heaps with key(start, i) as priority
-    int dimID = space_->GetDimID(m_start_state->state_id);
-    for (int hidx : m_heuristic_list[dimID]) {
-//    for (int hidx = 0; hidx < num_heuristics(); ++hidx) {
-        CKey key;
-        key.key[0] = compute_key(m_start_state, hidx);
-        m_open[hidx].insertheap(&m_start_state->od[hidx].open_state, key);
-        SBPL_DEBUG("Inserted start state %d into search %d with f = %ld", m_start_state->state_id, hidx, key.key[0]);
-    }
 
     end_time = sbpl::clock::now();
     m_elapsed += end_time - start_time;
@@ -294,7 +313,7 @@ int MHAPlanner_AD::replan(
 
         int best_state_id = space_->getBestSeenState();
         SBPL_INFO("Best stateID: %d", best_state_id);
-        if(best_state_id >= 0){
+        if (best_state_id >= 0) {
             SBPL_WARN("Reconstructing partial path!");
             MHASearchState* best_seen_state = get_state(best_state_id);
             extract_partial_path(solution_stateIDs_V, solcost, best_seen_state);
@@ -716,8 +735,7 @@ void MHAPlanner_AD::extract_path(std::vector<int>* solution_path, int* solcost)
     SBPL_DEBUG("Extracting path");
     solution_path->clear();
     *solcost = 0;
-    for (MHASearchState* state = m_goal_state; state; state = state->bp)
-    {
+    for (MHASearchState* state = m_goal_state; state; state = state->bp) {
         solution_path->push_back(state->state_id);
         if (state->bp) {
             *solcost += (state->g - state->bp->g);
@@ -728,13 +746,15 @@ void MHAPlanner_AD::extract_path(std::vector<int>* solution_path, int* solcost)
     std::reverse(solution_path->begin(), solution_path->end());
 }
 
-void MHAPlanner_AD::extract_partial_path(std::vector<int>* solution_path, int* solcost, MHASearchState* best_seen_state)
+void MHAPlanner_AD::extract_partial_path(
+    std::vector<int>* solution_path,
+    int* solcost,
+    MHASearchState* best_seen_state)
 {
     SBPL_DEBUG("Extracting path");
     solution_path->clear();
     *solcost = 0;
-    for (MHASearchState* state = best_seen_state; state; state = state->bp)
-    {
+    for (MHASearchState* state = best_seen_state; state; state = state->bp) {
         solution_path->push_back(state->state_id);
         if (state->bp) {
             *solcost += (state->g - state->bp->g);
