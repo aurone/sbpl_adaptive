@@ -95,9 +95,9 @@ int AdaptivePlanner::replan(
     auto time_expired = [&](){ return time_elapsed() > allowed_time; };
 
     auto it = std::find(track_sol_.begin(), track_sol_.end(), start_state_id_);
-    if (last_start_state_id_ != start_state_id_ &&
-        last_goal_state_id_ == goal_state_id_ &&
-        it != plan_sol_.end())
+    if (last_goal_state_id_ == goal_state_id_ && (
+            (last_start_state_id_ != start_state_id_ && it != plan_sol_.end()) ||
+            last_start_state_id_ == start_state_id_))
     {
         ROS_INFO("Skip planning phase and resume tracking from new start state on previous plan solution");
         // in the case where the start has changed, but the goal hasn't, and on
