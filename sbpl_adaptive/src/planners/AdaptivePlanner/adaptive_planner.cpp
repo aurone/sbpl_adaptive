@@ -341,6 +341,7 @@ bool AdaptivePlanner::onTrackingState(
 
     auto track_start = sbpl::clock::now();
     ROS_INFO("Still have time (%.3fs)...tracking", sbpl::to_seconds(time_remaining));
+    track_sol_.clear();
     double allowed_track_time = time_per_retry_track_ - sbpl::to_seconds(track_elapsed_);
     allowed_track_time = std::min(allowed_track_time, sbpl::to_seconds(time_remaining));
     allowed_track_time = std::max(allowed_track_time, 0.0);
