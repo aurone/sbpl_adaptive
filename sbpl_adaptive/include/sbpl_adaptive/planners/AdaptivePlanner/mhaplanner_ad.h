@@ -174,7 +174,7 @@ private:
 
     CHeap* m_open; ///< sequence of (m_hcount + 1) open lists
 
-    std::vector<int> created_states_;
+    std::vector<int> m_graph_to_search_state;
 
     std::unordered_map<int, std::vector<int>> m_heuristic_list;
 

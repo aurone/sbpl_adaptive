@@ -66,7 +66,6 @@ MHAPlanner_AD::MHAPlanner_AD(
     m_search_states(),
     m_open(NULL),
     set_heur_(false),
-    created_states_(),
     m_last_start_state_id(-1),
     m_last_goal_state_id(-1)
 {
@@ -496,18 +495,15 @@ bool MHAPlanner_AD::time_limit_reached() const
 
 MHASearchState* MHAPlanner_AD::get_state(int state_id)
 {
-    assert(state_id >= 0 && state_id < space_->StateID2IndexMapping.size());
+    if (m_graph_to_search_state.size() <= state_id) {
+        m_graph_to_search_state.resize(state_id + 1, -1);
+    }
 
-    int* idxs = space_->StateID2IndexMapping[state_id];
+    if (m_graph_to_search_state[state_id] == -1) {
+        // map graph state to search state
+        m_graph_to_search_state[state_id] = (int)m_search_states.size();
 
-    /* Finding if state already created. This
-       is needed since planner and tracker
-       lookup into the same StateID2IndexMapping
-       hence we have a different if condition */
-    std::vector<int>::iterator it = find(created_states_.begin(), created_states_.end(), state_id);
-
-    if (it == created_states_.end()){
-        // overallocate search state for appropriate heuristic information
+        // create new search state
         const size_t state_size =
                 sizeof(MHASearchState) +
                 sizeof(MHASearchState::HeapData) * (m_hcount);
@@ -515,17 +511,12 @@ MHASearchState* MHAPlanner_AD::get_state(int state_id)
 
         const size_t mha_state_idx = m_search_states.size();
         init_state(s, mha_state_idx, state_id);
-        // map graph state to search state
-        idxs[MHAMDP_STATEID2IND] = mha_state_idx;
         m_search_states.push_back(s);
-
-        // Pushing back newly created state
-        created_states_.push_back(state_id);
 
         return s;
     }
     else {
-        int ssidx = idxs[MHAMDP_STATEID2IND];
+        int ssidx = m_graph_to_search_state[state_id];
         return m_search_states[ssidx];
     }
 }
