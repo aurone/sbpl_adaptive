@@ -3,7 +3,6 @@
 
 // standard includes
 #include <memory>
-#include <chrono>
 
 // system includes
 #include <ros/console.h>
@@ -30,6 +29,29 @@ public:
         bool forward_search) const = 0;
 };
 
+/// An implementation of the search algorithm for Planning with Adaptive
+/// Dimensionality. The search algorithm runs a series of search iterations
+/// composed of two phases: a planning phase and a tracking phase. In the
+/// planning phase, the algorithm searches in a space composed of mostly
+/// lower-dimensional regions with sparse high-dimensional regions. In the
+/// tracking phase, the algorithm searches in the original high-dimensional
+/// space, constrained to lie within some distance to the lower-dimensional path
+/// found during the planning phase. Successive iterations of the algorithm
+/// introduce more high-dimensional regions where previous iterations struggled
+/// to find acceptable solutions during the tracking phase.
+///
+/// This class may use any two independent discrete search algorithms for the
+/// planning and tracking phase. The constructor is given two allocation
+/// function objects to handle construction of any two planners satisfying the
+/// SBPLPlanner interface.
+///
+/// This class maintains the state of the search procedure between calls to
+/// replan(), allowing the search to resume where it left off when the scenario
+/// doesn't change. This includes recording the planning/tracking phase, and
+/// maintaining the amount of time consumed in the current phase, for the
+/// current query. If the underlying search procedures are also resumable, this
+/// feature can be used to preempt the search and dedicate more time in the
+/// event of failures to find solutions.
 class AdaptivePlanner : public SBPLPlanner
 {
 public:
@@ -42,34 +64,20 @@ public:
 
     ~AdaptivePlanner();
 
-    /// \brief replan a path within the allocated time, return the solution in
-    ///     the vector
     int replan(
         double allocated_time_secs,
         double allocated_time_per_retry_plan,
         double allocated_time_per_retry_track,
-        std::vector<int>* solution_stateIDs_V);
+        std::vector<int>* solution);
 
-    /// \brief replan a path within the allocated time, return the solution in
-    ///     the vector, also returns solution cost
     int replan(
         double allocated_time_sec,
         double allocated_time_per_retry_plan,
         double allocated_time_per_retry_track,
-        std::vector<int>* solution_stateIDs_V,
+        std::vector<int>* solution,
         int* solcost);
 
-    int dynamically_replan(
-        double allocated_time_secs,
-        void (*Callback)(std::vector<std::vector<double> >*, void*),
-        void* obj);
-
     bool set_time_per_retry(double t_plan, double t_track);
-
-    /// \brief prints out the search path into a file
-    void print_searchpath(FILE* fOut);
-
-    bool saveStats(std::string name);
 
     /// \name Required Public Functions from SBPLPlanner
     ///@{
@@ -131,7 +139,6 @@ private:
     ///@{
     double time_per_retry_plan_;
     double time_per_retry_track_;
-    bool search_until_first_solution_; // true -> stop at first solution
     ///@}
 
     /// \name Search Parameters
@@ -244,11 +251,6 @@ inline double AdaptivePlanner::get_final_epsilon()
 inline void AdaptivePlanner::costs_changed(StateChangeQuery const & stateChange)
 {
     ROS_WARN("costs_changed(...) NOT IMPLEMENTED FOR THIS PLANNER");
-}
-
-inline bool AdaptivePlanner::saveStats(std::string name)
-{
-    return stat_->writeToFile(name);
 }
 
 } // namespace adim

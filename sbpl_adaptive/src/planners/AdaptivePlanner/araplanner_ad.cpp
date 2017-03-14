@@ -350,7 +350,7 @@ int ARAPlanner_AD::ImprovePath(
     while (!pSearchStateSpace->heap->emptyheap() &&
         minkey.key[0] < INFINITECOST &&
         goalkey > minkey &&
-        to_secs(sbpl::clock::now() - TimeStarted) < MaxNumofSecs)
+        sbpl::to_seconds(sbpl::clock::now() - TimeStarted) < MaxNumofSecs)
     {
         //get the state
         state = (ARAState*)pSearchStateSpace->heap->deleteminheap();
@@ -881,7 +881,7 @@ bool ARAPlanner_AD::Search(
     int prevexpands = 0;
     sbpl::clock::time_point loop_time;
     while (pSearchStateSpace->eps_satisfied > ARA_FINAL_EPS &&
-        to_secs(sbpl::clock::now() - TimeStarted) < MaxNumofSecs)
+        sbpl::to_seconds(sbpl::clock::now() - TimeStarted) < MaxNumofSecs)
     {
         loop_time = sbpl::clock::now();
         // decrease eps for all subsequent iterations
@@ -919,12 +919,12 @@ bool ARAPlanner_AD::Search(
         }
 
         // print the solution cost and eps bound
-        SBPL_PRINTF("eps=%f expands=%d g(searchgoal)=%d time=%.3f\n", pSearchStateSpace->eps_satisfied, searchexpands - prevexpands, ((ARAState*)pSearchStateSpace->searchgoalstate->PlannerSpecificData)->g, to_secs(sbpl::clock::now() - loop_time));
+        SBPL_PRINTF("eps=%f expands=%d g(searchgoal)=%d time=%.3f\n", pSearchStateSpace->eps_satisfied, searchexpands - prevexpands, ((ARAState*)pSearchStateSpace->searchgoalstate->PlannerSpecificData)->g, sbpl::to_seconds(sbpl::clock::now() - loop_time));
 
         if (pSearchStateSpace->eps_satisfied == finitial_eps &&
             pSearchStateSpace->eps == finitial_eps)
         {
-            finitial_eps_planning_time = to_secs(sbpl::clock::now() - loop_time);
+            finitial_eps_planning_time = sbpl::to_seconds(sbpl::clock::now() - loop_time);
             num_of_expands_initial_solution = searchexpands - prevexpands;
         }
 
@@ -965,8 +965,8 @@ bool ARAPlanner_AD::Search(
         ret = true;
     }
 
-    SBPL_PRINTF("total expands this call = %d, planning time = %.3f secs, solution cost=%d\n", searchexpands, to_secs(sbpl::clock::now() - TimeStarted), solcost);
-    final_eps_planning_time = to_secs(sbpl::clock::now() - TimeStarted);
+    SBPL_PRINTF("total expands this call = %d, planning time = %.3f secs, solution cost=%d\n", searchexpands, sbpl::to_seconds(sbpl::clock::now() - TimeStarted), solcost);
+    final_eps_planning_time = sbpl::to_seconds(sbpl::clock::now() - TimeStarted);
     final_eps = pSearchStateSpace->eps_satisfied;
 
     return ret;

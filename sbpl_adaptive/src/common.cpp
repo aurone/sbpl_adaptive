@@ -15,7 +15,7 @@ StopWatch_t::StopWatch_t()
 
 double StopWatch_t::getElapsedSeconds()
 {
-    return to_secs(sbpl::clock::now() - start_t);
+    return sbpl::to_seconds(sbpl::clock::now() - start_t);
 }
 
 void StopWatch_t::reset()

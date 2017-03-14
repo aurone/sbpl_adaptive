@@ -158,12 +158,6 @@ double Position3D::dist(const Position3D &ee1, const Position3D &ee2)
 void pause();
 bool prompt();
 
-template <class Rep, class Period>
-double to_secs(const std::chrono::duration<Rep, Period>& d)
-{
-    return std::chrono::duration_cast<std::chrono::duration<double>>(d).count();
-}
-
 struct Point3D
 {
    double x;

@@ -354,12 +354,12 @@ double MHAPlanner_AD::get_final_epsilon()
 
 double MHAPlanner_AD::get_final_eps_planning_time()
 {
-    return to_secs(m_elapsed);
+    return sbpl::to_seconds(m_elapsed);
 }
 
 double MHAPlanner_AD::get_initial_eps_planning_time()
 {
-    return to_secs(m_elapsed);
+    return sbpl::to_seconds(m_elapsed);
 }
 
 int MHAPlanner_AD::get_n_expands() const
@@ -464,7 +464,7 @@ bool MHAPlanner_AD::time_limit_reached() const
     if (m_params.return_first_solution) {
         return false;
     }
-    else if (m_params.max_time > 0.0 && to_secs(m_elapsed) >= m_params.max_time) {
+    else if (m_params.max_time > 0.0 && sbpl::to_seconds(m_elapsed) >= m_params.max_time) {
         return true;
     }
     else if (m_max_expansions > 0 && m_num_expansions >= m_max_expansions) {
