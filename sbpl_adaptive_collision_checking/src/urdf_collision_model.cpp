@@ -669,67 +669,17 @@ bool URDFCollisionModel::getInterpolatedPath(
     double resolution,
     std::vector<URDFModelCoords> &path) const
 {
-    //compute max_dist that collision spheres travel between c0 and c1
-    double max_dist = 0.0;
-    path.clear();
-    for (std::string link : links_with_collision_spheres_) {
-        std::vector<Sphere> s0;
-        std::vector<Sphere> s1;
-        if (!getLinkCollisionSpheres(coords0, link, s0)) {
-            ROS_ERROR("URDFCollisionModel::getInterpolatedPath - Failed to get link %s collision spheres", link.c_str());
-            return false;
-        }
-        if (!getLinkCollisionSpheres(coords1, link, s1)) {
-            ROS_ERROR("URDFCollisionModel::getInterpolatedPath - Failed to get link %s collision spheres", link.c_str());
-            return false;
-        }
-        if (s0.size() != s1.size()) {
-            ROS_ERROR("URDFCollisionModel::getInterpolatedPath - Different number of spheres found between coords0 and coords1!");
-            return false;
-        }
-        for (int s = 0; s < s0.size(); s++) {
-            double dist = (s0[s].v - s1[s].v).norm();
-            if (dist > max_dist) {
-                max_dist = dist;
-                if (max_dist > resolution) {
-                    break;
-                }
-            }
-        }
-        if (max_dist > resolution) {
-            break;
-        }
-    }
-    // if max_dist is more than resolution, we need to subdivide path between c0 and c1
-    if (max_dist > resolution) {
-        //ROS_WARN("Sphere MaxDist = %.3f", max_dist);
-        URDFModelCoords coords_half;
-        if (!getInterpolatedCoordinates(coords0, coords1, 0.5, coords_half)) {
-            ROS_ERROR("URDFCollisionModel::getInterpolatedPath - failed to get interpolation to midpoint!");
-            return false;
-        }
+    return getInterpolatedPath(coords0, coords1, resolution, path, 0, -1);
+}
 
-        std::vector<URDFModelCoords> sub_path0;
-        std::vector<URDFModelCoords> sub_path1;
-        if (!getInterpolatedPath(coords0, coords_half, resolution, sub_path0)) {
-            ROS_ERROR("URDFCollisionModel::getInterpolatedPath - failed to get interpolated sub-path 1");
-            return false;
-        }
-        if (!getInterpolatedPath(coords_half, coords1, resolution, sub_path1)) {
-            ROS_ERROR("URDFCollisionModel::getInterpolatedPath - failed to get interpolated sub-path 2");
-            return false;
-        }
-
-        path.insert(path.end(), sub_path0.begin(), sub_path0.end());
-        path.insert(path.end(), sub_path1.begin() + 1, sub_path1.end()); //don't add duplicate of the midpoint
-        return true;
-    }
-    else {
-        //no need to subdivide further - interpolated path only c0 to c1
-        path.push_back(coords0);
-        path.push_back(coords1);
-        return true;
-    }
+bool URDFCollisionModel::getInterpolatedPath(
+    const URDFModelCoords &coords0,
+    const URDFModelCoords &coords1,
+    double resolution,
+    std::vector<URDFModelCoords> &path,
+    int max_depth) const
+{
+    return getInterpolatedPath(coords0, coords1, resolution, path, 0, max_depth);
 }
 
 bool URDFCollisionModel::getInterpolatedCoordinates(
@@ -1478,6 +1428,82 @@ bool URDFCollisionModel::getLinkAttachedObjectsSpheres(
         }
     }
     return true;
+}
+
+bool URDFCollisionModel::getInterpolatedPath(
+    const URDFModelCoords &coords0,
+    const URDFModelCoords &coords1,
+    double resolution,
+    std::vector<URDFModelCoords> &path,
+    int depth,
+    int max_depth) const
+{
+    if (depth == max_depth) {
+        ROS_WARN("Maximum interpolation recursion depth of %d reached", depth);
+        return false;
+    }
+
+    //compute max_dist that collision spheres travel between c0 and c1
+    double max_dist = 0.0;
+    path.clear();
+    for (std::string link : links_with_collision_spheres_) {
+        std::vector<Sphere> s0;
+        std::vector<Sphere> s1;
+        if (!getLinkCollisionSpheres(coords0, link, s0)) {
+            ROS_ERROR("URDFCollisionModel::getInterpolatedPath - Failed to get link %s collision spheres", link.c_str());
+            return false;
+        }
+        if (!getLinkCollisionSpheres(coords1, link, s1)) {
+            ROS_ERROR("URDFCollisionModel::getInterpolatedPath - Failed to get link %s collision spheres", link.c_str());
+            return false;
+        }
+        if (s0.size() != s1.size()) {
+            ROS_ERROR("URDFCollisionModel::getInterpolatedPath - Different number of spheres found between coords0 and coords1!");
+            return false;
+        }
+        for (int s = 0; s < s0.size(); s++) {
+            double dist = (s0[s].v - s1[s].v).norm();
+            if (dist > max_dist) {
+                max_dist = dist;
+                if (max_dist > resolution) {
+                    break;
+                }
+            }
+        }
+        if (max_dist > resolution) {
+            break;
+        }
+    }
+    // if max_dist is more than resolution, we need to subdivide path between c0 and c1
+    if (max_dist > resolution) {
+        //ROS_WARN("Sphere MaxDist = %.3f", max_dist);
+        URDFModelCoords coords_half;
+        if (!getInterpolatedCoordinates(coords0, coords1, 0.5, coords_half)) {
+            ROS_ERROR("URDFCollisionModel::getInterpolatedPath - failed to get interpolation to midpoint!");
+            return false;
+        }
+
+        std::vector<URDFModelCoords> sub_path0;
+        std::vector<URDFModelCoords> sub_path1;
+        if (!getInterpolatedPath(coords0, coords_half, resolution, sub_path0, depth + 1, max_depth)) {
+            ROS_ERROR("URDFCollisionModel::getInterpolatedPath - failed to get interpolated sub-path 1");
+            return false;
+        }
+        if (!getInterpolatedPath(coords_half, coords1, resolution, sub_path1, depth + 1, max_depth)) {
+            ROS_ERROR("URDFCollisionModel::getInterpolatedPath - failed to get interpolated sub-path 2");
+            return false;
+        }
+
+        path.insert(path.end(), sub_path0.begin(), sub_path0.end());
+        path.insert(path.end(), sub_path1.begin() + 1, sub_path1.end()); //don't add duplicate of the midpoint
+        return true;
+    }
+    else {
+        //no need to subdivide further - interpolated path only c0 to c1
+        path.push_back(coords0);
+        path.push_back(coords1);
+        return true;
+    }
 }
 
 bool URDFCollisionModel::hasAttachedObject(

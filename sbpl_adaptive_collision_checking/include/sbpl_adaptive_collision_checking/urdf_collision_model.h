@@ -159,11 +159,20 @@ public:
         const URDFModelCoords &coords1,
         double t,
         URDFModelCoords &interp) const;
+
     virtual bool getInterpolatedPath(
         const URDFModelCoords &coords0,
         const URDFModelCoords &coords1,
         double resolution,
         std::vector<URDFModelCoords> &path) const;
+
+    virtual bool getInterpolatedPath(
+        const URDFModelCoords &coords0,
+        const URDFModelCoords &coords1,
+        double resolution,
+        std::vector<URDFModelCoords> &path,
+        int max_depth) const;
+
     virtual bool getInterpolatedPath(
         const URDFModelCoords &coords0,
         const URDFModelCoords &coords1,
@@ -358,6 +367,14 @@ protected:
         const std::string &link_name,
         const Eigen::Affine3d link_tfm,
         std::vector<Sphere> &spheres) const;
+
+    bool getInterpolatedPath(
+        const URDFModelCoords &coords0,
+        const URDFModelCoords &coords1,
+        double resolution,
+        std::vector<URDFModelCoords> &path,
+        int depth,
+        int max_depth) const;
 
     bool computeCOMRecurs(
         const KDL::SegmentMap::const_iterator &current_seg,
