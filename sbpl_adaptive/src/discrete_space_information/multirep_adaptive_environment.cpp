@@ -53,9 +53,9 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
     if (toID == fulld_representation_->getID()) {
         //fromID understands state
         bool bRes = representations_[fromID]->ProjectToFullD(state, proj_stateIDs, adPathIdx);
-        ROS_DEBUG_NAMED(GPLOG, "Got %zu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
+        ROS_DEBUG_NAMED(GPLOG, "Got %zu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getName().c_str(), representations_[toID]->getName().c_str());
         if (!bRes) {
-            ROS_DEBUG_NAMED(GPLOG, "Failed to project from [%s] to [%s]", representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
+            ROS_DEBUG_NAMED(GPLOG, "Failed to project from [%s] to [%s]", representations_[fromID]->getName().c_str(), representations_[toID]->getName().c_str());
         }
         return bRes;
     }
@@ -64,27 +64,27 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
     if (fromID == fulld_representation_->getID()) {
         //state is hd toID understands it
         bool bRes = representations_[toID]->ProjectFromFullD(state, proj_stateIDs, adPathIdx);
-        ROS_DEBUG_NAMED(GPLOG, "Got %zu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
+        ROS_DEBUG_NAMED(GPLOG, "Got %zu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getName().c_str(), representations_[toID]->getName().c_str());
         if (!bRes) {
-            ROS_DEBUG_NAMED(GPLOG, "Failed to project from [%s] to [%s]", representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
+            ROS_DEBUG_NAMED(GPLOG, "Failed to project from [%s] to [%s]", representations_[fromID]->getName().c_str(), representations_[toID]->getName().c_str());
         }
         return bRes;
     }
 
     // project state to HD and project the hd-projections to a different LD
     std::vector<int> hd_proj_stateIDs;
-    ROS_DEBUG_NAMED(GPLOG, "Projecting %d [%s] to FullD first! (adPathIdx=%d)", fromID, representations_[fromID]->getDescription().c_str(), adPathIdx);
+    ROS_DEBUG_NAMED(GPLOG, "Projecting %d [%s] to FullD first! (adPathIdx=%d)", fromID, representations_[fromID]->getName().c_str(), adPathIdx);
     if (!ProjectToFullD(state, fromID, hd_proj_stateIDs, adPathIdx)) {
-        ROS_DEBUG_NAMED(GPLOG, "Failed to project state data from representation %d [%s] to fullD representation", fromID, representations_[fromID]->getDescription().c_str());
+        ROS_DEBUG_NAMED(GPLOG, "Failed to project state data from representation %d [%s] to fullD representation", fromID, representations_[fromID]->getName().c_str());
         return false;
     }
     ROS_DEBUG_NAMED(GPLOG, "Got %zu FullD projections", hd_proj_stateIDs.size());
-    ROS_DEBUG_NAMED(GPLOG, "Now projecting to %d [%s] (adPathIdx=%d)", toID, representations_[toID]->getDescription().c_str(), adPathIdx);
+    ROS_DEBUG_NAMED(GPLOG, "Now projecting to %d [%s] (adPathIdx=%d)", toID, representations_[toID]->getName().c_str(), adPathIdx);
     for (int hd_stateID : hd_proj_stateIDs) {
         AdaptiveHashEntry *entry = GetState(hd_stateID);
         if (entry) {
             if (!representations_[toID]->ProjectFromFullD(entry->stateData, proj_stateIDs, adPathIdx)) {
-                ROS_DEBUG_NAMED(GPLOG, "Failed to project HD state data to representation %d [%s]", toID, representations_[toID]->getDescription().c_str());
+                ROS_DEBUG_NAMED(GPLOG, "Failed to project HD state data to representation %d [%s]", toID, representations_[toID]->getName().c_str());
                 return false;
             }
         }
@@ -95,7 +95,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
             return false;
         }
     }
-    ROS_DEBUG_NAMED(GPLOG, "Got %zu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getDescription().c_str(), representations_[toID]->getDescription().c_str());
+    ROS_DEBUG_NAMED(GPLOG, "Got %zu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getName().c_str(), representations_[toID]->getName().c_str());
     return true;
 }
 
@@ -244,8 +244,8 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::RegisterRepresentation(
 {
     for (int i = 0; i < representations_.size(); i++) {
         if (representations_[i]->getID() == rep->getID()) {
-            ROS_ERROR_NAMED(GLOG, "Failed to register new representation (%s) with ID (%d) -- duplicate ID registered already", rep->getDescription().c_str(), rep->getID());
-            ROS_ERROR_NAMED(GLOG, "Duplicate (%d)(%s)", representations_[i]->getID(), representations_[i]->getDescription().c_str());
+            ROS_ERROR_NAMED(GLOG, "Failed to register new representation (%s) with ID (%d) -- duplicate ID registered already", rep->getName().c_str(), rep->getID());
+            ROS_ERROR_NAMED(GLOG, "Duplicate (%d)(%s)", representations_[i]->getID(), representations_[i]->getName().c_str());
             return false;
         }
     }
@@ -258,7 +258,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::RegisterRepresentation(
 
     data_.HashTables.push_back(HashTable);
 
-    ROS_INFO_NAMED(GLOG, "Registered representation %d '%s'", rep->getID(), rep->getDescription().c_str());
+    ROS_INFO_NAMED(GLOG, "Registered representation %d '%s'", rep->getID(), rep->getName().c_str());
 
     return true;
 }
@@ -374,7 +374,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::isExecutablePath(
         else {
             const auto &prev_rep = representations_[prev_entry->dimID];
             const auto &curr_rep = representations_[curr_entry->dimID];
-            ROS_WARN_NAMED(GLOG, "Skip checking for executable projection from '%s' to '%s' for now", prev_rep->getDescription().c_str(), curr_rep->getDescription().c_str());
+            ROS_WARN_NAMED(GLOG, "Skip checking for executable projection from '%s' to '%s' for now", prev_rep->getName().c_str(), curr_rep->getName().c_str());
         }
 
         prev_entry = curr_entry;
@@ -395,7 +395,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::GetSuccs_Track(
 //        std::stringstream ss;
 //        ss << "stateID " << SourceStateID << " has representation ID " <<
 //                entry->dimID << " [" <<
-//                representations_[entry->dimID]->getDescription() <<
+//                representations_[entry->dimID]->getName() <<
 //                "] which is not executable. Cannot get tracking successors";
 //        throw SBPL_Exception(ss.str());
 //    }
@@ -442,7 +442,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::GetPreds_Track(
 {
     AdaptiveHashEntry *entry = GetState(TargetStateID);
     if (!representations_[entry->dimID]->isExecutable()) {
-        ROS_ERROR_NAMED(GLOG, "stateID [%d] has representation ID %d [%s], which is not executable. Cannot get tracking successors!", TargetStateID, entry->dimID, representations_[entry->dimID]->getDescription().c_str());
+        ROS_ERROR_NAMED(GLOG, "stateID [%d] has representation ID %d [%s], which is not executable. Cannot get tracking successors!", TargetStateID, entry->dimID, representations_[entry->dimID]->getName().c_str());
         throw SBPL_Exception();
     }
     representations_[entry->dimID]->GetPreds(TargetStateID, PredIDV, CostV, env_data_.get());

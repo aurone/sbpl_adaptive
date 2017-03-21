@@ -36,7 +36,7 @@ public:
     AdaptiveStateRepresentation(
         const MultiRepAdaptiveDiscreteSpaceInformationPtr &env,
         bool executable,
-        const std::string &description);
+        const std::string &name);
 
     virtual ~AdaptiveStateRepresentation() { };
 
@@ -130,7 +130,7 @@ public:
 
     void setID(int id){ dimID_ = id; }
 
-    const std::string getDescription() const { return description_; }
+    const std::string getName() const { return name_; }
 
     void addParentRepresentation(const AdaptiveStateRepresentationPtr &parent);
 
@@ -158,7 +158,7 @@ protected:
     MultiRepAdaptiveDiscreteSpaceInformationPtr env_;
     int dimID_;
     bool executable_;
-    std::string description_;
+    std::string name_;
     AdaptiveStateRepresentationPtr fullD_rep_;
 
     // these form the abstraction hierarchy
@@ -175,7 +175,7 @@ AdaptiveStateRepresentation::AdaptiveStateRepresentation(
     env_(env),
     dimID_(-1),
     executable_(executable),
-    description_(description)
+    name_(description)
 {
     sphere_radius_ = 1.0;
     near_radius_ = 1.0;
@@ -194,7 +194,7 @@ void AdaptiveStateRepresentation::addParentRepresentation(
         }
     }
     if (!found) {
-        ROS_INFO("Added %s as parent representation to %s!", parent->getDescription().c_str(), getDescription().c_str());
+        ROS_INFO("Added %s as parent representation to %s!", parent->getName().c_str(), getName().c_str());
         parents_.push_back(parent);
         parent->addChildRepresentation(shared_from_this());
     }
@@ -212,7 +212,7 @@ void AdaptiveStateRepresentation::addChildRepresentation(
         }
     }
     if (!found) {
-        ROS_INFO("Added %s as child representation to %s!", child->getDescription().c_str(), getDescription().c_str());
+        ROS_INFO("Added %s as child representation to %s!", child->getName().c_str(), getName().c_str());
         children_.push_back(child);
         child->addParentRepresentation(shared_from_this());
     }
