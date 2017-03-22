@@ -29,6 +29,9 @@
 
 /** \author Kalin Gochev */
 
+#ifndef SBPL_ADAPTIVE_COLLISION_CHECKING_URDF_COLLISION_MODEL_H
+#define SBPL_ADAPTIVE_COLLISION_CHECKING_URDF_COLLISION_MODEL_H
+
 // standard includes
 #include <map>
 #include <memory>
@@ -730,3 +733,5 @@ bool URDFCollisionModel::hasIgnoreSelfPair(
 }
 
 } // namespace adim
+
+#endif
