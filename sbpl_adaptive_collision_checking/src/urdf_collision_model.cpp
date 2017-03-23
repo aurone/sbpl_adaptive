@@ -33,22 +33,25 @@
 
 // system includes
 #include <leatherman/utils.h>
+#include <leatherman/print.h>
 #include <sbpl_geometry_utils/bounding_spheres.h>
 #include <sbpl_geometry_utils/voxelize.h>
 
 namespace adim {
 
 URDFCollisionModel::URDFCollisionModel() :
-    rm_loader_(nullptr),
-    robot_model_(nullptr),
-    robot_state_(nullptr),
-    urdf_(nullptr),
-    bFixedRoot(true)
+    urdf_(),
+    srdf_(),
+    links_with_collision_spheres_(),
+    links_with_contact_spheres_(),
+    self_collision_ignore_pairs_(),
+    collision_spheres_(),
+    contact_spheres_(),
+    attached_objects_(),
+    rm_loader_(),
+    robot_model_(),
+    robot_state_()
 {
-    num_coords_ = 0;
-    num_active_joints_ = 0;
-    spinner = new ros::AsyncSpinner(1);
-    spinner->start();
 }
 
 URDFCollisionModel::~URDFCollisionModel()
@@ -63,11 +66,12 @@ URDFModelCoords URDFCollisionModel::getDefaultCoordinates() const
     c.collision_links = links_with_collision_spheres_;
     c.contact_links = links_with_contact_spheres_;
 
-    for (robot_model::JointModel* j : robot_model_->getJointModels()) {
-        std::vector<double> vals;
-        vals.resize(j->getVariableCount());
-        j->getVariableDefaultPositions(&vals[0]);
-        c.coordmap[j->getName()] = vals;
+    for (const moveit::core::JointModel *j : robot_model_->getJointModels()) {
+        if (j->getVariableCount() > 0) {
+            std::vector<double> vals(j->getVariableCount());
+            j->getVariableDefaultPositions(&vals[0]);
+            c.coordmap[j->getName()] = vals;
+        }
     }
 
     return c;
@@ -81,15 +85,16 @@ URDFModelCoords URDFCollisionModel::getRandomCoordinates() const
     c.collision_links = links_with_collision_spheres_;
     c.contact_links = links_with_contact_spheres_;
 
-    for (robot_model::JointModel* j : robot_model_->getJointModels()) {
-        std::vector<double> vals;
-        vals.resize(j->getVariableCount());
-        do {
-            j->getVariableRandomPositions(
-                    robot_state_->getRandomNumberGenerator(), &vals[0]);
+    for (moveit::core::JointModel* j : robot_model_->getJointModels()) {
+        if (j->getVariableCount() > 0) {
+            std::vector<double> vals(j->getVariableCount());
+            do {
+                j->getVariableRandomPositions(
+                        robot_state_->getRandomNumberGenerator(), &vals[0]);
+            }
+            while (!j->enforcePositionBounds(&vals[0]));
+            c.coordmap[j->getName()] = vals;
         }
-        while (!j->enforcePositionBounds(&vals[0]));
-        c.coordmap[j->getName()] = vals;
     }
 
     return c;
@@ -109,72 +114,10 @@ bool URDFCollisionModel::initFromURDF(
         ROS_WARN("Failed to load robot model from URDF/SRDF");
         return false;
     }
-    if (!loadKDLModel()) {
-        ROS_WARN("Could not load KDL model!");
-        return false;
-    }
 
     robot_state_->setToDefaultValues();
 
     return true;
-}
-
-bool URDFCollisionModel::loadKDLModel()
-{
-    if (!kdl_parser::treeFromUrdfModel(*robot_model_->getURDF().get(), kdl_tree_)) {
-        ROS_ERROR("Could not initialize tree object");
-        return false;
-    }
-
-    // walk the tree and add segments to segments_
-    addChildren(kdl_tree_.getRootSegment());
-
-    return true;
-}
-
-bool URDFCollisionModel::InitializeChains(
-    const std::vector<std::string> &chain_tip_link_names)
-{
-    std::string root_link_name = robot_model_->getRootLink()->getName();
-    for (std::string tip_link : chain_tip_link_names) {
-        KDL::Chain chain;
-        if (!kdl_tree_.getChain(root_link_name, tip_link, chain)) {
-            ROS_ERROR("Failed to init chain for tip link: %s", tip_link.c_str());
-            return false;
-        }
-        kdl_chains_[tip_link] = chain;
-        kdl_fk_solvers_[tip_link] =
-                std::unique_ptr<KDL::ChainFkSolverPos_recursive>(
-                        new KDL::ChainFkSolverPos_recursive(chain));
-        kdl_ik_solvers_[tip_link] =
-                std::unique_ptr<KDL::ChainIkSolverPos_LMA>(
-                        new KDL::ChainIkSolverPos_LMA(chain));
-        ROS_INFO("Initialized KDL chain for tip %s", tip_link.c_str());
-    }
-    return true;
-}
-
-void URDFCollisionModel::addChildren(
-    const KDL::SegmentMap::const_iterator segment)
-{
-    const std::string& root = segment->second.segment.getName();
-
-    const std::vector<KDL::SegmentMap::const_iterator>& children =
-            segment->second.children;
-    for (unsigned int i = 0; i < children.size(); i++) {
-        const KDL::Segment& child = children[i]->second.segment;
-        SegmentPair s(children[i]->second.segment, root, child.getName());
-        if (child.getJoint().getType() == KDL::Joint::None) {
-            // skip over fixed:
-            //      segments_fixed_.insert(make_pair(child.getJoint().getName(), s));
-            ROS_DEBUG("Tree initialization: Skipping fixed segment from %s to %s", root.c_str(), child.getName().c_str());
-        }
-        else {
-            segments_.insert(make_pair(child.getJoint().getName(), s));
-            ROS_DEBUG("Tree initialization: Adding moving segment from %s to %s", root.c_str(), child.getName().c_str());
-        }
-        addChildren(children[i]);
-    }
 }
 
 void URDFCollisionModel::printIgnoreSelfCollisionLinkPairs()
@@ -285,12 +228,6 @@ bool URDFCollisionModel::initFromParam(const std::string &robot_desc_param_name)
     }
 
     const robot_model::JointModel* root = robot_model_->getJointModel(robot_model_->getRootJointName());
-    bFixedRoot = (root->getType() == robot_model::JointModel::FIXED);
-
-    if (!loadKDLModel()) {
-        ROS_WARN("Could not load KDL model!");
-        return false;
-    }
 
     robot_state_->setToDefaultValues();
 
@@ -330,13 +267,12 @@ bool URDFCollisionModel::initRobotModelFromURDF(
     }
 
     const robot_model::JointModel* root = robot_model_->getRootJoint();
-    bFixedRoot = (root->getType() == robot_model::JointModel::FIXED);
 
     return true;
 }
 
 bool URDFCollisionModel::getLinkCollisionSpheres_CurrentState(
-    std::string link_name,
+    const std::string &link_name,
     std::vector<Sphere> &spheres) const
 {
     Eigen::Affine3d tfm = robot_state_->getGlobalLinkTransform(link_name);
@@ -346,7 +282,7 @@ bool URDFCollisionModel::getLinkCollisionSpheres_CurrentState(
         //no spheres on this link
         return true;
     }
-    for (Sphere s : it->second) {
+    for (const Sphere &s : it->second) {
         Sphere s_;
         s_.name_ = s.name_;
         s_.link_name_ = s.link_name_;
@@ -368,7 +304,7 @@ bool URDFCollisionModel::getLinkCollisionSpheres_CurrentState(
 
 bool URDFCollisionModel::getLinkCollisionSpheres(
     const URDFModelCoords &coords,
-    std::string link_name,
+    const std::string &link_name,
     std::vector<Sphere> &spheres) const
 {
     if (!updateFK(coords)) {
@@ -380,12 +316,11 @@ bool URDFCollisionModel::getLinkCollisionSpheres(
 
 bool URDFCollisionModel::getLinkContactSpheres(
     const URDFModelCoords &coords,
-    std::string link_name,
+    const std::string &link_name,
     std::vector<Sphere> &spheres) const
 {
     if (!updateFK(coords)) {
-        ROS_ERROR(
-                "URDFCollisionModel::getLinkContactSpheres - failed to update FK!");
+        ROS_ERROR("URDFCollisionModel::getLinkContactSpheres - failed to update FK!");
         return false;
     }
     return getLinkContactSpheres_CurrentState(link_name, spheres);
@@ -393,7 +328,7 @@ bool URDFCollisionModel::getLinkContactSpheres(
 
 /// \brief Return the contact spheres for a link in the current state
 bool URDFCollisionModel::getLinkContactSpheres_CurrentState(
-    std::string link_name,
+    const std::string &link_name,
     std::vector<Sphere> &spheres) const
 {
     Eigen::Affine3d tfm = robot_state_->getGlobalLinkTransform(link_name);
@@ -404,7 +339,7 @@ bool URDFCollisionModel::getLinkContactSpheres_CurrentState(
         return true;
     }
 
-    for (Sphere s : it->second) {
+    for (const Sphere &s : it->second) {
         Sphere s_;
         s_.v = tfm * s.v;
         s_.radius = s.radius;
@@ -607,29 +542,31 @@ bool URDFCollisionModel::updateFK(
     const URDFModelCoords &coords) const
 {
     // set the root joint first
-    const robot_model::LinkModel* rootlink = state.getRobotModel()->getRootLink();
     const robot_model::JointModel* root = state.getRobotModel()->getRootJoint();
 
     state.setJointPositions(root, coords.root);
 
     // then go through the other joints and set them
-    for (auto it = coords.coordmap.begin(); it != coords.coordmap.end(); it++) {
-        const std::string &joint_name = it->first;
-
-        const robot_model::JointModel* jm = state.getRobotModel()->getJointModel(joint_name);
-        int var_count = jm->getVariableCount();
-
-        if (var_count != it->second.size()) {
-            ROS_ERROR("URDFCollisionModel::getModelCollisionSpheres -- coords.size() (%d) != joint #vars (%d) for joint %s!", (int)it->second.size(), var_count, joint_name.c_str());
-            throw SBPL_Exception();
+    for (const auto &entry : coords.coordmap) {
+        const std::string &joint_name = entry.first;
+        const std::vector<double> &vals = entry.second;
+        const moveit::core::JointModel *j = state.getRobotModel()->getJointModel(joint_name);
+        if (!j) {
+            ROS_ERROR("Joint '%s' not found in the Robot Model", joint_name.c_str());
             return false;
         }
-        state.setJointPositions(jm, it->second);
+
+        if (vals.size() != j->getVariableCount()) {
+            ROS_ERROR("URDFCollisionModel::getModelCollisionSpheres -- coords.size() (%zu) != joint #vars (%zu) for joint %s!", vals.size(), j->getVariableCount(), joint_name.c_str());
+            throw SBPL_Exception();
+        }
+
+        state.setJointPositions(j, vals);
     }
+
     state.update();
     state.updateLinkTransforms();
     state.updateCollisionBodyTransforms();
-    ros::spinOnce();
 
     return true;
 }
@@ -647,14 +584,14 @@ bool URDFCollisionModel::getModelContactSpheres(
         return false;
     }
     if (coords.contact_links.empty()) {
-        for (std::string link_name : links_with_contact_spheres_) {
+        for (const std::string &link_name : links_with_contact_spheres_) {
             if (!getLinkContactSpheres_CurrentState(link_name, spheres)) {
                 return false;
             }
         }
     }
     else {
-        for (std::string link_name : coords.contact_links) {
+        for (const std::string &link_name : coords.contact_links) {
             if (!getLinkContactSpheres_CurrentState(link_name, spheres)) {
                 return false;
             }
@@ -697,13 +634,11 @@ bool URDFCollisionModel::getInterpolatedCoordinates(
 
     robot_state_->setJointPositions(root, coords0.root);
     const double* pos0 = robot_state_->getJointPositions(root);
-    std::vector<double> root_vars0(root_n_vars);
-    memcpy(&root_vars0[0], pos0, root_n_vars * sizeof(double));
+    std::vector<double> root_vars0(pos0, pos0 + root->getVariableCount());
 
     robot_state_->setJointPositions(root, coords1.root);
     const double* pos1 = robot_state_->getJointPositions(root);
-    std::vector<double> root_vars1(root_n_vars);
-    memcpy(&root_vars1[0], pos1, root_n_vars * sizeof(double));
+    std::vector<double> root_vars1(pos1, pos1 + root->getVariableCount());
 
     std::vector<double> root_varsT(root_n_vars);
     root->interpolate(&root_vars0[0], &root_vars1[0], t, &root_varsT[0]);
@@ -721,29 +656,21 @@ bool URDFCollisionModel::getInterpolatedCoordinates(
             return false;
         }
 
-        const robot_model::JointModel* jm = robot_model_->getJointModel(
+        const moveit::core::JointModel* jm = robot_model_->getJointModel(
                 joint_name);
         if (!jm) {
-            ROS_ERROR(
-                    "URDFCollisionModel::getInterpolatedPath -- Joint %s not found in model!",
-                    joint_name.c_str());
+            ROS_ERROR("URDFCollisionModel::getInterpolatedPath -- Joint %s not found in model!", joint_name.c_str());
             throw SBPL_Exception();
             return false;
         }
         robot_model::JointModel::Bounds bounds = jm->getVariableBounds();
         if (jm->getVariableCount() != j0_pos.size()) {
-            ROS_ERROR(
-                    "URDFCollisionModel::getInterpolatedPath -- %s : coords0.size() [%d] != jointVarCount [%d]",
-                    joint_name.c_str(), (int )j0_pos.size(),
-                    (int )jm->getVariableCount());
+            ROS_ERROR("URDFCollisionModel::getInterpolatedPath -- %s : coords0.size() [%d] != jointVarCount [%d]", joint_name.c_str(), (int )j0_pos.size(), (int )jm->getVariableCount());
             throw SBPL_Exception();
             return false;
         }
         if (jm->getVariableCount() != j1_pos.size()) {
-            ROS_ERROR(
-                    "URDFCollisionModel::getInterpolatedPath -- %s : coords1.size() [%d] != jointVarCount [%d]",
-                    joint_name.c_str(), (int )j1_pos.size(),
-                    (int )jm->getVariableCount());
+            ROS_ERROR("URDFCollisionModel::getInterpolatedPath -- %s : coords1.size() [%d] != jointVarCount [%d]", joint_name.c_str(), (int )j1_pos.size(), (int )jm->getVariableCount());
             throw SBPL_Exception();
             return false;
         }
@@ -854,9 +781,9 @@ bool URDFCollisionModel::getModelPathContactSpheres(
 
 visualization_msgs::MarkerArray URDFCollisionModel::getAttachedObjectsVisualization(
     const URDFModelCoords &coords,
-    std::string frame_id,
-    std::string ns,
-    std_msgs::ColorRGBA col,
+    const std::string &frame_id,
+    const std::string &ns,
+    const std_msgs::ColorRGBA &col,
     int &idx) const
 {
     visualization_msgs::MarkerArray markers;
@@ -886,9 +813,9 @@ visualization_msgs::MarkerArray URDFCollisionModel::getAttachedObjectsVisualizat
 //get more advanced mesh visualization when available
 visualization_msgs::MarkerArray URDFCollisionModel::getModelVisualization(
     const URDFModelCoords &coords,
-    std::string frame_id,
-    std::string ns,
-    std_msgs::ColorRGBA col,
+    const std::string &frame_id,
+    const std::string &ns,
+    const std_msgs::ColorRGBA &col,
     int &id) const
 {
     visualization_msgs::MarkerArray markers;
@@ -905,18 +832,18 @@ visualization_msgs::MarkerArray URDFCollisionModel::getModelVisualization(
 
 visualization_msgs::MarkerArray URDFCollisionModel::getModelBasicVisualizationByLink(
     const URDFModelCoords &coords,
-    std::string frame_id,
-    std::string ns,
+    const std::string &frame_id,
+    const std::string &ns,
     int &idx) const
 {
     visualization_msgs::MarkerArray markers;
     std_msgs::ColorRGBA col;
     int i = 0;
-    for (std::string link : links_with_collision_spheres_) {
+    for (const std::string &link : links_with_collision_spheres_) {
         std::vector<Sphere> spheres;
         leatherman::msgHSVToRGB(240.0 * i / (double)links_with_collision_spheres_.size(), 1, 1, col);
         if (getLinkCollisionSpheres(coords, link, spheres)) {
-            for (Sphere s : spheres) {
+            for (const Sphere &s : spheres) {
                 visualization_msgs::Marker marker =
                         getSphereMarker(s, ns + "_" + link + "_collision_spheres", frame_id, col, idx);
                 markers.markers.push_back(marker);
@@ -926,13 +853,13 @@ visualization_msgs::MarkerArray URDFCollisionModel::getModelBasicVisualizationBy
     }
     col.a = 0.5 * col.a;
     i = 0;
-    for (std::string link : links_with_contact_spheres_) {
+    for (const std::string &link : links_with_contact_spheres_) {
         std::vector<Sphere> contact_spheres;
         leatherman::msgHSVToRGB(240 * i / (double)links_with_contact_spheres_.size(), 1, 1, col);
         col.a = 0.5;
         if (getLinkContactSpheres(coords, link, contact_spheres)) {
             int id = 0;
-            for (Sphere s : contact_spheres) {
+            for (const Sphere &s : contact_spheres) {
                 visualization_msgs::Marker marker =
                         getSphereMarker(s, ns + "_" + link + "_contact_spheres", frame_id, col, id);
             }
@@ -992,8 +919,8 @@ URDFCollisionModel::getModelSelfCollisionVisualization(
 
 visualization_msgs::MarkerArray URDFCollisionModel::getModelBasicVisualization(
     const URDFModelCoords &coords,
-    std::string frame_id,
-    std::string ns,
+    const std::string &frame_id,
+    const std::string &ns,
     std_msgs::ColorRGBA col,
     int &idx) const
 {
@@ -1019,41 +946,80 @@ visualization_msgs::MarkerArray URDFCollisionModel::getModelBasicVisualization(
     return markers;
 }
 
-bool URDFCollisionModel::computeCOMRecurs(
-    const KDL::SegmentMap::const_iterator& current_seg,
-    const URDFModelCoords &joint_positions,
-    const KDL::Frame& tf,
-    double& m,
-    KDL::Vector& com) const
+bool URDFCollisionModel::computeCOMRecursURDF(
+    const boost::shared_ptr<const urdf::Link> &link,
+    const URDFModelCoords &coords,
+    const Eigen::Affine3d &tf,
+    double &m,
+    Eigen::Vector3d &com) const
 {
-    std::vector<double> jnt_p;
-
-    if (current_seg->second.segment.getJoint().getType() != KDL::Joint::None) {
-        if (!joint_positions.getCoords(current_seg->second.segment.getJoint().getName(), jnt_p)) {
-            ROS_DEBUG("Could not find joint %s of %s in joint positions. Aborting tree branch.", current_seg->second.segment.getJoint().getName().c_str(), current_seg->first.c_str());
-            return true;
-        }
-        if (jnt_p.size() > 1) {
-            ROS_WARN("Got %d values for joint %s of segment %s", (int )jnt_p.size(), current_seg->second.segment.getJoint().getName().c_str(), current_seg->first.c_str());
+    // compute transform from parent link to this link
+    Eigen::Affine3d joint_trans;
+    if (!link->parent_joint) {
+        joint_trans = Eigen::Affine3d::Identity();
+    }
+    else {
+        switch (link->parent_joint->type) {
+        case urdf::Joint::UNKNOWN:
+            return false;
+        case urdf::Joint::REVOLUTE:
+        case urdf::Joint::CONTINUOUS: {
+            std::vector<double> vals;
+            if (!coords.getCoords(link->parent_joint->name, vals)) {
+                ROS_ERROR("failed to find joint value '%s'", link->parent_joint->name.c_str());
+                return false;
+            }
+            if (vals.size() != 1) {
+                return false;
+            }
+            Eigen::Vector3d axis(
+                    link->parent_joint->axis.x,
+                    link->parent_joint->axis.y,
+                    link->parent_joint->axis.z);
+            joint_trans = Eigen::AngleAxisd(vals[0], axis);
+        }   break;
+        case urdf::Joint::PRISMATIC: {
+            std::vector<double> vals;
+            if (!coords.getCoords(link->parent_joint->name, vals)) {
+                ROS_ERROR("failed to find joint value '%s'", link->parent_joint->name.c_str());
+                return false;
+            }
+            if (vals.size() != 1) {
+                return false;
+            }
+            Eigen::Vector3d axis(
+                    link->parent_joint->axis.x,
+                    link->parent_joint->axis.y,
+                    link->parent_joint->axis.z);
+            joint_trans = Eigen::Translation3d(0.0, 0.0, vals[0]);
+        }   break;
+        case urdf::Joint::FLOATING:
+        case urdf::Joint::PLANAR:
+            ROS_ERROR("learn to compute center of mass for multi-dof joints");
+            return false;
+        case urdf::Joint::FIXED:
+            joint_trans = Eigen::Affine3d::Identity();
+            break;
         }
     }
 
-    KDL::Frame current_frame = tf * current_seg->second.segment.pose(jnt_p[0]);
+    // transform this link into robot frame
+    Eigen::Affine3d current_frame = tf * joint_trans;
 
-    KDL::Vector current_cog = current_seg->second.segment.getInertia().getCOG();
-    //ROS_INFO("Got CoG: %.3f, %.3f, %.3f", current_cog.x(), current_cog.y(), current_cog.z());
-    double current_m = current_seg->second.segment.getInertia().getMass();
-    //ROS_INFO("Got mass: %.3f", current_m);
+    if (link->inertial) {
+        // compute center-of-mass contributions
+        const Eigen::Vector3d current_cog(
+                link->inertial->origin.position.x,
+                link->inertial->origin.position.y,
+                link->inertial->origin.position.z);
+        double mass = link->inertial->mass;
+        com = com + mass * (current_frame * current_cog);
+        m += mass;
+    }
 
-    com = com + current_m * (current_frame * current_cog);
-
-    m += current_m;
-    //ROS_INFO("At link %s. local: %f / [%f %f %f]; global: %f / [%f %f %f]",current_seg->first.c_str(), current_m, current_cog.x(), current_cog.y(), current_cog.z(),
-    // m, com.x(), com.y(), com.z());
-
-    std::vector<KDL::SegmentMap::const_iterator>::const_iterator child_it;
-    for (child_it = current_seg->second.children.begin(); child_it != current_seg->second.children.end(); ++child_it) {
-        if (!computeCOMRecurs(*child_it, joint_positions, current_frame, m, com)) {
+    // recursively compute center of mass for children
+    for (auto child : link->child_links) {
+        if (!computeCOMRecursURDF(child, coords, current_frame, m, com)) {
             return false;
         }
     }
@@ -1066,96 +1032,23 @@ bool URDFCollisionModel::computeCOM(
     KDL::Vector& CoM,
     double& mass) const
 {
-    mass = 0.0;
-    KDL::Vector com;
-    KDL::Frame ident = KDL::Frame::Identity();
-    KDL::Frame transform = ident;
-    KDL::Frame right_foot_tf = ident;
-    KDL::Frame left_foot_tf = ident;
+    ROS_DEBUG("compute center of mass: urdf @ %p, root link @ %p", urdf_.get(), urdf_ ? urdf_->getRoot().get() : nullptr);
 
-    if (!computeCOMRecurs(
-            kdl_tree_.getRootSegment(), joint_positions, transform, mass, com))
-    {
-        ROS_WARN("Failed to compute CoM recursively!");
+    mass = 0.0;
+    Eigen::Vector3d com(0.0, 0.0, 0.0);
+    Eigen::Affine3d trans(Eigen::Affine3d::Identity());
+    if (!computeCOMRecursURDF(urdf_->getRoot(), joint_positions, trans, mass, com)) {
         return false;
     }
 
     if (mass <= 0.0) {
-        ROS_WARN("Total mass is 0, no CoM possible.");
         return false;
     }
 
-    com = 1.0 / mass * com;
-    ROS_DEBUG("Total mass: %f CoG: (%f %f %f)", mass, com.x(), com.y(), com.z());
-
-    CoM = com;
-    return true;
-}
-
-bool URDFCollisionModel::computeChainTipPosesRecurs(
-    const KDL::SegmentMap::const_iterator& current_seg,
-    const URDFModelCoords &joint_positions,
-    const KDL::Frame& tf,
-    std::map<std::string, KDL::Frame> &tip_frames)
-{
-    std::vector<double> jnt_p;
-
-    std::string joint_name = current_seg->second.segment.getJoint().getName();
-    std::string link_name = current_seg->second.segment.getName();
-
-    if (current_seg->second.segment.getJoint().getType() != KDL::Joint::None) {
-        if (!joint_positions.getCoords(joint_name, jnt_p)) {
-            ROS_WARN("Could not find joint %s of %s in joint positions. Aborting tree branch.", joint_name.c_str(), current_seg->first.c_str());
-            return false;
-        }
-        if (jnt_p.size() > 1) {
-            ROS_WARN("Got %d values for joint %s of segment %s [%s]", (int )jnt_p.size(), joint_name.c_str(), current_seg->first.c_str(), link_name.c_str());
-        }
-    }
-
-    KDL::Frame current_frame = tf * current_seg->second.segment.pose(jnt_p[0]);
-
-    auto it = kdl_chains_.find(joint_name);
-    if (it != kdl_chains_.end()) {
-        //this joint is chain tip!
-        tip_frames[joint_name] = current_frame;
-    }
-
-    it = kdl_chains_.find(link_name);
-    if (it != kdl_chains_.end()) {
-        //this joint is chain tip!
-        tip_frames[link_name] = current_frame;
-    }
-
-    std::vector<KDL::SegmentMap::const_iterator>::const_iterator child_it;
-    for (child_it = current_seg->second.children.begin();
-            child_it != current_seg->second.children.end(); ++child_it) {
-        if (!computeChainTipPosesRecurs(*child_it, joint_positions,
-                current_frame, tip_frames)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-bool URDFCollisionModel::computeChainTipPoses(
-    const URDFModelCoords &coords,
-    std::map<std::string, Eigen::Affine3d> &tip_poses)
-{
-    std::map<std::string, KDL::Frame> tip_frames;
-
-    KDL::Frame transform = KDL::Frame::Identity();
-    if (!computeChainTipPosesRecurs(
-            kdl_tree_.getRootSegment(), coords, transform, tip_frames))
-    {
-        return false;
-    }
-    for (auto it = tip_frames.begin(); it != tip_frames.end(); it++) {
-        Eigen::Affine3d pose;
-        tf::transformKDLToEigen(it->second, pose);
-        tip_poses[it->first] = pose;
-    }
+    com = (1.0 / mass) * com;
+    CoM.x(com.x());
+    CoM.y(com.y());
+    CoM.z(com.z());
     return true;
 }
 
@@ -1168,15 +1061,16 @@ bool URDFCollisionModel::computeGroupIK(
     int n_attempts,
     double time_s)
 {
-    const robot_model::JointModelGroup* joint_model_group =
+    const robot_model::JointModelGroup* jmg =
             robot_model_->getJointModelGroup(group_name);
 
-    if (!joint_model_group) {
+    if (!jmg) {
         ROS_ERROR("Could not get joint model group: %s", group_name.c_str());
         return false;
     }
 
     if (!updateFK(seed)) {
+        ROS_ERROR("Failed to update kinematics");
         return false;
     }
 
@@ -1184,26 +1078,24 @@ bool URDFCollisionModel::computeGroupIK(
     options.return_approximate_solution = bAllowApproxSolutions;
 
     if (!robot_state_->setFromIK(
-            joint_model_group,
+            jmg,
             ee_pose_map,
             n_attempts,
             time_s,
             moveit::core::GroupStateValidityCallbackFn(),
             options))
     {
+        std::vector<double> gpos;
+        robot_state_->copyJointGroupPositions(jmg, gpos);
+        ROS_DEBUG("Failed to compute IK for group '%s' to pose { %s } using seed %s", group_name.c_str(), to_str(ee_pose_map).c_str(), to_string(gpos).c_str());
         return false;
     }
-    const std::vector<const robot_model::JointModel*> joints =
-            joint_model_group->getJointModels();
-    for (int j = 0; j < joints.size(); j++) {
-        size_t v_n = joints[j]->getVariableCount();
-        if (v_n == 0) {
-            continue;
-        }
-        const double* v_ = robot_state_->getJointPositions(joints[j]);
-        std::vector<double> vals(v_, v_ + v_n);
-        if (vals.size() > 0) {
-            sol.set(joints[j]->getName(), vals);
+
+    for (const moveit::core::JointModel *jm : jmg->getJointModels()) {
+        if (jm->getVariableCount() > 0) {
+            const double *v = robot_state_->getJointPositions(jm);
+            std::vector<double> vals(v, v + jm->getVariableCount());
+            sol.set(jm->getName(), vals);
         }
     }
 

@@ -51,6 +51,8 @@ namespace adim {
 
 struct URDFModelCoords : ModelCoords
 {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     Eigen::Affine3d root;
     std::map<std::string, std::vector<double>> coordmap;
     std::vector<std::string> collision_links;
@@ -66,10 +68,6 @@ struct URDFModelCoords : ModelCoords
 
     void set(const std::string &name, const std::vector<double> &p_coords);
 
-    static void print(const URDFModelCoords &c);
-
-    static void print(const Eigen::Affine3d &t);
-
     static void updateWith(
         URDFModelCoords &target,
         const URDFModelCoords &source);
@@ -79,21 +77,7 @@ struct URDFModelCoords : ModelCoords
         const URDFModelCoords &to);
 };
 
-struct SegmentPair
-{
-    std::string root;
-    std::string tip;
-    KDL::Segment segment;
-
-    SegmentPair(
-        const KDL::Segment &p_segment,
-        const std::string &p_root,
-        const std::string &p_tip)
-    :
-        segment(p_segment), root(p_root), tip(p_tip)
-    {
-    }
-};
+std::ostream &operator<<(std::ostream &o, const URDFModelCoords &coords);
 
 struct AttachedObject
 {
@@ -127,8 +111,6 @@ public:
     virtual void autoIgnoreSelfCollisions(const URDFModelCoords &coords);
 
     void printIgnoreSelfCollisionLinkPairs();
-
-    bool InitializeChains(const std::vector<std::string> &chain_tip_link_names);
 
     bool checkLimits(const URDFModelCoords &coords) const;
 
@@ -204,26 +186,26 @@ public:
 
     visualization_msgs::MarkerArray getModelBasicVisualizationByLink(
         const URDFModelCoords &coords,
-        std::string frame_id,
-        std::string ns,
+        const std::string &frame_id,
+        const std::string &ns,
         int &idx) const;
     visualization_msgs::MarkerArray getModelBasicVisualization(
         const URDFModelCoords &coords,
-        std::string frame_id,
-        std::string ns,
+        const std::string &frame_id,
+        const std::string &ns,
         std_msgs::ColorRGBA col,
         int &idx) const;
     visualization_msgs::MarkerArray getModelVisualization(
         const URDFModelCoords &coords,
-        std::string frame_id,
-        std::string ns,
-        std_msgs::ColorRGBA col,
+        const std::string &frame_id,
+        const std::string &ns,
+        const std_msgs::ColorRGBA &col,
         int &idx) const;
     visualization_msgs::MarkerArray getAttachedObjectsVisualization(
         const URDFModelCoords &coords,
-        std::string frame_id,
-        std::string ns,
-        std_msgs::ColorRGBA col,
+        const std::string &frame_id,
+        const std::string &ns,
+        const std_msgs::ColorRGBA &col,
         int &idx) const;
 
     bool computeGroupIK(
@@ -239,10 +221,6 @@ public:
         const URDFModelCoords &coords,
         KDL::Vector &COM,
         double &mass) const;
-
-    bool computeChainTipPoses(
-        const URDFModelCoords &coords,
-        std::map<std::string, Eigen::Affine3d> &tip_poses);
 
     bool getLinkGlobalTransform(
         const URDFModelCoords &coords,
@@ -308,15 +286,8 @@ public:
 
 protected:
 
-    ros::AsyncSpinner* spinner;
-
     boost::shared_ptr<const urdf::ModelInterface> urdf_;
     boost::shared_ptr<const srdf::Model> srdf_;
-
-    int num_active_joints_;
-    int num_coords_;
-
-    bool bFixedRoot;
 
     std::vector<std::string> links_with_collision_spheres_;
     std::vector<std::string> links_with_contact_spheres_;
@@ -333,14 +304,6 @@ protected:
     robot_state::RobotStatePtr robot_state_;
 
     KDL::Tree kdl_tree_;
-    std::map<std::string, KDL::Chain> kdl_chains_;
-    std::map<std::string, SegmentPair> segments_;
-    std::map<std::string, std::unique_ptr<KDL::ChainIkSolverPos_LMA>> kdl_ik_solvers_;
-    std::map<std::string, std::unique_ptr<KDL::ChainFkSolverPos_recursive>> kdl_fk_solvers_;
-
-    bool loadKDLModel();
-
-    void addChildren(const KDL::SegmentMap::const_iterator segment);
 
     bool updateFK(const URDFModelCoords &coords) const;
 
@@ -352,18 +315,18 @@ protected:
 
     bool getLinkCollisionSpheres(
         const URDFModelCoords &coords,
-        std::string link_name,
+        const std::string &link_name,
         std::vector<Sphere> &spheres) const;
     bool getLinkCollisionSpheres_CurrentState(
-        std::string link_name,
+        const std::string &link_name,
         std::vector<Sphere> &spheres) const;
 
     bool getLinkContactSpheres(
         const URDFModelCoords &coords,
-        std::string link_name,
+        const std::string &link_name,
         std::vector<Sphere> &spheres) const;
     bool getLinkContactSpheres_CurrentState(
-        std::string link_name,
+        const std::string &link_name,
         std::vector<Sphere> &spheres) const;
 
     bool getLinkAttachedObjectsSpheres(
@@ -379,25 +342,16 @@ protected:
         int depth,
         int max_depth) const;
 
-    bool computeCOMRecurs(
-        const KDL::SegmentMap::const_iterator &current_seg,
+    bool computeCOMRecursURDF(
+        const boost::shared_ptr<const urdf::Link> &link,
         const URDFModelCoords &coords,
-        const KDL::Frame &tf,
+        const Eigen::Affine3d &tf,
         double &m,
-        KDL::Vector &com) const;
-    bool computeChainTipPosesRecurs(
-        const KDL::SegmentMap::const_iterator &current_seg,
-        const URDFModelCoords &joint_positions,
-        const KDL::Frame &tf,
-        std::map<std::string, KDL::Frame> &tip_frames);
+        Eigen::Vector3d &com) const;
 
     bool initRobotModelFromURDF(
         const std::string &urdf_string,
         const std::string &srdf_string);
-
-    bool setJointVariables(
-        std::string joint_name,
-        const std::vector<double> &variables);
 
     bool hasAttachedObject(
         const std::string &link_name,
@@ -411,9 +365,9 @@ protected:
         const AttachedObject &obj);
 
     bool computeShapeBoundingSpheres(
-        const shapes::Shape& shape,
+        const shapes::Shape &shape,
         double res,
-        std::vector<Sphere>& spheres);
+        std::vector<Sphere> &spheres);
 };
 
 ////////////////////////////////////
@@ -476,28 +430,21 @@ void URDFModelCoords::set(
 }
 
 inline
-void URDFModelCoords::print(const URDFModelCoords &c)
+std::ostream &operator<<(std::ostream &o, const URDFModelCoords &c)
 {
-    printf("root: [%.3f %.3f %.3f %.3f]\n", c.root(0, 0), c.root(0, 1), c.root(0, 2), c.root(0, 3));
-    printf("root: [%.3f %.3f %.3f %.3f]\n", c.root(1, 0), c.root(1, 1), c.root(1, 2), c.root(1, 3));
-    printf("root: [%.3f %.3f %.3f %.3f]\n", c.root(2, 0), c.root(2, 1), c.root(2, 2), c.root(2, 3));
-    printf("root: [%.3f %.3f %.3f %.3f]\n", c.root(3, 0), c.root(3, 1), c.root(3, 2), c.root(3, 3));
-    for (auto it = c.coordmap.begin(); it != c.coordmap.end();it++) {
-        printf("%s : ", it->first.c_str());
-        for (double v : it->second) {
-            printf("%.3f ", v);
-        }
-        printf("\n");
-    }
-}
+    o << "root: [" << std::setprecision(3) << c.root(0, 0) << " " << std::setprecision(3) << c.root(0, 1) << " " << std::setprecision(3) << c.root(0, 2) << " " << std::setprecision(3) << c.root(0, 3) << "]\n";
+    o << "root: [" << std::setprecision(3) << c.root(1, 0) << " " << std::setprecision(3) << c.root(1, 1) << " " << std::setprecision(3) << c.root(1, 2) << " " << std::setprecision(3) << c.root(1, 3) << "]\n";
+    o << "root: [" << std::setprecision(3) << c.root(2, 0) << " " << std::setprecision(3) << c.root(2, 1) << " " << std::setprecision(3) << c.root(2, 2) << " " << std::setprecision(3) << c.root(2, 3) << "]\n";
+    o << "root: [" << std::setprecision(3) << c.root(3, 0) << " " << std::setprecision(3) << c.root(3, 1) << " " << std::setprecision(3) << c.root(3, 2) << " " << std::setprecision(3) << c.root(3, 3) << "]\n";
 
-inline
-void URDFModelCoords::print(const Eigen::Affine3d &t)
-{
-    printf("[%.3f %.3f %.3f %.3f]\n", t(0, 0), t(0, 1), t(0, 2), t(0, 3));
-    printf("[%.3f %.3f %.3f %.3f]\n", t(1, 0), t(1, 1), t(1, 2), t(1, 3));
-    printf("[%.3f %.3f %.3f %.3f]\n", t(2, 0), t(2, 1), t(2, 2), t(2, 3));
-    printf("[%.3f %.3f %.3f %.3f]\n", t(3, 0), t(3, 1), t(3, 2), t(3, 3));
+    for (const auto &entry : c.coordmap) {
+        o << entry.first << " : { ";
+        for (const double v : entry.second) {
+            o << v << ' ';
+        }
+        o << "}\n";
+    }
+    return o;
 }
 
 inline
