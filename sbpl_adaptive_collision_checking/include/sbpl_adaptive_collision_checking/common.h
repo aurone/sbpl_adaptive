@@ -16,11 +16,6 @@ struct Sphere
     std::string link_name_;
     std::string name_;
     double radius;
-
-    static void print(const Sphere &s)
-    {
-        printf("Sphere %s on %s [%.3f %.3f %.3f] rad=%.3f\n", s.name_.c_str(), s.link_name_.c_str(), s.v.x(), s.v.y(), s.v.z(), s.radius);
-    }
 };
 
 } // namespace adim
