@@ -15,6 +15,8 @@
 
 namespace adim {
 
+static const char *SLOG = "mrmha";
+
 ADMHAPlannerAllocator::ADMHAPlannerAllocator(
     MultiRepHeuristic *aheur,
     MultiRepHeuristic **heurs,
@@ -95,7 +97,7 @@ MHAPlanner_AD::MHAPlanner_AD(
         }
     }
 
-    ROS_INFO("Representation -> Heuristic Mapping:");
+    ROS_INFO_NAMED(SLOG, "Representation -> Heuristic Mapping:");
     for (const auto &entry : m_heuristic_list) {
         std::stringstream ss;
         ss << entry.first << ": [ ";
@@ -109,7 +111,7 @@ MHAPlanner_AD::MHAPlanner_AD(
             }
         }
         ss << ']';
-        ROS_INFO("  %s", ss.str().c_str());
+        ROS_INFO_NAMED(SLOG, "  %s", ss.str().c_str());
     }
 
     /// Four Modes:
@@ -180,11 +182,11 @@ int MHAPlanner_AD::replan(
     int* solcost)
 {
     if (!m_start_state) {
-        SBPL_ERROR("Start state is not set");
+        ROS_ERROR("Start state is not set");
         return 0;
     }
     if (!m_goal_state) {
-        SBPL_ERROR("Goal state is not set");
+        ROS_ERROR("Goal state is not set");
         return 0;
     }
 
@@ -214,7 +216,7 @@ int MHAPlanner_AD::replan(
             CKey key;
             key.key[0] = compute_key(m_start_state, hidx);
             m_open[hidx].insertheap(&m_start_state->od[hidx].open_state, key);
-            SBPL_DEBUG("Inserted start state %d into search %d with f = %ld", m_start_state->state_id, hidx, key.key[0]);
+            ROS_DEBUG_NAMED(SLOG, "Inserted start state %d into search %d with f = %ld", m_start_state->state_id, hidx, key.key[0]);
         }
 
         m_eps = m_params.initial_eps;
@@ -228,16 +230,16 @@ int MHAPlanner_AD::replan(
     // m_params = params;
     m_params.max_time = params.max_time;
 
-    SBPL_INFO("Generic Search parameters:");
-    SBPL_INFO("  Initial Epsilon: %0.3f", m_params.initial_eps);
-    SBPL_INFO("  Final Epsilon: %0.3f", m_params.final_eps);
-    SBPL_INFO("  Delta Epsilon: %0.3f", m_params.dec_eps);
-    SBPL_INFO("  Return First Solution: %s", m_params.return_first_solution ? "true" : "false");
-    SBPL_INFO("  Max Time: %0.3f", m_params.max_time);
-    SBPL_INFO("  Repair Time: %0.3f", m_params.repair_time);
-    SBPL_INFO("MHA Search parameters:");
-    SBPL_INFO("  MHA Epsilon: %0.3f", m_initial_eps_mha);
-    SBPL_INFO("  Max Expansions: %d", m_max_expansions);
+    ROS_INFO_NAMED(SLOG, "Generic Search parameters:");
+    ROS_INFO_NAMED(SLOG, "  Initial Epsilon: %0.3f", m_params.initial_eps);
+    ROS_INFO_NAMED(SLOG, "  Final Epsilon: %0.3f", m_params.final_eps);
+    ROS_INFO_NAMED(SLOG, "  Delta Epsilon: %0.3f", m_params.dec_eps);
+    ROS_INFO_NAMED(SLOG, "  Return First Solution: %s", m_params.return_first_solution ? "true" : "false");
+    ROS_INFO_NAMED(SLOG, "  Max Time: %0.3f", m_params.max_time);
+    ROS_INFO_NAMED(SLOG, "  Repair Time: %0.3f", m_params.repair_time);
+    ROS_INFO_NAMED(SLOG, "MHA Search parameters:");
+    ROS_INFO_NAMED(SLOG, "  MHA Epsilon: %0.3f", m_initial_eps_mha);
+    ROS_INFO_NAMED(SLOG, "  Max Expansions: %d", m_max_expansions);
 
     // reset time limits
     m_num_expansions = 0;
@@ -282,7 +284,6 @@ int MHAPlanner_AD::replan(
                 else {
                     MHASearchState* s =
                             state_from_open_state(m_open[hidx].getminheap());
-                    // SBPL_INFO("Expanding state %d  from search %d g : %d h : %d", s->state_id, hidx, s->g, s->od[hidx].h);
                     expand(s, hidx);
                 }
             }
@@ -295,7 +296,6 @@ int MHAPlanner_AD::replan(
                 else {
                     MHASearchState* s =
                             state_from_open_state(m_open[0].getminheap());
-                    // SBPL_INFO("Expanding state %d  from search %d g : %d h : %d h_inadd : %d", s->state_id, 0, s->g, s->od[0].h, s->od[hidx].h);
                     expand(s, 0);
                 }
             }
@@ -305,15 +305,15 @@ int MHAPlanner_AD::replan(
     }
 
     if (m_open[0].emptyheap()) {
-        SBPL_DEBUG("Anchor search exhausted");
+        ROS_DEBUG_NAMED(SLOG, "Anchor search exhausted");
     }
     if (time_limit_reached()) {
-        SBPL_DEBUG("Time limit reached");
+        ROS_DEBUG_NAMED(SLOG, "Time limit reached");
 
         int best_state_id = space_->getBestSeenState();
-        SBPL_INFO("Best stateID: %d", best_state_id);
+        ROS_INFO_NAMED(SLOG, "Best stateID: %d", best_state_id);
         if (best_state_id >= 0) {
-            SBPL_WARN("Reconstructing partial path!");
+            ROS_WARN("Reconstructing partial path!");
             MHASearchState* best_seen_state = get_state(best_state_id);
             extract_partial_path(solution_stateIDs_V, solcost, best_seen_state);
             if (best_state_id == m_start_state->state_id) {
@@ -447,22 +447,22 @@ double MHAPlanner_AD::get_max_time() const
 bool MHAPlanner_AD::check_params(const ReplanParams& params)
 {
     if (params.initial_eps < 1.0) {
-        SBPL_ERROR("Initial Epsilon must be greater than or equal to 1");
+        ROS_ERROR("Initial Epsilon must be greater than or equal to 1");
         return false;
     }
 
     if (params.final_eps > params.initial_eps) {
-        SBPL_ERROR("Final Epsilon must be less than or equal to initial epsilon %f %f", params.final_eps, params.initial_eps);
+        ROS_ERROR("Final Epsilon must be less than or equal to initial epsilon %f %f", params.final_eps, params.initial_eps);
         return false;
     }
 
     if (params.dec_eps <= 0.0) {
-        SBPL_ERROR("Delta epsilon must be strictly positive");
+        ROS_ERROR("Delta epsilon must be strictly positive");
         return false;
     }
 
     if (m_initial_eps_mha < 1.0) {
-        SBPL_ERROR("MHA Epsilon must be greater than or equal to 1");
+        ROS_ERROR("MHA Epsilon must be greater than or equal to 1");
         return false;
     }
 
@@ -470,7 +470,7 @@ bool MHAPlanner_AD::check_params(const ReplanParams& params)
         params.max_time <= 0.0 &&
         m_max_expansions <= 0)
     {
-        SBPL_ERROR("Max Time or Max Expansions must be positive");
+        ROS_ERROR("Max Time or Max Expansions must be positive");
         return false;
     }
 
@@ -602,7 +602,8 @@ long int MHAPlanner_AD::compute_key(MHASearchState* state, int hidx)
 
 void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
 {
-    SBPL_DEBUG("Expanding state %d in search %d", state->state_id, hidx);
+    int dimID = space_->GetDimID(state->state_id);
+    ROS_DEBUG_NAMED(SLOG, "Expanding state %d (dim = %d) in search %d { g = %d, h(0) = %d, h(%d) = %d, f = %d }", state->state_id, dimID, hidx, state->g, state->od[0].h, hidx, state->od[hidx].h, compute_key(state, hidx));
     space_->expandingState(state->state_id);
 
     assert(!closed_in_add_search(state) || !closed_in_anc_search(state));
@@ -623,7 +624,6 @@ void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
     // }
 
     // remove s from all open lists based on dimID
-    int dimID = space_->GetDimID(state->state_id);
     for (int i : m_heuristic_list[dimID]){
     // for (int i = 0; i < num_heuristics(); ++i){
         if (m_open[i].inheap(&state->od[i].open_state)) {
@@ -641,7 +641,7 @@ void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
         MHASearchState* succ_state = get_state(succ_ids[sidx]);
         reinit_state(succ_state);
 
-        SBPL_DEBUG(" Successor %d", succ_state->state_id);
+        ROS_DEBUG_NAMED(SLOG, " Successor %d (dim = %d)", succ_state->state_id, space_->GetDimID(succ_ids[sidx]));
 
         int new_g = state->g + costs[sidx];
         if (new_g < succ_state->g) {
@@ -650,7 +650,7 @@ void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
             if (!closed_in_anc_search(succ_state)) {
                 const long int fanchor = compute_key(succ_state, 0);
                 insert_or_update(succ_state, 0, fanchor);
-                SBPL_DEBUG("  Update in search %d with f = %d", 0, fanchor);
+                ROS_DEBUG_NAMED(SLOG, "  Update in search %d with f = %d + %0.3f * %d = %d", 0, succ_state->g, m_eps, succ_state->od[0].h, fanchor);
 
                 if (!closed_in_add_search(succ_state)) {
                     int dimID = space_->GetDimID(succ_state->state_id);
@@ -661,10 +661,13 @@ void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
                         long int fn = compute_key(succ_state, hidx);
                         if (fn <= (long int)(m_eps_mha * fanchor)) {
                             insert_or_update(succ_state, hidx, fn);
-                            SBPL_DEBUG("  Update in search %d with f = %d", hidx, fn);
+                            ROS_DEBUG_NAMED(SLOG, "  Update in search %d with f = %d + %0.3f * %d = %d", hidx, succ_state->g, m_eps, succ_state->od[hidx].h, fn);
                         }
                         else {
-                            SBPL_DEBUG("  Skipping update of in search %d (%0.3f > %0.3f)", hidx, (double)fn, m_eps_mha * fanchor);
+                            ROS_DEBUG_NAMED(SLOG, "  Skip update in search %d with f = %d + %0.3f * %d = %d (> %0.3f * %d = %d)",
+                                    hidx,
+                                    succ_state->g, m_eps, succ_state->od[hidx].h, fn,
+                                    m_eps_mha, fanchor, (int)(m_eps * fanchor));
                         }
                     }
                 }
@@ -684,22 +687,11 @@ MHASearchState* MHAPlanner_AD::state_from_open_state(
 
 int MHAPlanner_AD::compute_heuristic(int state_id, int hidx)
 {
-    if(hidx == 1 && set_heur_)
-        return m_hanchor->GetGoalHeuristic(state_id);
-
     if (hidx == 0) {
-        int anc = m_hanchor->GetGoalHeuristic(state_id);
-        ROS_DEBUG("Anchor is %d", anc);
-        return anc;
+        return m_hanchor->GetGoalHeuristic(state_id);
     }
     else {
-        int heur = m_heurs[hidx - 1]->GetGoalHeuristic(state_id);
-        ROS_DEBUG("Stair is %d", heur);
-        if(heur == 0 && hidx == 1 && state_id != 1){
-            set_heur_ = true;
-            return m_hanchor->GetGoalHeuristic(state_id);
-        }
-        return heur;
+        return m_heurs[hidx - 1]->GetGoalHeuristic(state_id);
     }
 }
 
@@ -723,7 +715,7 @@ void MHAPlanner_AD::insert_or_update(MHASearchState* state, int hidx, int f)
 
 void MHAPlanner_AD::extract_path(std::vector<int>* solution_path, int* solcost)
 {
-    SBPL_DEBUG("Extracting path");
+    ROS_DEBUG_NAMED(SLOG, "Extracting path");
     solution_path->clear();
     *solcost = 0;
     for (MHASearchState* state = m_goal_state; state; state = state->bp) {
@@ -742,7 +734,7 @@ void MHAPlanner_AD::extract_partial_path(
     int* solcost,
     MHASearchState* best_seen_state)
 {
-    SBPL_DEBUG("Extracting path");
+    ROS_DEBUG_NAMED(SLOG, "Extracting path");
     solution_path->clear();
     *solcost = 0;
     for (MHASearchState* state = best_seen_state; state; state = state->bp) {
