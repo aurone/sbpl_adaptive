@@ -189,7 +189,7 @@ private:
     void reinit_search();
     void clear_open_lists();
     void clear();
-    int compute_key(MHASearchState* state, int hidx);
+    long int compute_key(MHASearchState* state, int hidx);
     void expand(MHASearchState* state, int hidx);
     MHASearchState* state_from_open_state(AbstractSearchState* open_state);
     int compute_heuristic(int state_id, int hidx);

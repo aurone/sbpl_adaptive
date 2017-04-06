@@ -595,9 +595,9 @@ void MHAPlanner_AD::clear_open_lists()
     }
 }
 
-int MHAPlanner_AD::compute_key(MHASearchState* state, int hidx)
+long int MHAPlanner_AD::compute_key(MHASearchState* state, int hidx)
 {
-    return state->g + m_eps * state->od[hidx].h;
+    return (long int)state->g + (long int)(m_eps * (long int)state->od[hidx].h);
 }
 
 void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
@@ -648,7 +648,7 @@ void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
             succ_state->g = new_g;
             succ_state->bp = state;
             if (!closed_in_anc_search(succ_state)) {
-                const int fanchor = compute_key(succ_state, 0);
+                const long int fanchor = compute_key(succ_state, 0);
                 insert_or_update(succ_state, 0, fanchor);
                 SBPL_DEBUG("  Update in search %d with f = %d", 0, fanchor);
 
@@ -658,8 +658,8 @@ void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
                     // for (int hidx = 0; hidx < num_heuristics(); ++hidx){
                         if(hidx == 0)
                             continue;
-                        int fn = compute_key(succ_state, hidx);
-                        if (fn <= m_eps_mha * fanchor) {
+                        long int fn = compute_key(succ_state, hidx);
+                        if (fn <= (long int)(m_eps_mha * fanchor)) {
                             insert_or_update(succ_state, hidx, fn);
                             SBPL_DEBUG("  Update in search %d with f = %d", hidx, fn);
                         }
