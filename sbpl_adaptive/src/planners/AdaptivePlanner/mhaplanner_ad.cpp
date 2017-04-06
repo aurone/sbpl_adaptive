@@ -603,7 +603,7 @@ long int MHAPlanner_AD::compute_key(MHASearchState* state, int hidx)
 void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
 {
     int dimID = space_->GetDimID(state->state_id);
-    ROS_DEBUG_NAMED(SLOG, "Expanding state %d (dim = %d) in search %d { g = %d, h(0) = %d, h(%d) = %d, f = %d }", state->state_id, dimID, hidx, state->g, state->od[0].h, hidx, state->od[hidx].h, compute_key(state, hidx));
+    ROS_DEBUG_NAMED(SLOG, "Expanding state %d (dim = %d) in search %d { g = %d, h(0) = %d, h(%d) = %d, f = %ld }", state->state_id, dimID, hidx, state->g, state->od[0].h, hidx, state->od[hidx].h, compute_key(state, hidx));
     space_->expandingState(state->state_id);
 
     assert(!closed_in_add_search(state) || !closed_in_anc_search(state));
@@ -650,7 +650,7 @@ void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
             if (!closed_in_anc_search(succ_state)) {
                 const long int fanchor = compute_key(succ_state, 0);
                 insert_or_update(succ_state, 0, fanchor);
-                ROS_DEBUG_NAMED(SLOG, "  Update in search %d with f = %d + %0.3f * %d = %d", 0, succ_state->g, m_eps, succ_state->od[0].h, fanchor);
+                ROS_DEBUG_NAMED(SLOG, "  Update in search %d with f = %d + %0.3f * %d = %ld", 0, succ_state->g, m_eps, succ_state->od[0].h, fanchor);
 
                 if (!closed_in_add_search(succ_state)) {
                     int dimID = space_->GetDimID(succ_state->state_id);
@@ -661,13 +661,13 @@ void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
                         long int fn = compute_key(succ_state, hidx);
                         if (fn <= (long int)(m_eps_mha * fanchor)) {
                             insert_or_update(succ_state, hidx, fn);
-                            ROS_DEBUG_NAMED(SLOG, "  Update in search %d with f = %d + %0.3f * %d = %d", hidx, succ_state->g, m_eps, succ_state->od[hidx].h, fn);
+                            ROS_DEBUG_NAMED(SLOG, "  Update in search %d with f = %d + %0.3f * %d = %ld", hidx, succ_state->g, m_eps, succ_state->od[hidx].h, fn);
                         }
                         else {
-                            ROS_DEBUG_NAMED(SLOG, "  Skip update in search %d with f = %d + %0.3f * %d = %d (> %0.3f * %d = %d)",
+                            ROS_DEBUG_NAMED(SLOG, "  Skip update in search %d with f = %d + %0.3f * %d = %ld (> %0.3f * %ld = %ld)",
                                     hidx,
                                     succ_state->g, m_eps, succ_state->od[hidx].h, fn,
-                                    m_eps_mha, fanchor, (int)(m_eps * fanchor));
+                                    m_eps_mha, fanchor, (long int)(m_eps * fanchor));
                         }
                     }
                 }
