@@ -16,6 +16,8 @@
 namespace adim {
 
 static const char *SLOG = "mrmha";
+static const char *SELOG = "mrmha.expansion";
+static const char *SSLOG = "mrmha.successors";
 
 ADMHAPlannerAllocator::ADMHAPlannerAllocator(
     MultiRepHeuristic *aheur,
@@ -267,15 +269,19 @@ int MHAPlanner_AD::replan(
             }
         }
 
+        bool all_empty = true;
         for (int hidx = 1; hidx < num_heuristics(); ++hidx) {
             if (m_open[0].emptyheap()) {
                 printf("Anchor empty\n");
                 break;
             }
 
-            if (!m_open[hidx].emptyheap() && get_minf(m_open[hidx]) <=
-                m_eps_mha * get_minf(m_open[0]))
-            {
+            all_empty &= m_open[hidx].emptyheap();
+            if (m_open[hidx].emptyheap()) {
+                continue;
+            }
+
+            if (get_minf(m_open[hidx]) <= m_eps_mha * get_minf(m_open[0])) {
                 if (m_goal_state->g <= get_minf(m_open[hidx])) {
                     m_eps_satisfied = m_eps * m_eps_mha;
                     extract_path(solution_stateIDs_V, solcost);
@@ -300,6 +306,20 @@ int MHAPlanner_AD::replan(
                 }
             }
         }
+
+        if (all_empty && !m_open[0].emptyheap()) {
+            if (m_goal_state->g <= get_minf(m_open[0])) {
+                m_eps_satisfied = m_eps * m_eps_mha;
+                extract_path(solution_stateIDs_V, solcost);
+                return 1;
+            }
+            else {
+                MHASearchState* s =
+                        state_from_open_state(m_open[0].getminheap());
+                expand(s, 0);
+            }
+        }
+
         end_time = sbpl::clock::now();
         m_elapsed += end_time - start_time;
     }
@@ -603,7 +623,7 @@ long int MHAPlanner_AD::compute_key(MHASearchState* state, int hidx)
 void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
 {
     int dimID = space_->GetDimID(state->state_id);
-    ROS_DEBUG_NAMED(SLOG, "Expanding state %d (dim = %d) in search %d { g = %d, h(0) = %d, h(%d) = %d, f = %ld }", state->state_id, dimID, hidx, state->g, state->od[0].h, hidx, state->od[hidx].h, compute_key(state, hidx));
+    ROS_DEBUG_NAMED(SELOG, "Expanding state %d (dim = %d) in search %d { g = %d, h(0) = %d, h(%d) = %d, f = %ld }", state->state_id, dimID, hidx, state->g, state->od[0].h, hidx, state->od[hidx].h, compute_key(state, hidx));
     space_->expandingState(state->state_id);
 
     assert(!closed_in_add_search(state) || !closed_in_anc_search(state));
@@ -641,7 +661,7 @@ void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
         MHASearchState* succ_state = get_state(succ_ids[sidx]);
         reinit_state(succ_state);
 
-        ROS_DEBUG_NAMED(SLOG, " Successor %d (dim = %d)", succ_state->state_id, space_->GetDimID(succ_ids[sidx]));
+        ROS_DEBUG_NAMED(SSLOG, " Successor %d (dim = %d)", succ_state->state_id, space_->GetDimID(succ_ids[sidx]));
 
         int new_g = state->g + costs[sidx];
         if (new_g < succ_state->g) {
@@ -650,7 +670,7 @@ void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
             if (!closed_in_anc_search(succ_state)) {
                 const long int fanchor = compute_key(succ_state, 0);
                 insert_or_update(succ_state, 0, fanchor);
-                ROS_DEBUG_NAMED(SLOG, "  Update in search %d with f = %d + %0.3f * %d = %ld", 0, succ_state->g, m_eps, succ_state->od[0].h, fanchor);
+                ROS_DEBUG_NAMED(SSLOG, "  Update in search %d with f = %d + %0.3f * %d = %ld", 0, succ_state->g, m_eps, succ_state->od[0].h, fanchor);
 
                 if (!closed_in_add_search(succ_state)) {
                     int dimID = space_->GetDimID(succ_state->state_id);
@@ -661,10 +681,10 @@ void MHAPlanner_AD::expand(MHASearchState* state, int hidx)
                         long int fn = compute_key(succ_state, hidx);
                         if (fn <= (long int)(m_eps_mha * fanchor)) {
                             insert_or_update(succ_state, hidx, fn);
-                            ROS_DEBUG_NAMED(SLOG, "  Update in search %d with f = %d + %0.3f * %d = %ld", hidx, succ_state->g, m_eps, succ_state->od[hidx].h, fn);
+                            ROS_DEBUG_NAMED(SSLOG, "  Update in search %d with f = %d + %0.3f * %d = %ld", hidx, succ_state->g, m_eps, succ_state->od[hidx].h, fn);
                         }
                         else {
-                            ROS_DEBUG_NAMED(SLOG, "  Skip update in search %d with f = %d + %0.3f * %d = %ld (> %0.3f * %ld = %ld)",
+                            ROS_DEBUG_NAMED(SSLOG, "  Skip update in search %d with f = %d + %0.3f * %d = %ld (> %0.3f * %ld = %ld)",
                                     hidx,
                                     succ_state->g, m_eps, succ_state->od[hidx].h, fn,
                                     m_eps_mha, fanchor, (long int)(m_eps * fanchor));
@@ -695,7 +715,7 @@ int MHAPlanner_AD::compute_heuristic(int state_id, int hidx)
     }
 }
 
-int MHAPlanner_AD::get_minf(CHeap& pq) const
+long int MHAPlanner_AD::get_minf(CHeap& pq) const
 {
     return pq.getminkeyheap().key[0];
 }

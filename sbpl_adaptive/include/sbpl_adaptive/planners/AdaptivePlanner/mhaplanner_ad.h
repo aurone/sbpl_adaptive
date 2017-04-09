@@ -193,7 +193,7 @@ private:
     void expand(MHASearchState* state, int hidx);
     MHASearchState* state_from_open_state(AbstractSearchState* open_state);
     int compute_heuristic(int state_id, int hidx);
-    int get_minf(CHeap& pq) const;
+    long int get_minf(CHeap& pq) const;
     void insert_or_update(MHASearchState* state, int hidx, int f);
 
     void extract_path(std::vector<int>* solution_path, int* solcost);
