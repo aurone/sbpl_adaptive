@@ -6,6 +6,8 @@
 
 namespace adim {
 
+static const char *LOG = "adaptive_planner";
+
 PlannerAllocator::~PlannerAllocator()
 {
 }

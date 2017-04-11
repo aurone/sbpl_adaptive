@@ -99,7 +99,7 @@ MHAPlanner_AD::MHAPlanner_AD(
         }
     }
 
-    ROS_INFO_NAMED(SLOG, "Representation -> Heuristic Mapping:");
+    ROS_DEBUG_NAMED(SLOG, "Representation -> Heuristic Mapping:");
     for (const auto &entry : m_heuristic_list) {
         std::stringstream ss;
         ss << entry.first << ": [ ";
@@ -113,7 +113,7 @@ MHAPlanner_AD::MHAPlanner_AD(
             }
         }
         ss << ']';
-        ROS_INFO_NAMED(SLOG, "  %s", ss.str().c_str());
+        ROS_DEBUG_NAMED(SLOG, "  %s", ss.str().c_str());
     }
 
     /// Four Modes:
@@ -232,16 +232,16 @@ int MHAPlanner_AD::replan(
     // m_params = params;
     m_params.max_time = params.max_time;
 
-    ROS_INFO_NAMED(SLOG, "Generic Search parameters:");
-    ROS_INFO_NAMED(SLOG, "  Initial Epsilon: %0.3f", m_params.initial_eps);
-    ROS_INFO_NAMED(SLOG, "  Final Epsilon: %0.3f", m_params.final_eps);
-    ROS_INFO_NAMED(SLOG, "  Delta Epsilon: %0.3f", m_params.dec_eps);
-    ROS_INFO_NAMED(SLOG, "  Return First Solution: %s", m_params.return_first_solution ? "true" : "false");
-    ROS_INFO_NAMED(SLOG, "  Max Time: %0.3f", m_params.max_time);
-    ROS_INFO_NAMED(SLOG, "  Repair Time: %0.3f", m_params.repair_time);
-    ROS_INFO_NAMED(SLOG, "MHA Search parameters:");
-    ROS_INFO_NAMED(SLOG, "  MHA Epsilon: %0.3f", m_initial_eps_mha);
-    ROS_INFO_NAMED(SLOG, "  Max Expansions: %d", m_max_expansions);
+    ROS_DEBUG_NAMED(SLOG, "Generic Search parameters:");
+    ROS_DEBUG_NAMED(SLOG, "  Initial Epsilon: %0.3f", m_params.initial_eps);
+    ROS_DEBUG_NAMED(SLOG, "  Final Epsilon: %0.3f", m_params.final_eps);
+    ROS_DEBUG_NAMED(SLOG, "  Delta Epsilon: %0.3f", m_params.dec_eps);
+    ROS_DEBUG_NAMED(SLOG, "  Return First Solution: %s", m_params.return_first_solution ? "true" : "false");
+    ROS_DEBUG_NAMED(SLOG, "  Max Time: %0.3f", m_params.max_time);
+    ROS_DEBUG_NAMED(SLOG, "  Repair Time: %0.3f", m_params.repair_time);
+    ROS_DEBUG_NAMED(SLOG, "MHA Search parameters:");
+    ROS_DEBUG_NAMED(SLOG, "  MHA Epsilon: %0.3f", m_initial_eps_mha);
+    ROS_DEBUG_NAMED(SLOG, "  Max Expansions: %d", m_max_expansions);
 
     // reset time limits
     m_num_expansions = 0;
@@ -272,7 +272,7 @@ int MHAPlanner_AD::replan(
         bool all_empty = true;
         for (int hidx = 1; hidx < num_heuristics(); ++hidx) {
             if (m_open[0].emptyheap()) {
-                printf("Anchor empty\n");
+                ROS_INFO_NAMED(SLOG, "Anchor empty");
                 break;
             }
 
@@ -331,7 +331,7 @@ int MHAPlanner_AD::replan(
         ROS_DEBUG_NAMED(SLOG, "Time limit reached");
 
         int best_state_id = space_->getBestSeenState();
-        ROS_INFO_NAMED(SLOG, "Best stateID: %d", best_state_id);
+        ROS_DEBUG_NAMED(SLOG, "Best stateID: %d", best_state_id);
         if (best_state_id >= 0) {
             ROS_WARN("Reconstructing partial path!");
             MHASearchState* best_seen_state = get_state(best_state_id);
