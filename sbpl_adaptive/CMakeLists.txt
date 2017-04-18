@@ -35,6 +35,7 @@ include_directories(include)
 add_library(
     ${PROJECT_NAME}
     src/adaptive_grid_3d.cpp
+    src/sparse_adaptive_grid_3d.cpp
     src/common.cpp
 #    src/expansion_grid_3d.cpp
     src/discrete_space_information/multirep_adaptive_environment.cpp

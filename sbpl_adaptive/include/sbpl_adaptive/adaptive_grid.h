@@ -15,6 +15,14 @@ struct AdaptiveGridCell
     unsigned int costToGoal;
 };
 
+inline
+bool operator==(const AdaptiveGridCell &a, const AdaptiveGridCell &b)
+{
+    return
+        std::tie(a.pDefaultDimID, a.pDimID, a.pNearDimID, a.tDimID, a.tNearDimID, a.costToGoal) ==
+        std::tie(b.pDefaultDimID, b.pDimID, b.pNearDimID, b.tDimID, b.tNearDimID, b.costToGoal);
+}
+
 } // namespace adim
 
 #endif
