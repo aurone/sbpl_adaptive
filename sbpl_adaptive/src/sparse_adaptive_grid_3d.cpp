@@ -22,8 +22,9 @@ SparseAdaptiveGrid3D::SparseAdaptiveGrid3D(const sbpl::OccupancyGridPtr& grid) :
     trackMode_(false)
 {
     oc_grid_ = grid;
-    grid_sizes_.resize(3);
+
     oc_grid_->getGridSize(grid_sizes_[0], grid_sizes_[1], grid_sizes_[2]);
+    grid_.resize(grid_sizes_[0], grid_sizes_[1], grid_sizes_[2]);
 
     AdaptiveGridCell default_cell;
     default_cell.costToGoal = INFINITECOST;
@@ -206,6 +207,7 @@ void SparseAdaptiveGrid3D::clearAllSpheres()
 void SparseAdaptiveGrid3D::setPlanningMode()
 {
     trackMode_ = false;
+    grid_.prune();
 }
 
 void SparseAdaptiveGrid3D::setTrackingMode(
@@ -217,6 +219,7 @@ void SparseAdaptiveGrid3D::setTrackingMode(
     for (const AdaptiveSphere3D &sphere : tunnel) {
         addTrackingSphere(sphere, modCells);
     }
+    grid_.prune();
 }
 
 unsigned int SparseAdaptiveGrid3D::getCellCostToGoal(int gx, int gy, int gz) const

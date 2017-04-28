@@ -14,7 +14,7 @@
 #include <sbpl/utils/key.h>
 #include <smpl/occupancy_grid.h>
 #include <smpl/forward.h>
-#include <smpl/octree.h>
+#include <smpl/grid/sparse_grid.h>
 #include <std_msgs/ColorRGBA.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -153,11 +153,11 @@ private:
 
     bool trackMode_;
 
-    std::vector<int> grid_sizes_;
+    std::array<int, 3> grid_sizes_;
     std::vector<std::vector<int>> spheres_;
 
     // used to keep track of state type (LD, NearLD, HD)
-    sbpl::OcTree<AdaptiveGridCell> grid_;
+    sbpl::SparseGrid<AdaptiveGridCell> grid_;
     AdaptiveGridCell invalid_cell_;
 
     int max_dimID_;
