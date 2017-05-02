@@ -31,7 +31,9 @@ AdaptiveGrid3D::AdaptiveGrid3D(const sbpl::OccupancyGridPtr& grid) :
 {
     oc_grid_ = grid;
     grid_sizes_.resize(3);
-    oc_grid_->getGridSize(grid_sizes_[0], grid_sizes_[1], grid_sizes_[2]);
+    grid_sizes_[0] = oc_grid_->numCellsX();
+    grid_sizes_[1] = oc_grid_->numCellsY();
+    grid_sizes_[2] = oc_grid_->numCellsZ();
 
     AdaptiveGridCell default_cell;
     default_cell.costToGoal = INFINITECOST;

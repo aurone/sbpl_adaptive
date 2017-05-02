@@ -81,7 +81,7 @@ public:
     const AdaptiveGridCell &getCell(int gx, int gy, int gz) const;
     const AdaptiveGridCell &getCell(double wx, double wy, double wz) const;
 
-    double resolution() const { return oc_grid_->getResolution(); }
+    double resolution() const { return oc_grid_->resolution(); }
 
     void world2grid(
         double wx, double wy, double wz,
@@ -462,8 +462,8 @@ void AdaptiveGrid3D::addPlanningSphere(
 {
     size_t gx, gy, gz;
     world2grid(sphere.x,sphere.y,sphere.z,gx,gy,gz);
-    int r = round(sphere.rad / oc_grid_->getResolution());
-    int nr = round(sphere.near_rad / oc_grid_->getResolution());
+    int r = round(sphere.rad / oc_grid_->resolution());
+    int nr = round(sphere.near_rad / oc_grid_->resolution());
     addSphere(false, gx, gy, gz, r, nr, sphere.dimID, INFINITECOST, modCells);
 }
 
@@ -523,8 +523,8 @@ void AdaptiveGrid3D::addTrackingSphere(
 {
     size_t gx, gy, gz;
     world2grid(sphere.x, sphere.y, sphere.z, gx, gy, gz);
-    int r = round(sphere.rad / oc_grid_->getResolution());
-    int nr = round(sphere.near_rad / oc_grid_->getResolution());
+    int r = round(sphere.rad / oc_grid_->resolution());
+    int nr = round(sphere.near_rad / oc_grid_->resolution());
     addSphere(true, gx, gy, gz, r, nr, sphere.dimID, sphere.costToGoal, modCells);
 }
 

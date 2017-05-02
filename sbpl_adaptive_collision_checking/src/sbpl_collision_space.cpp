@@ -218,10 +218,9 @@ bool SBPLCollisionSpace::getModelVoxelsInGrid(
         return false;
     }
     // 1. find the extents of the spheres (axis-aligned bounding box)
-    int min_x = 0, max_x = 0, dim_x = 0;
-    int min_y = 0, max_y = 0, dim_y = 0;
-    int min_z = 0, max_z = 0, dim_z = 0;
-    grid_->getGridSize(dim_x, dim_y, dim_z);
+    int min_x = 0, max_x = 0, dim_x = grid_->numCellsX();
+    int min_y = 0, max_y = 0, dim_y = grid_->numCellsY();
+    int min_z = 0, max_z = 0, dim_z = grid_->numCellsZ();
     min_x = dim_x;
     min_y = dim_y;
     min_z = dim_z;

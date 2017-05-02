@@ -89,11 +89,6 @@ private:
     double padding_;
     double contact_padding_;
 
-    inline bool isValidCell(
-        const int x,
-        const int y,
-        const int z,
-        const int radius);
     double isValidLineSegment(
         const std::vector<int>& a,
         const std::vector<int>& b,
@@ -108,7 +103,7 @@ private:
 inline
 double SBPLCollisionSpace::getResolution()
 {
-    return grid_->getResolution();
+    return grid_->resolution();
 }
 
 inline
@@ -120,7 +115,9 @@ std::string SBPLCollisionSpace::getReferenceFrame()
 inline
 void SBPLCollisionSpace::getSize(int &dim_x, int &dim_y, int &dim_z)
 {
-    grid_->getGridSize(dim_x, dim_y, dim_z);
+    dim_x = grid_->numCellsX();
+    dim_y = grid_->numCellsY();
+    dim_z = grid_->numCellsZ();
 }
 
 inline
@@ -136,24 +133,11 @@ bool SBPLCollisionSpace::isValidPoint(double x, double y, double z) const
     int gx, gy, gz;
     grid_->worldToGrid(x, y, z, gx, gy, gz);
     if (grid_->isInBounds(gx, gy, gz)) {
-        if (grid_->getDistance(gx, gy, gz) > grid_->getResolution()) {
+        if (grid_->getDistance(gx, gy, gz) > grid_->resolution()) {
             return true;
         }
     }
     return false;
-}
-
-inline
-bool SBPLCollisionSpace::isValidCell(
-    const int x,
-    const int y,
-    const int z,
-    const int radius)
-{
-    if (grid_->getCell(x, y, z) <= radius) {
-        return false;
-    }
-    return true;
 }
 
 } // namespace adim

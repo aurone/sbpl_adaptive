@@ -23,7 +23,9 @@ SparseAdaptiveGrid3D::SparseAdaptiveGrid3D(const sbpl::OccupancyGridPtr& grid) :
 {
     oc_grid_ = grid;
 
-    oc_grid_->getGridSize(grid_sizes_[0], grid_sizes_[1], grid_sizes_[2]);
+    grid_sizes_[0] = oc_grid_->numCellsX();
+    grid_sizes_[1] = oc_grid_->numCellsY();
+    grid_sizes_[2] = oc_grid_->numCellsZ();
     grid_.resize(grid_sizes_[0], grid_sizes_[1], grid_sizes_[2]);
 
     AdaptiveGridCell default_cell;
