@@ -12,8 +12,6 @@
 #include <tf/tf.h>
 #include <tf_conversions/tf_eigen.h>
 
-using namespace adim;
-
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "sbpl_adaptive_collision_checking_test");
@@ -22,108 +20,105 @@ int main(int argc, char** argv)
     ros::NodeHandle ph("~");
 
     ros::Publisher viz = nh.advertise<visualization_msgs::MarkerArray>(
-            "visualization_marker_array", 500);
+            "visualization_markers", 500);
 
-    if (!nh.hasParam("robot_description")) {
-        ROS_ERROR("robot_description not found on param server");
-        exit(0);
-    }
+    ///////////////////
+    // test settings //
+    ///////////////////
+
+    const std::string model_frame("map");
+    const std::string attach_link("r_gripper_palm_link");
+    const std::string object_name("attached_object");
+
+    shapes::Cylinder obj;
+    obj.radius = 0.05;
+    obj.length = 0.80;
+
+    const Eigen::Affine3d objpose(Eigen::Translation3d(0.2, 0.0, 0.0));
+
+    //////////////////////
+    // Initialize model //
+    //////////////////////
 
     std::string robot_desc;
     std::string robot_desc_sem;
-
-    nh.param<std::string>("robot_description", robot_desc, "");
-    nh.param<std::string>("robot_description_semantic", robot_desc_sem, "");
-
-    std::shared_ptr<URDFCollisionModel> urdf_model;
-    sbpl::OccupancyGridPtr grid;
-    std::shared_ptr<SBPLCollisionSpace> cspace;
-
-    grid.reset(new sbpl::OccupancyGrid(0, 0, 0, 0.05, 5.0, 5.0, 5.0, 0.3));
-    if (!grid) {
-        ROS_ERROR("Failed to init grid!");
-        exit(0);
+    if (!nh.getParam("robot_description", robot_desc) ||
+        !nh.getParam("robot_description_semantic", robot_desc_sem))
+    {
+        ROS_ERROR("Failed to retrieve 'robot_description' or 'robot_description_semantic' from the param server.");
+        return 1;
     }
 
-    urdf_model.reset(new URDFCollisionModel());
-    if (!urdf_model) {
-        ROS_ERROR("Failed to create model!");
-        exit(0);
-    }
+    auto urdf_model = std::make_shared<adim::URDFCollisionModel>();
 
-    if (robot_desc_sem.empty()) {
-        if (!urdf_model->initFromParam("robot_description")) {
-            ROS_ERROR("Could not initialize URDF model initRobotModelFromDescription!");
-            exit(0);
-        }
-    }
-    else {
-        if (!urdf_model->initFromURDF(robot_desc, robot_desc_sem)) {
-            ROS_ERROR("Could not initialize URDF model initFromURDF!");
-            exit(0);
-        }
-    }
-
-    ROS_INFO("Model loaded!");
-
-    cspace.reset(new SBPLCollisionSpace(urdf_model, grid));
-
-    if (!cspace) {
-        ROS_ERROR("Failed to create collision space!");
+    if (!urdf_model->initFromURDF(robot_desc, robot_desc_sem)) {
+        ROS_ERROR("Failed to initialize URDF Collision Model from URDF/SRDF");
+        return 1;
     }
 
     std::ostringstream oss;
     urdf_model->PrintModelInfo(oss);
     ROS_INFO_STREAM(oss);
 
-    if (urdf_model->computeSpheresFromURDFModel(0.05, { }, { }) == false) {
-        ROS_WARN("Could not auto-compute model spheres!");
+    ///////////////////////////////////
+    // Automatically compute spheres //
+    ///////////////////////////////////
+
+    const double res = 0.05;
+    std::vector<std::string> ignore_collision_links = { };
+    std::vector<std::string> contact_links = { };
+    if (!urdf_model->computeSpheresFromURDFModel(
+            res,
+            ignore_collision_links,
+            contact_links))
+    {
+        ROS_ERROR("Failed to automatically compute model spheres");
+        return 1;
     }
 
-    shapes::Cylinder obj;
-    obj.radius = 0.05;
-    obj.length = 0.80;
-
-    tf::Transform p;
-    p.setRotation(tf::Quaternion::getIdentity());
-    p.setOrigin(tf::Vector3(0.2, 0.0, 0.0));
-
-    Eigen::Affine3d objpose;
-    tf::transformTFToEigen(p, objpose);
+    ////////////////////////////
+    // Attach object to model //
+    ////////////////////////////
 
     if (!urdf_model->attachObjectToLink(
-            "r_gripper_palm_link", objpose, obj, "attached_object", obj.radius))
+            attach_link, objpose, obj, object_name, obj.radius))
     {
-        ROS_WARN("Could not attach object!");
+        ROS_ERROR("Failed to attach object!");
+        return 1;
     }
 
-    sleep(5);
+    ros::Duration(1.0).sleep();
 
-    URDFModelCoords coords = urdf_model->getDefaultCoordinates();
-    std_msgs::ColorRGBA col;
-    col.r = 1;
-    col.g = 1;
-    col.b = 0;
-    col.a = 1;
+    ////////////////////
+    // Visualizations //
+    ////////////////////
+
+    std_msgs::ColorRGBA color;
     int viz_id = 0;
+
+    adim::URDFModelCoords coords = urdf_model->getDefaultCoordinates();
+    color.r = 1.0f;
+    color.g = 1.0f;
+    color.b = 0.0f;
+    color.a = 1.0f;
     viz.publish(urdf_model->getModelBasicVisualization(
-            coords, "/map", "model-spheres", col, viz_id));
+            coords, model_frame, "model-spheres", color, viz_id));
 
     viz_id = 0;
-    col.r = 0;
-    col.g = 1;
-    col.b = 0;
-    col.a = 1;
+    color.r = 0.0f;
+    color.g = 1.0f;
+    color.b = 0.0f;
+    color.a = 1.0f;
     viz.publish(urdf_model->getModelVisualization(
-                    coords, "/map", "model", col, viz_id));
+            coords, model_frame, "model", color, viz_id));
 
-    col.r = 1;
-    col.g = 0;
-    col.b = 0;
-    col.a = 1;
+    color.r = 1.0f;
+    color.g = 0.0f;
+    color.b = 0.0f;
+    color.a = 1.0f;
     viz_id = 0;
     viz.publish(urdf_model->getAttachedObjectsVisualization(
-            coords, "/map", "attached", col, viz_id));
+            coords, model_frame, "attached", color, viz_id));
 
     ros::shutdown();
 }
