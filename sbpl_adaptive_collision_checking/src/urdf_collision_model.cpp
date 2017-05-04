@@ -34,8 +34,8 @@
 // system includes
 #include <leatherman/utils.h>
 #include <leatherman/print.h>
-#include <sbpl_geometry_utils/bounding_spheres.h>
-#include <sbpl_geometry_utils/voxelize.h>
+#include <smpl/geometry/bounding_spheres.h>
+#include <smpl/geometry/voxelize.h>
 
 namespace adim {
 
@@ -104,12 +104,13 @@ bool URDFCollisionModel::initFromURDF(
     const std::string& urdf_string,
     const std::string& srdf_string)
 {
-    urdf::Model* urdf_model = new urdf::Model;
+    auto urdf_model = boost::make_shared<urdf::Model>();
     if (!urdf_model->initString(urdf_string)) {
         ROS_WARN("Failed to parse the URDF");
         return false;
     }
-    urdf_.reset(urdf_model);
+    urdf_ = std::move(urdf_model);
+
     if (!initRobotModelFromURDF(urdf_string, srdf_string)) {
         ROS_WARN("Failed to load robot model from URDF/SRDF");
         return false;
@@ -293,7 +294,7 @@ bool URDFCollisionModel::getLinkCollisionSpheres_CurrentState(
     }
 
     if (hasAttachedObjects(link_name)) {
-        ROS_INFO("Found attahed objects for link %s", link_name.c_str());
+        ROS_INFO("Found attached objects for link %s", link_name.c_str());
         if (!getLinkAttachedObjectsSpheres(link_name, tfm, spheres)) {
             return false;
         }
@@ -1216,7 +1217,7 @@ bool URDFCollisionModel::computeShapeBoundingSpheres(
     case shapes::BOX: {
         const shapes::Box& obj = dynamic_cast<const shapes::Box&>(shape);
         std::vector<Eigen::Vector3d> centers;
-        sbpl::ComputeBoxBoundingSpheres(obj.size[0], obj.size[1], obj.size[2], res, centers);
+        sbpl::geometry::ComputeBoxBoundingSpheres(obj.size[0], obj.size[1], obj.size[2], res, centers);
         spheres.reserve(spheres.size() + centers.size());
         for (const auto& center : centers) {
             spheres.push_back(Sphere());
@@ -1227,7 +1228,7 @@ bool URDFCollisionModel::computeShapeBoundingSpheres(
     case shapes::CYLINDER: {
         const shapes::Cylinder& obj = dynamic_cast<const shapes::Cylinder&>(shape);
         std::vector<Eigen::Vector3d> centers;
-        sbpl::ComputeCylinderBoundingSpheres(obj.radius, obj.length, res, centers);
+        sbpl::geometry::ComputeCylinderBoundingSpheres(obj.radius, obj.length, res, centers);
         spheres.reserve(spheres.size() + centers.size());
         for (const auto& center : centers) {
             spheres.push_back(Sphere());
@@ -1265,7 +1266,7 @@ bool URDFCollisionModel::computeShapeBoundingSpheres(
         /// sbpl_geometry_utils
         double radius = sqrt(2.0) * res;
         std::vector<Eigen::Vector3d> centers;
-        sbpl::VoxelizeMesh(vert, tri, radius, centers, false);
+        sbpl::geometry::VoxelizeMesh(vert, tri, radius, centers, false);
         spheres.reserve(spheres.size() + centers.size());
         for (const auto& center : centers) {
             spheres.push_back(Sphere());
