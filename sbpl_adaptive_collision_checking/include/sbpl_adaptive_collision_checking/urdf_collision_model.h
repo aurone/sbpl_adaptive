@@ -42,6 +42,7 @@
 #include <Eigen/Geometry>
 #include <boost/shared_ptr.hpp>
 #include <ros/ros.h>
+#include <smpl/forward.h>
 #include <sbpl/sbpl_exception.h>
 #include <urdf/model.h>
 
@@ -84,6 +85,8 @@ struct AttachedObject
     std::string name;
     std::vector<Sphere> spheres;
 };
+
+SBPL_CLASS_FORWARD(URDFCollisionModel);
 
 class URDFCollisionModel : public SBPLCollisionModel
 {
