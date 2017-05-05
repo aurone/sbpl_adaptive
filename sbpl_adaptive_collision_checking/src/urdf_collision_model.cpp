@@ -522,8 +522,9 @@ bool URDFCollisionModel::checkLimits(const URDFModelCoords &coords) const
         throw SBPL_Exception();
     }
     for (auto it = coords.coordmap.begin(); it != coords.coordmap.end(); it++) {
-        std::string joint_name = it->first;
-        const robot_model::JointModel* jm = robot_model_->getJointModel(joint_name);
+        const std::string &joint_name = it->first;
+        const robot_model::JointModel* jm =
+                robot_model_->getJointModel(joint_name);
 
         if (!jm) {
             ROS_ERROR("Could not get joint model for joint %s", joint_name.c_str());
@@ -534,7 +535,7 @@ bool URDFCollisionModel::checkLimits(const URDFModelCoords &coords) const
         robot_model::JointModel::Bounds bounds = jm->getVariableBounds();
 
         if (var_count != it->second.size()) {
-            ROS_ERROR("URDFCollisionModel::getModelCollisionSpheres -- coords.size() (%zu) != joint #vars (%d) for joint %s!", it->second.size(), var_count, joint_name.c_str());
+            ROS_ERROR("coords.size() (%zu) != joint #vars (%d) for joint %s!", it->second.size(), var_count, joint_name.c_str());
             throw SBPL_Exception();
             return false;
         }
@@ -1096,6 +1097,25 @@ bool URDFCollisionModel::computeCOM(
     return true;
 }
 
+/// Compute an IK solution for the default tip of a joint group, using the
+/// underlying kinematics solver attached to the RobotModel. The seed state is
+/// adjusted to fit within joint limits. If the underlying solver returns
+/// solutions invalid with respect to joint limits, the solution will be
+/// adjusted only if approximate solutions are allowed, otherwise, this function
+/// will return false.
+///
+/// \param group_name The group to compute IK for
+/// \param ee_pose_map The pose of the tip link in the model frame
+/// \param seed The seed state
+/// \param sol The solution state; this will contain the adjusted seed state
+///     values and the solution values from the joints variables from the joint
+///     group
+/// \param bAllowApproxSolutions Whether to allow the underlying solver to
+///     return approximate solutions
+/// \param n_attempts The number of attempts to be used by the underlying solver
+/// \param time_s The allowed time given to the underlying solver
+///
+/// \return true if a valid solution was computed
 bool URDFCollisionModel::computeGroupIK(
     const std::string &group_name,
     const Eigen::Affine3d &ee_pose_map,
@@ -1105,6 +1125,15 @@ bool URDFCollisionModel::computeGroupIK(
     int n_attempts,
     double time_s)
 {
+    // reference seed for later
+    moveit::core::RobotState seed_state(robot_model_);
+    if (!updateFK(seed_state, seed)) {
+        ROS_ERROR("Failed to update kinematics");
+        return false;
+    }
+
+    *robot_state_ = seed_state; // the solution state to-be
+
     const robot_model::JointModelGroup* jmg =
             robot_model_->getJointModelGroup(group_name);
 
@@ -1113,14 +1142,12 @@ bool URDFCollisionModel::computeGroupIK(
         return false;
     }
 
-    if (!updateFK(seed)) {
-        ROS_ERROR("Failed to update kinematics");
-        return false;
-    }
+    // keep the solvers happy
+    robot_state_->enforceBounds(jmg);
 
+    // call ik
     kinematics::KinematicsQueryOptions options;
     options.return_approximate_solution = bAllowApproxSolutions;
-
     if (!robot_state_->setFromIK(
             jmg,
             ee_pose_map,
@@ -1133,6 +1160,46 @@ bool URDFCollisionModel::computeGroupIK(
         robot_state_->copyJointGroupPositions(jmg, gpos);
         ROS_DEBUG("Failed to compute IK for group '%s' to pose { %s } using seed %s", group_name.c_str(), to_str(ee_pose_map).c_str(), to_string(gpos).c_str());
         return false;
+    }
+
+    //  foreach active joint in the joint group
+    for (const moveit::core::JointModel *jm : jmg->getActiveJointModels()) {
+        // for revolute joints
+        if (jm->getType() == moveit::core::JointModel::REVOLUTE) {
+            if (!jm->getVariableBounds()[0].position_bounded_) {
+                // just normalize these...to keep RobotState from being upset
+                robot_state_->enforcePositionBounds(jm);
+            }
+//            else {
+//                // find the closest 2*pi equivalent that is within bounds
+//                double spos = robot_state_->getJointPositions(jm)[0];
+//
+//                double vdiff = seed_state.getJointPositions(jm)[0] - spos;
+//
+//                int twopi_hops = (int)std::fabs(vdiff / (2.0 * M_PI));
+//
+//                double npos = spos + 2.0 * M_PI * twopi_hops * std::copysign(1.0, vdiff);
+//                if (fabs(npos - seed_state.getJointPositions(jm)[0]) > M_PI) {
+//                    // one hop this time
+//                    npos += 2.0 * M_PI * std::copysign(1.0, vdiff);
+//                }
+//
+//                // try it out, revert if outside bounds
+//                robot_state_->setJointPositions(jm, &npos);
+//                if (!robot_state_->satisfiesBounds(jm)) {
+//                    robot_state_->setJointPositions(jm, &spos);
+//                }
+//            }
+        }
+    }
+
+    if (bAllowApproxSolutions) {
+        robot_state_->enforceBounds(jmg);
+    } else {
+        if (!robot_state_->satisfiesBounds(jmg)) {
+            ROS_DEBUG("IK Solution angles are out of bounds");
+            return false;
+        }
     }
 
     for (const moveit::core::JointModel *jm : jmg->getJointModels()) {
