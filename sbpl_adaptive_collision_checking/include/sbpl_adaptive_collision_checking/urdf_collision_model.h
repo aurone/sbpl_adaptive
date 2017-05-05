@@ -35,6 +35,7 @@
 // standard includes
 #include <map>
 #include <memory>
+#include <ostream>
 #include <utility>
 
 // system includes
@@ -46,6 +47,7 @@
 #include <sbpl/sbpl_exception.h>
 #include <urdf/model.h>
 
+// project includes
 #include <sbpl_adaptive_collision_checking/sbpl_collision_model.h>
 
 namespace adim {
@@ -95,33 +97,110 @@ public:
     URDFCollisionModel();
     ~URDFCollisionModel();
 
-    URDFModelCoords getRandomCoordinates() const;
-
-    URDFModelCoords getDefaultCoordinates() const;
-
+    /// \name Initialization
+    ///@{
     virtual bool initFromURDF(
         const std::string &urdf_string,
         const std::string &srdf_string);
 
     virtual bool initFromParam(const std::string &robot_desc_param_name);
+    ///@}
 
+    /// \name Model Information
+    ///@{
+    boost::shared_ptr<const urdf::ModelInterface> getURDF() const;
+    boost::shared_ptr<const srdf::Model> getSRDF() const;
+    moveit::core::RobotModelConstPtr getRobotModel() const;
+    moveit::core::RobotStatePtr getStateAt(const URDFModelCoords &coords) const;
+
+    void PrintModelInfo(std::ostream &o) const;
+    URDFModelCoords getDefaultCoordinates() const;
+    ///@}
+
+    URDFModelCoords getRandomCoordinates() const;
+    URDFModelCoords getRandomCoordinates(
+        random_numbers::RandomNumberGenerator &rng) const;
+
+    /// \name Joint Limits
+    ///@{
+    bool checkLimits(const URDFModelCoords &coords) const;
+    ///@}
+
+    /// \name Forward Kinematics
+    ///@{
+    bool getLinkGlobalTransform(
+        const URDFModelCoords &coords,
+        const std::string &link_name,
+        Eigen::Affine3d &tfm) const;
+    ///@}
+
+    /// \name Inverse Kinematics
+    ///@{
+    bool computeGroupIK(
+        const std::string &group_name,
+        const Eigen::Affine3d &ee_pose_map,
+        const URDFModelCoords &seed,
+        URDFModelCoords &sol,
+        bool bAllowApproxSolutions = false,
+        int n_attempts = 0,
+        double time_s = 0);
+    ///@}
+
+    /// \name Inertial Properties
+    ///@{
+    bool computeCOM(
+        const URDFModelCoords &coords,
+        KDL::Vector &COM,
+        double &mass) const;
+    ///@}
+
+    /// \name Collision Model Construction
+    ///@{
     virtual bool computeSpheresFromURDFModel(
         double res,
         const std::vector<std::string> &ignore_collision_links,
         const std::vector<std::string> &contact_links);
 
+    void addContactSpheres(
+        const std::string &link_name,
+        const std::vector<Sphere> &s);
+
+    void addCollisionSpheres(
+        const std::string &link_name,
+        const std::vector<Sphere> &s);
+
+    void addContactSphere(const std::string &link_name, Sphere s);
+
+    void addCollisionSphere(const std::string &link_name, Sphere s);
+
+    bool attachObjectToLink(
+        const std::string &link_name,
+        const Eigen::Affine3d &pose,
+        const shapes::Shape &object,
+        const std::string &object_name,
+        double res);
+    ///@}
+
+    /// \name Self Collisions
+    ///@{
     virtual void autoIgnoreSelfCollisions();
     virtual void autoIgnoreSelfCollisions(const URDFModelCoords &coords);
 
-    void printIgnoreSelfCollisionLinkPairs();
+    void printIgnoreSelfCollisionLinkPairs(std::ostream& o);
 
-    bool checkLimits(const URDFModelCoords &coords) const;
+    void addIgnoreSelfCollisionLinkPair(
+        const std::pair<std::string, std::string> pair);
+    void addIgnoreSelfCollisionLinkPairs(
+        const std::vector<std::pair<std::string, std::string>> pairs);
 
     bool checkSelfCollisions(const URDFModelCoords &coords) const;
 
     std::vector<std::pair<std::string, std::string>> getSelfCollisions(
         const URDFModelCoords &coords) const;
+    ///@}
 
+    /// \name Type-Aware Overloads of SBPLCollisionModel functions
+    ///@{
     bool getModelCollisionSpheres(
         const URDFModelCoords &coords,
         std::vector<Sphere> &spheres) const;
@@ -141,7 +220,10 @@ public:
         const URDFModelCoords &coords1,
         int steps,
         std::vector<Sphere> &spheres) const;
+    ///@}
 
+    /// \name Interpolation
+    ///@{
     virtual bool getInterpolatedCoordinates(
         const URDFModelCoords &coords0,
         const URDFModelCoords &coords1,
@@ -166,20 +248,10 @@ public:
         const URDFModelCoords &coords1,
         int steps,
         std::vector<URDFModelCoords> &path) const;
+    ///@}
 
-    void addContactSpheres(
-        const std::string &link_name,
-        const std::vector<Sphere> &s);
-
-    void addCollisionSpheres(
-        const std::string &link_name,
-        const std::vector<Sphere> &s);
-
-    void addContactSphere(const std::string &link_name, Sphere s);
-
-    void addCollisionSphere(const std::string &link_name, Sphere s);
-
-    // get more advanced mesh visualization when available
+    /// \name Visualization
+    ///@{
     visualization_msgs::MarkerArray getModelSelfCollisionVisualization(
         const URDFModelCoords &coords,
         const std::string &frame_id,
@@ -192,65 +264,30 @@ public:
         const std::string &frame_id,
         const std::string &ns,
         int &idx) const;
+
     visualization_msgs::MarkerArray getModelBasicVisualization(
         const URDFModelCoords &coords,
         const std::string &frame_id,
         const std::string &ns,
         std_msgs::ColorRGBA col,
         int &idx) const;
+
     visualization_msgs::MarkerArray getModelVisualization(
         const URDFModelCoords &coords,
         const std::string &frame_id,
         const std::string &ns,
         const std_msgs::ColorRGBA &col,
         int &idx) const;
+
     visualization_msgs::MarkerArray getAttachedObjectsVisualization(
         const URDFModelCoords &coords,
         const std::string &frame_id,
         const std::string &ns,
         const std_msgs::ColorRGBA &col,
         int &idx) const;
+    ///@}
 
-    bool computeGroupIK(
-        const std::string &group_name,
-        const Eigen::Affine3d &ee_pose_map,
-        const URDFModelCoords &seed,
-        URDFModelCoords &sol,
-        bool bAllowApproxSolutions = false,
-        int n_attempts = 0,
-        double time_s = 0);
-
-    bool computeCOM(
-        const URDFModelCoords &coords,
-        KDL::Vector &COM,
-        double &mass) const;
-
-    bool getLinkGlobalTransform(
-        const URDFModelCoords &coords,
-        const std::string &link_name,
-        Eigen::Affine3d &tfm) const;
-
-    bool attachObjectToLink(
-        const std::string &link_name,
-        const Eigen::Affine3d &pose,
-        const shapes::Shape &object,
-        const std::string &object_name,
-        double res);
-
-    void PrintModelInfo(std::ostream &o) const;
-
-    void addIgnoreSelfCollisionLinkPair(
-        const std::pair<std::string, std::string> pair);
-    void addIgnoreSelfCollisionLinkPairs(
-        const std::vector<std::pair<std::string, std::string>> pairs);
-
-    boost::shared_ptr<const urdf::ModelInterface> getURDF() const;
-    boost::shared_ptr<const srdf::Model> getSRDF() const;
-    moveit::core::RobotModelConstPtr getRobotModel() const;
-
-    moveit::core::RobotStatePtr getStateAt(const URDFModelCoords &coords) const;
-
-    /// \name Required Public Functions from SBPLCollisionModel
+    /// \name Required Functions from SBPLCollisionModel
     ///@{
     bool checkLimits(const ModelCoords &coord) const override;
 
@@ -305,8 +342,6 @@ protected:
     robot_model_loader::RobotModelLoaderPtr rm_loader_;
     robot_model::RobotModelPtr robot_model_;
     robot_state::RobotStatePtr robot_state_;
-
-    KDL::Tree kdl_tree_;
 
     bool updateFK(const URDFModelCoords &coords) const;
 

@@ -79,20 +79,25 @@ URDFModelCoords URDFCollisionModel::getDefaultCoordinates() const
 
 URDFModelCoords URDFCollisionModel::getRandomCoordinates() const
 {
+    return getRandomCoordinates(robot_state_->getRandomNumberGenerator());
+}
+
+URDFModelCoords URDFCollisionModel::getRandomCoordinates(
+    random_numbers::RandomNumberGenerator &rng) const
+{
     URDFModelCoords c;
 
     c.root = Eigen::Affine3d::Identity();
     c.collision_links = links_with_collision_spheres_;
     c.contact_links = links_with_contact_spheres_;
 
-    for (moveit::core::JointModel* j : robot_model_->getJointModels()) {
+    for (moveit::core::JointModel *j : robot_model_->getJointModels()) {
         if (j->getVariableCount() > 0) {
             std::vector<double> vals(j->getVariableCount());
             do {
-                j->getVariableRandomPositions(
-                        robot_state_->getRandomNumberGenerator(), &vals[0]);
+                j->getVariableRandomPositions(rng, &vals[0]);
             }
-            while (!j->enforcePositionBounds(&vals[0]));
+            while (j->enforcePositionBounds(&vals[0]));
             c.coordmap[j->getName()] = vals;
         }
     }
@@ -121,25 +126,43 @@ bool URDFCollisionModel::initFromURDF(
     return true;
 }
 
-void URDFCollisionModel::printIgnoreSelfCollisionLinkPairs()
+/// Print the set of ignored self-collision pairs to an output stream.
+void URDFCollisionModel::printIgnoreSelfCollisionLinkPairs(std::ostream& o)
 {
-    printf("{\n");
-    for (auto pair : self_collision_ignore_pairs_) {
-        printf("std::make_pair(\"%s\",\"%s\"),", pair.first.c_str(),
-                pair.second.c_str());
+    o << "{ ";
+    for (size_t i = 0; i < self_collision_ignore_pairs_.size(); ++i) {
+        const auto &pair = self_collision_ignore_pairs_[i];
+        o << "(" << pair.first << ", " << pair.second << ")";
+        if (i != self_collision_ignore_pairs_.size() - 1) {
+            o << ',';
+        }
+        o << ' ';
     }
-    printf("}\n");
+    o << '}';
 }
 
+/// Compute a set of collision and contact spheres that bound the surface of the
+/// robot's geometry. Overwrites the existing set of collision and contact
+/// spheres. Bounding spheres are computed by 3d rasterization of the surface
+/// geometry into a voxel grid with cells of size \p res and placing spheres at
+/// the center of each occupied cell with radius \p res.
+///
+/// \param res The radius of computed collision/contact spheres.
+/// \param A set of links to be ignored. Their existing collision spheres will
+///     be retained and no additional collision spheres will be generated.
+/// \param The set of contact links. Their existing contact spheres will be
+///     overwritten.
+/// \return true
 bool URDFCollisionModel::computeSpheresFromURDFModel(
     double res,
     const std::vector<std::string> &ignore_collision_links,
     const std::vector<std::string> &contact_links)
 {
-    const std::vector<robot_model::LinkModel*> links = robot_model_->getLinkModels();
+    const std::vector<robot_model::LinkModel*> &links =
+            robot_model_->getLinkModels();
 
     for (const robot_model::LinkModel* link : links) {
-        std::string link_name = link->getName();
+        const std::string &link_name = link->getName();
         bool bIgnoreCollision = std::find(
                 ignore_collision_links.begin(),
                 ignore_collision_links.end(),
@@ -155,16 +178,16 @@ bool URDFCollisionModel::computeSpheresFromURDFModel(
 
         std::vector<Sphere> link_spheres;
 
-        // multiple shapes after than groovy
-        std::vector<shapes::ShapeConstPtr> objects = link->getShapes();
-        for (shapes::ShapeConstPtr object : objects) {
+        for (const shapes::ShapeConstPtr &object : link->getShapes()) {
             if (!object) {
                 continue;
             }
+
             Eigen::Affine3d pose = Eigen::Affine3d::Identity(); //link->getJointOriginTransform();
 
-            size_t prev_size = link_spheres.size();
+            const size_t prev_size = link_spheres.size();
 
+            // append spheres
             computeShapeBoundingSpheres(*object, res, link_spheres);
 
             // transform the spheres by the pose
@@ -173,23 +196,39 @@ bool URDFCollisionModel::computeSpheresFromURDFModel(
             }
 
             // give unique names to the spheres and reference the attached link
-            for (size_t i = 0; i < link_spheres.size(); ++i) {
+            for (size_t i = prev_size; i < link_spheres.size(); ++i) {
                 Sphere& s = link_spheres[i];
                 s.name_ = link->getName() + "_" + std::to_string(i);
                 s.link_name_ = link->getName();
             }
+        }
 
-            if (!bIgnoreCollision) {
-                collision_spheres_[link->getName()] = link_spheres;
+        if (!bIgnoreCollision) {
+            collision_spheres_[link->getName()] = link_spheres;
+
+            if (std::find(
+                    links_with_collision_spheres_.begin(),
+                    links_with_collision_spheres_.end(),
+                    link->getName()) == links_with_collision_spheres_.end())
+            {
                 links_with_collision_spheres_.push_back(link->getName());
-                ROS_INFO("Adding %d collision spheres for link %s", (int )link_spheres.size(), link->getName().c_str());
             }
 
-            if (bIsContact) {
-                contact_spheres_[link->getName()] = link_spheres;
+            ROS_INFO("Adding %zu collision spheres for link %s", link_spheres.size(), link->getName().c_str());
+        }
+
+        if (bIsContact) {
+            contact_spheres_[link->getName()] = link_spheres;
+
+            if (std::find(
+                    links_with_contact_spheres_.begin(),
+                    links_with_contact_spheres_.end(),
+                    link->getName()) == links_with_contact_spheres_.end())
+            {
                 links_with_contact_spheres_.push_back(link->getName());
-                ROS_INFO("Adding %d contact spheres for link %s", (int )link_spheres.size(), link->getName().c_str());
             }
+
+            ROS_INFO("Adding %zu contact spheres for link %s", link_spheres.size(), link->getName().c_str());
         }
     }
     return true;
@@ -349,12 +388,16 @@ bool URDFCollisionModel::getLinkContactSpheres_CurrentState(
     return true;
 }
 
+/// Add all pairs of colliding links in the default state to the allowed
+/// collision matrix.
 void URDFCollisionModel::autoIgnoreSelfCollisions()
 {
     URDFModelCoords defaultCoords = getDefaultCoordinates();
     autoIgnoreSelfCollisions(defaultCoords);
 }
 
+/// Add all pairs of colliding links in the given state to the allowed
+/// collision matrix.
 void URDFCollisionModel::autoIgnoreSelfCollisions(
     const URDFModelCoords &coords)
 {
