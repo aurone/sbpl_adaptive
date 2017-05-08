@@ -22,6 +22,7 @@
 #include <sbpl_adaptive/state.h>
 #include <sbpl_adaptive/discrete_space_information/adaptive_discrete_space_information.h>
 #include <sbpl_adaptive/adaptive_state_representation.h>
+#include <sbpl_adaptive/discrete_space_information/projection.h>
 
 namespace adim {
 
@@ -49,7 +50,7 @@ struct EnvStateData
     std::vector<AdaptiveHashEntry *> StateID2HashEntry;
 };
 
-SBPL_CLASS_FORWARD(MultiRepAdaptiveDiscreteSpaceInformation)
+SBPL_CLASS_FORWARD(MultiRepAdaptiveDiscreteSpaceInformation);
 
 class MultiRepAdaptiveDiscreteSpaceInformation :
     public AdaptiveDiscreteSpaceInformation
@@ -78,6 +79,8 @@ public:
     template <class T>
     const T *envDataAs() const { return static_cast<const T *>(env_data_.get()); }
 
+    /// \name Representation Management
+    ///@{
     bool RegisterFullDRepresentation(
         const AdaptiveStateRepresentationPtr &fullD_representation);
 
@@ -99,6 +102,12 @@ public:
     template <typename T> const T *GetFullDRepresentation() const;
     template <typename T> T *GetRepresentation(int dimID);
     template <typename T> const T *GetRepresentation(int dimID) const;
+    ///@}
+
+    /// \name Projection Management
+    ///@{
+    bool RegisterProjection(const ProjectionPtr &proj);
+    ///@}
 
     int SetStartCoords(int dimID, const adim::AdaptiveState *state);
     int SetStartConfig(int dimID, const void *representation_specific_data);
@@ -186,6 +195,8 @@ protected:
     EnvStateData data_;
 
     std::shared_ptr<void> env_data_;
+
+    std::vector<ProjectionPtr> proj_matrix_;
 };
 
 inline

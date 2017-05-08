@@ -128,7 +128,7 @@ public:
 
     int getID() const { return dimID_; }
 
-    void setID(int id){ dimID_ = id; }
+    void setID(int id) { dimID_ = id; }
 
     const std::string getName() const { return name_; }
 

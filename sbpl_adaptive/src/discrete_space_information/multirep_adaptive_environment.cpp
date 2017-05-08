@@ -49,6 +49,14 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
 //        return false; //no projections to non-executable types in trackmode
 //    }
 
+    int proj_idx = fromID * NumRepresentations() + toID;
+    if (proj_matrix_[proj_idx]) {
+        proj_matrix_[proj_idx]->project(state, proj_stateIDs, adPathIdx);
+        return true;
+    } else {
+        return false;
+    }
+
     // optimization when toID is fullD: directly up-project to HD
     if (toID == fulld_representation_->getID()) {
         //fromID understands state
@@ -258,8 +266,38 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::RegisterRepresentation(
 
     data_.HashTables.push_back(HashTable);
 
+    std::vector<ProjectionPtr> new_proj_matrix;
+    new_proj_matrix.resize(representations_.size() * representations_.size());
+
+    // copy over projection matrix
+    int prev_rep_count = NumRepresentations() - 1;
+    ROS_INFO_NAMED(GLOG, "Resize projection matrix to %d^2 -> %d^2", prev_rep_count, NumRepresentations());
+    for (int i = 0; i < prev_rep_count; ++i) {
+        for (int j = 0; j < prev_rep_count; ++j) {
+            int prev_rep_idx = i * prev_rep_count + j;
+            int curr_rep_idx = i * NumRepresentations() + j;
+            new_proj_matrix[curr_rep_idx] = proj_matrix_[prev_rep_idx];
+        }
+    }
+    proj_matrix_ = std::move(new_proj_matrix);
+
     ROS_INFO_NAMED(GLOG, "Registered representation %d '%s'", rep->getID(), rep->getName().c_str());
 
+    return true;
+}
+
+bool MultiRepAdaptiveDiscreteSpaceInformation::RegisterProjection(
+    const ProjectionPtr &proj)
+{
+    if (proj->sourceRepID() < 0 || proj->sourceRepID() >= NumRepresentations() ||
+        proj->targetRepID() < 0 || proj->targetRepID() >= NumRepresentations())
+    {
+        return false;
+    }
+
+    int proj_idx = proj->sourceRepID() * NumRepresentations() + proj->targetRepID();
+    proj_matrix_[proj_idx] = proj;
+    proj->setPlanningSpace(this);
     return true;
 }
 
