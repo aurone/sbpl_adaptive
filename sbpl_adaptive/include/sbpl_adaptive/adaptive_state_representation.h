@@ -115,14 +115,10 @@ public:
     }
 
     virtual bool IsExecutableAction(int src_id, int dst_id) const
-    {
-        return isExecutable();
-    }
+    { return isExecutable(); }
 
     void setFullDRepresentation(const AdaptiveStateRepresentationPtr &fullD_rep)
-    {
-        fullD_rep_ = fullD_rep;
-    }
+    { fullD_rep_ = fullD_rep; }
 
     bool isExecutable() const { return executable_; }
 
@@ -130,7 +126,7 @@ public:
 
     void setID(int id) { dimID_ = id; }
 
-    const std::string getName() const { return name_; }
+    const std::string &getName() const { return name_; }
 
     void addParentRepresentation(const AdaptiveStateRepresentationPtr &parent);
 
@@ -148,6 +144,12 @@ public:
     double getNearRadius() const { return near_radius_; }
 
     double getTunnelRadius() const { return tunnel_radius_; }
+
+    const std::vector<AdaptiveStateRepresentationPtr> &parents() const
+    { return parents_; }
+
+    const std::vector<AdaptiveStateRepresentationPtr> &children() const
+    { return children_; }
 
 protected:
 
