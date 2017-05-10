@@ -107,6 +107,18 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
     return true;
 }
 
+bool MultiRepAdaptiveDiscreteSpaceInformation::IsProjectionExecutable(
+    int fromID,
+    int toID) const
+{
+    int proj_idx = fromID * NumRepresentations() + toID;
+    if (!proj_matrix_[proj_idx]) {
+        return false;
+    } else {
+        return proj_matrix_[proj_idx]->executable();
+    }
+}
+
 int MultiRepAdaptiveDiscreteSpaceInformation::SetGoalCoords(
     int dimID,
     const AdaptiveState *state)

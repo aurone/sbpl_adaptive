@@ -131,6 +131,8 @@ public:
         std::vector<int> &proj_stateIDs,
         int adPathIdx = 0);
 
+    bool IsProjectionExecutable(int fromID, int toID) const;
+
     /// \name Required Public Functions From AdaptiveDiscreteSpaceInformation
     ///@{
 
