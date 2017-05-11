@@ -71,7 +71,8 @@ public:
     /* \brief visualize cuboids */
     void visualizeObstacles(
         const std::vector<std::vector<double>> &obstacles,
-        std::string reference_frame_);
+        std::string reference_frame_,
+        const std::string &ns = "");
 
     void visualize3DPath(
         std::vector<std::vector<double>> &dpath,

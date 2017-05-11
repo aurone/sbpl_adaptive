@@ -11,7 +11,6 @@ SimpleViz::SimpleViz() :
     marker_array_(),
     marker_()
 {
-    srand(time(NULL));
 }
 
 SimpleViz::~SimpleViz()
@@ -20,14 +19,15 @@ SimpleViz::~SimpleViz()
 
 void SimpleViz::visualizeObstacles(
     const std::vector<std::vector<double>> &obstacles,
-    std::string reference_frame_)
+    std::string reference_frame_,
+    const std::string &_ns)
 {
     marker_array_.markers.clear();
     marker_array_.markers.resize(obstacles.size());
 
     ROS_INFO("[SimpleViz] Displaying %d obstaclesin the %s frame", (int)obstacles.size(), reference_frame_.c_str());
 
-    std::string ns = "obstacles" + boost::lexical_cast<std::string>(rand());
+    const std::string &ns = _ns.empty() ? "obstacles" : _ns;
 
     for (size_t i = 0; i < obstacles.size(); i++) {
         if (obstacles[i].size() < 6) {
