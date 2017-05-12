@@ -45,6 +45,15 @@ public:
         int costToGoal,
         std::vector<AdaptiveSphere3D> &spheres) = 0;
 
+    virtual void getTunnelSpheresForAction(
+        int state_id,
+        int succ_id,
+        int cost_to_goal,
+        std::vector<AdaptiveSphere3D> &spheres)
+    {
+        return getTunnelSpheresForState(state_id, cost_to_goal, spheres);
+    }
+
     virtual std::vector<Position3D> getSpherePositionsForState(int StateID) = 0;
 
 protected:
