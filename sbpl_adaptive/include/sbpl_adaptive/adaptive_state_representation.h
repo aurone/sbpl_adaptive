@@ -28,6 +28,29 @@ SBPL_CLASS_FORWARD(MultiRepAdaptiveDiscreteSpaceInformation)
 
 SBPL_CLASS_FORWARD(AdaptiveStateRepresentation)
 
+/// Base class defining the interface to a discrete graph representation used in
+/// the multi-representation adaptive dimensionality planning framework.
+///
+/// Each subclass of AdaptiveStateRepresentation is responsible for creating
+/// states on demand and inserting them into the combined multi-representation
+/// graph representation. A child class may choose to instantiate subclasses
+/// of AdaptiveState and safely assume that input states and states
+/// corresponding to input state ids are of the same type as instantiated by the
+/// representation, and may be safely downcasted. However, to support debugging,
+/// the function state_cast should be used to allow run-time type checking of
+/// states in debug mode. Since no run-time type information is present in
+/// release mode, the representation is responsible for destroying each state
+/// it constructs.
+///
+/// The edge transitions between states in an AdaptiveStateRepresentation have
+/// an implicit property labeling their executability. This corresponds to
+/// whether an action may be executed be a corresponding controller. Both
+/// executable and non-executable actions may be used to generate successors in
+/// calls to GetSuccs (and GetPreds), but only executable actions may be used to
+/// generate successors in GetTrackSuccs.
+///
+/// Each AdaptiveStateRepresentation may contain multiple parent and child
+/// representations, forming a representation graph.
 class AdaptiveStateRepresentation :
     public std::enable_shared_from_this<AdaptiveStateRepresentation>
 {
