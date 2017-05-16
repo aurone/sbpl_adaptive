@@ -48,7 +48,6 @@ URDFCollisionModel::URDFCollisionModel() :
     collision_spheres_(),
     contact_spheres_(),
     attached_objects_(),
-    rm_loader_(),
     robot_model_(),
     robot_state_()
 {
@@ -244,34 +243,9 @@ bool URDFCollisionModel::initFromParam(const std::string &robot_desc_param_name)
     ops.srdf_doc_ = nullptr;
     ops.load_kinematics_solvers_ = true;
 
-    rm_loader_.reset(new robot_model_loader::RobotModelLoader(ops));
-    if (!rm_loader_) {
-        ROS_ERROR("Failed to instantiate Robot Model Loader from description");
-        ROS_ERROR("%s", robot_desc_param_name.c_str());
-        return false;
-    }
+    robot_model_loader::RobotModelLoader loader(ops);
 
-    robot_model_ = rm_loader_->getModel();
-    if (!robot_model_) {
-        ROS_ERROR("Failed to retrieve valid Robot Model");
-        ROS_ERROR("%s", robot_desc_param_name.c_str());
-        return false;
-    }
-
-    urdf_ = robot_model_->getURDF();
-    srdf_ = robot_model_->getSRDF();
-
-    robot_state_.reset(new robot_state::RobotState(robot_model_));
-    if (!robot_state_) {
-        ROS_ERROR("Failed to instantiate Robot State");
-        return false;
-    }
-
-    const robot_model::JointModel* root = robot_model_->getJointModel(robot_model_->getRootJointName());
-
-    robot_state_->setToDefaultValues();
-
-    return true;
+    return initFromModel(loader.getModel());
 }
 
 bool URDFCollisionModel::initRobotModelFromURDF(
@@ -286,27 +260,26 @@ bool URDFCollisionModel::initRobotModelFromURDF(
     ops.srdf_doc_ = nullptr;
     ops.load_kinematics_solvers_ = true;
 
-    rm_loader_.reset(new robot_model_loader::RobotModelLoader(ops));
-    if (!rm_loader_) {
-        ROS_ERROR("Failed to instantiate Robot Model Loader");
+    robot_model_loader::RobotModelLoader loader(ops);
+
+    return initFromModel(loader.getModel());
+}
+
+bool URDFCollisionModel::initFromModel(
+    const moveit::core::RobotModelPtr &robot_model)
+{
+    if (!robot_model) {
         return false;
     }
 
-    robot_model_ = rm_loader_->getModel();
-    if (!robot_model_) {
-        ROS_ERROR("Failed to retrieve valid Robot Model");
-        return false;
-    }
+    robot_model_ = robot_model;
+    urdf_ = robot_model->getURDF();
+    srdf_ = robot_model->getSRDF();
 
-    srdf_ = robot_model_->getSRDF();
+    robot_state_ = boost::make_shared<moveit::core::RobotState>(robot_model);
+    robot_state_->setToDefaultValues();
 
-    robot_state_.reset(new robot_state::RobotState(robot_model_));
-    if (!robot_state_) {
-        ROS_ERROR("Failed to instantiate Robot State");
-        return false;
-    }
-
-    const robot_model::JointModel* root = robot_model_->getRootJoint();
+    const robot_model::JointModel* root = robot_model->getRootJoint();
 
     return true;
 }

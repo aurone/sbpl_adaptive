@@ -99,11 +99,14 @@ public:
 
     /// \name Initialization
     ///@{
+    virtual bool initFromParam(const std::string &robot_desc_param_name);
+
     virtual bool initFromURDF(
         const std::string &urdf_string,
         const std::string &srdf_string);
 
-    virtual bool initFromParam(const std::string &robot_desc_param_name);
+    virtual bool initFromModel(
+        const moveit::core::RobotModelPtr &robot_model);
     ///@}
 
     /// \name Model Information
