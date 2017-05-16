@@ -114,7 +114,7 @@ public:
         return std::to_string(state_id);
     }
 
-    virtual bool IsExecutableAction(int src_id, int dst_id) const
+    virtual bool IsExecutableAction(int src_id, int dst_id)
     { return isExecutable(); }
 
     void setFullDRepresentation(const AdaptiveStateRepresentationPtr &fullD_rep)
