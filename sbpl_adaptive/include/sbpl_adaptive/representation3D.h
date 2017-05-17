@@ -29,7 +29,7 @@ class AdaptiveStateRepresentation3D : public AdaptiveStateRepresentation
 public:
 
     AdaptiveStateRepresentation3D(
-        const MultiRepAdaptiveDiscreteSpaceInformation3DPtr &env,
+        const MultiRepAdaptiveDiscreteSpace3DPtr &env,
         bool executable,
         const std::string &description);
 
@@ -58,12 +58,12 @@ public:
 
 protected:
 
-    MultiRepAdaptiveDiscreteSpaceInformation3DPtr env3d_;
+    MultiRepAdaptiveDiscreteSpace3DPtr env3d_;
 };
 
 inline
 AdaptiveStateRepresentation3D::AdaptiveStateRepresentation3D(
-    const MultiRepAdaptiveDiscreteSpaceInformation3DPtr &env,
+    const MultiRepAdaptiveDiscreteSpace3DPtr &env,
     bool executable,
     const std::string &description)
 :

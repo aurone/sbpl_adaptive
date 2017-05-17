@@ -20,10 +20,9 @@
 
 namespace adim {
 
-SBPL_CLASS_FORWARD(MultiRepAdaptiveDiscreteSpaceInformation3D)
+SBPL_CLASS_FORWARD(MultiRepAdaptiveDiscreteSpace3D)
 
-class MultiRepAdaptiveDiscreteSpaceInformation3D :
-    public MultiRepAdaptiveDiscreteSpace
+class MultiRepAdaptiveDiscreteSpace3D : public MultiRepAdaptiveDiscreteSpace
 {
 public:
 
