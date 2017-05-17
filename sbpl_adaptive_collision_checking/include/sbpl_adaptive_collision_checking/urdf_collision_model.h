@@ -342,7 +342,6 @@ protected:
 
     std::map<std::string, std::vector<AttachedObject>> attached_objects_;
 
-    robot_model_loader::RobotModelLoaderPtr rm_loader_;
     robot_model::RobotModelPtr robot_model_;
     robot_state::RobotStatePtr robot_state_;
 
