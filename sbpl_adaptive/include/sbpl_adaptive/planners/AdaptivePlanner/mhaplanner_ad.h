@@ -6,10 +6,10 @@
 
 // system includes
 #include <sbpl/headers.h>
+#include <sbpl_adaptive/discrete_space_information/adaptive_discrete_space.h>
 #include <smpl/time.h>
 
 // project includes
-#include <sbpl_adaptive/discrete_space_information/adaptive_discrete_space_information.h>
 #include <sbpl_adaptive/discrete_space_information/multirep_adaptive_environment.h>
 #include <sbpl_adaptive/heuristics/multirep_heuristic.h>
 #include <sbpl_adaptive/planners/AdaptivePlanner/adaptive_planner.h>
@@ -23,7 +23,7 @@ public:
     ADMHAPlannerAllocator(MultiRepHeuristic *aheur, MultiRepHeuristic **heurs, int h_count);
 
     SBPLPlanner *make(
-        AdaptiveDiscreteSpaceInformation *space,
+        AdaptiveDiscreteSpace *space,
         bool forward_search) const override;
 
 private:
@@ -38,7 +38,7 @@ class MHAPlanner_AD : public SBPLPlanner
 public:
 
     MHAPlanner_AD(
-            MultiRepAdaptiveDiscreteSpaceInformation* space,
+            MultiRepAdaptiveDiscreteSpace* space,
             MultiRepHeuristic* hanchor,
             MultiRepHeuristic** heurs,
             int hcount);
@@ -139,7 +139,7 @@ public:
 
 private:
 
-    MultiRepAdaptiveDiscreteSpaceInformation *space_;
+    MultiRepAdaptiveDiscreteSpace *space_;
 
     // Related objects
     MultiRepHeuristic* m_hanchor;
@@ -153,7 +153,7 @@ private:
     double m_eps;           ///< current w_1
     double m_eps_mha;       ///< current w_2
 
-    AdaptiveDiscreteSpaceInformation* environment_;
+    AdaptiveDiscreteSpace* environment_;
 
     /// suboptimality bound satisfied by the last search
     double m_eps_satisfied;

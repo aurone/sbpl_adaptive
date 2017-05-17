@@ -20,8 +20,8 @@
 // project includes
 #include <sbpl_adaptive/common.h>
 #include <sbpl_adaptive/state.h>
-#include <sbpl_adaptive/discrete_space_information/adaptive_discrete_space_information.h>
 #include <sbpl_adaptive/adaptive_state_representation.h>
+#include <sbpl_adaptive/discrete_space_information/adaptive_discrete_space.h>
 #include <sbpl_adaptive/discrete_space_information/projection.h>
 
 namespace adim {
@@ -50,16 +50,15 @@ struct EnvStateData
     std::vector<AdaptiveHashEntry *> StateID2HashEntry;
 };
 
-SBPL_CLASS_FORWARD(MultiRepAdaptiveDiscreteSpaceInformation);
+SBPL_CLASS_FORWARD(MultiRepAdaptiveDiscreteSpace);
 
-class MultiRepAdaptiveDiscreteSpaceInformation :
-    public AdaptiveDiscreteSpaceInformation
+class MultiRepAdaptiveDiscreteSpace : public AdaptiveDiscreteSpace
 {
 public:
 
-    MultiRepAdaptiveDiscreteSpaceInformation();
+    MultiRepAdaptiveDiscreteSpace();
 
-    ~MultiRepAdaptiveDiscreteSpaceInformation();
+    ~MultiRepAdaptiveDiscreteSpace();
 
     /// inserts a new hash entry into the hash table and updates its stateID
     /// accordingly returns the stateID
@@ -203,21 +202,21 @@ protected:
 
 inline
 AdaptiveStateRepresentation *
-MultiRepAdaptiveDiscreteSpaceInformation::GetFullDRepresentation()
+MultiRepAdaptiveDiscreteSpace::GetFullDRepresentation()
 {
     return fulld_representation_.get();
 }
 
 inline
 const AdaptiveStateRepresentation *
-MultiRepAdaptiveDiscreteSpaceInformation::GetFullDRepresentation() const
+MultiRepAdaptiveDiscreteSpace::GetFullDRepresentation() const
 {
     return fulld_representation_.get();
 }
 
 inline
 AdaptiveStateRepresentation *
-MultiRepAdaptiveDiscreteSpaceInformation::GetRepresentation(int dimID)
+MultiRepAdaptiveDiscreteSpace::GetRepresentation(int dimID)
 {
     if (dimID < 0 || dimID >= representations_.size()) {
         return NULL;
@@ -227,7 +226,7 @@ MultiRepAdaptiveDiscreteSpaceInformation::GetRepresentation(int dimID)
 
 inline
 const AdaptiveStateRepresentation *
-MultiRepAdaptiveDiscreteSpaceInformation::GetRepresentation(int dimID) const
+MultiRepAdaptiveDiscreteSpace::GetRepresentation(int dimID) const
 {
     if (dimID < 0 || dimID >= representations_.size()) {
         return NULL;
@@ -236,19 +235,19 @@ MultiRepAdaptiveDiscreteSpaceInformation::GetRepresentation(int dimID) const
 }
 
 template <typename T> T *
-MultiRepAdaptiveDiscreteSpaceInformation::GetFullDRepresentation()
+MultiRepAdaptiveDiscreteSpace::GetFullDRepresentation()
 {
     return (T *)fulld_representation_.get();
 }
 
 template <typename T> const T *
-MultiRepAdaptiveDiscreteSpaceInformation::GetFullDRepresentation() const
+MultiRepAdaptiveDiscreteSpace::GetFullDRepresentation() const
 {
     return (const T *)fulld_representation_.get();
 }
 
 template <typename T> T *
-MultiRepAdaptiveDiscreteSpaceInformation::GetRepresentation(int dimID)
+MultiRepAdaptiveDiscreteSpace::GetRepresentation(int dimID)
 {
     if (dimID < 0 || dimID >= representations_.size()) {
         return nullptr;
@@ -257,7 +256,7 @@ MultiRepAdaptiveDiscreteSpaceInformation::GetRepresentation(int dimID)
 }
 
 template <typename T> const T *
-MultiRepAdaptiveDiscreteSpaceInformation::GetRepresentation(int dimID) const
+MultiRepAdaptiveDiscreteSpace::GetRepresentation(int dimID) const
 {
     if (dimID < 0 || dimID >= representations_.size()) {
         return nullptr;
@@ -266,7 +265,7 @@ MultiRepAdaptiveDiscreteSpaceInformation::GetRepresentation(int dimID) const
 }
 
 inline
-void MultiRepAdaptiveDiscreteSpaceInformation::updateBestTracked(
+void MultiRepAdaptiveDiscreteSpace::updateBestTracked(
     int StateID,
     int costToGoal)
 {

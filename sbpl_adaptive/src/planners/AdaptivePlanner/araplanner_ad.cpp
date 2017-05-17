@@ -41,14 +41,14 @@
 namespace adim {
 
 SBPLPlanner *ADARAPlannerAllocator::make(
-    adim::AdaptiveDiscreteSpaceInformation *space,
+    adim::AdaptiveDiscreteSpace *space,
     bool forward_search) const
 {
     return new ARAPlanner_AD(space, forward_search);
 }
 
 ARAPlanner_AD::ARAPlanner_AD(
-    AdaptiveDiscreteSpaceInformation* environment,
+    AdaptiveDiscreteSpace* environment,
     bool bSearchForward)
 :
     environment_(environment),

@@ -13,7 +13,7 @@ static const char *GLOG = "mrep";
 static const char *GPLOG = "mrep.projection";
 
 /// \brief Return the HD states up-projected from a LD state
-bool MultiRepAdaptiveDiscreteSpaceInformation::ProjectToFullD(
+bool MultiRepAdaptiveDiscreteSpace::ProjectToFullD(
     const AdaptiveState *state,
     int fromID,
     std::vector<int> &proj_stateIDs,
@@ -28,7 +28,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::ProjectToFullD(
 }
 
 /// \brief Project a state to a set of states in another dimension
-bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
+bool MultiRepAdaptiveDiscreteSpace::Project(
     const AdaptiveState *state,
     int fromID,
     int toID,
@@ -107,7 +107,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::Project(
     return true;
 }
 
-bool MultiRepAdaptiveDiscreteSpaceInformation::IsProjectionExecutable(
+bool MultiRepAdaptiveDiscreteSpace::IsProjectionExecutable(
     int fromID,
     int toID) const
 {
@@ -119,7 +119,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::IsProjectionExecutable(
     }
 }
 
-int MultiRepAdaptiveDiscreteSpaceInformation::SetGoalCoords(
+int MultiRepAdaptiveDiscreteSpace::SetGoalCoords(
     int dimID,
     const AdaptiveState *state)
 {
@@ -136,7 +136,7 @@ int MultiRepAdaptiveDiscreteSpaceInformation::SetGoalCoords(
     return GoalID;
 }
 
-int MultiRepAdaptiveDiscreteSpaceInformation::SetGoalConfig(
+int MultiRepAdaptiveDiscreteSpace::SetGoalConfig(
     int dimID,
     const void *representation_specific_cont_data)
 {
@@ -154,7 +154,7 @@ int MultiRepAdaptiveDiscreteSpaceInformation::SetGoalConfig(
     return GoalID;
 }
 
-int MultiRepAdaptiveDiscreteSpaceInformation::SetStartCoords(
+int MultiRepAdaptiveDiscreteSpace::SetStartCoords(
     int dimID,
     const AdaptiveState *state)
 {
@@ -171,7 +171,7 @@ int MultiRepAdaptiveDiscreteSpaceInformation::SetStartCoords(
     return StartID;
 }
 
-int MultiRepAdaptiveDiscreteSpaceInformation::SetStartConfig(
+int MultiRepAdaptiveDiscreteSpace::SetStartConfig(
     int dimID,
     const void *representation_specific_cont_data)
 {
@@ -189,7 +189,7 @@ int MultiRepAdaptiveDiscreteSpaceInformation::SetStartConfig(
     return StartID;
 }
 
-void MultiRepAdaptiveDiscreteSpaceInformation::InsertMetaGoalHashEntry(
+void MultiRepAdaptiveDiscreteSpace::InsertMetaGoalHashEntry(
     AdaptiveHashEntry *entry)
 {
     int i;
@@ -214,7 +214,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::InsertMetaGoalHashEntry(
     return;
 }
 
-int MultiRepAdaptiveDiscreteSpaceInformation::SetAbstractGoal(
+int MultiRepAdaptiveDiscreteSpace::SetAbstractGoal(
     AbstractGoal *goal)
 {
     ROS_INFO_NAMED(GLOG, "Setting abstract goal...");
@@ -229,7 +229,7 @@ int MultiRepAdaptiveDiscreteSpaceInformation::SetAbstractGoal(
     return entry->stateID;
 }
 
-MultiRepAdaptiveDiscreteSpaceInformation::MultiRepAdaptiveDiscreteSpaceInformation()
+MultiRepAdaptiveDiscreteSpace::MultiRepAdaptiveDiscreteSpace()
 {
     data_.HashTableSize = 32 * 1024; //should be power of two
     data_.StateID2HashEntry.clear();
@@ -240,7 +240,7 @@ MultiRepAdaptiveDiscreteSpaceInformation::MultiRepAdaptiveDiscreteSpaceInformati
     BestTracked_Cost = INFINITECOST;
 }
 
-MultiRepAdaptiveDiscreteSpaceInformation::~MultiRepAdaptiveDiscreteSpaceInformation()
+MultiRepAdaptiveDiscreteSpace::~MultiRepAdaptiveDiscreteSpace()
 {
     for (size_t i = 0; i < data_.StateID2HashEntry.size(); i++) {
         adim::AdaptiveHashEntry *entry = data_.StateID2HashEntry[i];
@@ -252,14 +252,14 @@ MultiRepAdaptiveDiscreteSpaceInformation::~MultiRepAdaptiveDiscreteSpaceInformat
     data_.HashTables.clear();
 }
 
-bool MultiRepAdaptiveDiscreteSpaceInformation::RegisterFullDRepresentation(
+bool MultiRepAdaptiveDiscreteSpace::RegisterFullDRepresentation(
     const AdaptiveStateRepresentationPtr &rep)
 {
     fulld_representation_ = rep;
     return RegisterRepresentation(rep);
 }
 
-bool MultiRepAdaptiveDiscreteSpaceInformation::RegisterRepresentation(
+bool MultiRepAdaptiveDiscreteSpace::RegisterRepresentation(
     const AdaptiveStateRepresentationPtr &rep)
 {
     for (int i = 0; i < representations_.size(); i++) {
@@ -298,7 +298,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::RegisterRepresentation(
     return true;
 }
 
-bool MultiRepAdaptiveDiscreteSpaceInformation::RegisterProjection(
+bool MultiRepAdaptiveDiscreteSpace::RegisterProjection(
     const ProjectionPtr &proj)
 {
     if (proj->sourceRepID() < 0 || proj->sourceRepID() >= NumRepresentations() ||
@@ -313,7 +313,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::RegisterProjection(
     return true;
 }
 
-size_t MultiRepAdaptiveDiscreteSpaceInformation::InsertHashEntry(
+size_t MultiRepAdaptiveDiscreteSpace::InsertHashEntry(
     AdaptiveHashEntry *entry,
     size_t binID)
 {
@@ -350,7 +350,7 @@ size_t MultiRepAdaptiveDiscreteSpaceInformation::InsertHashEntry(
     return entry->stateID;
 }
 
-AdaptiveHashEntry *MultiRepAdaptiveDiscreteSpaceInformation::GetState(
+AdaptiveHashEntry *MultiRepAdaptiveDiscreteSpace::GetState(
     size_t stateID) const
 {
     if (stateID >= data_.StateID2HashEntry.size()) {
@@ -360,7 +360,7 @@ AdaptiveHashEntry *MultiRepAdaptiveDiscreteSpaceInformation::GetState(
     return data_.StateID2HashEntry[stateID];
 }
 
-int MultiRepAdaptiveDiscreteSpaceInformation::GetDimID(size_t stateID)
+int MultiRepAdaptiveDiscreteSpace::GetDimID(size_t stateID)
 {
     if (stateID >= data_.StateID2HashEntry.size()) {
         ROS_ERROR("stateID [%zu] out of range [%zu]", stateID, data_.StateID2HashEntry.size());
@@ -369,7 +369,7 @@ int MultiRepAdaptiveDiscreteSpaceInformation::GetDimID(size_t stateID)
     return (int)data_.StateID2HashEntry[stateID]->dimID;
 }
 
-bool MultiRepAdaptiveDiscreteSpaceInformation::isExecutablePath(
+bool MultiRepAdaptiveDiscreteSpace::isExecutablePath(
     const std::vector<int> &stateIDV)
 {
     if (stateIDV.size() < 2) {
@@ -433,7 +433,7 @@ bool MultiRepAdaptiveDiscreteSpaceInformation::isExecutablePath(
     return true;
 }
 
-void MultiRepAdaptiveDiscreteSpaceInformation::GetSuccs_Track(
+void MultiRepAdaptiveDiscreteSpace::GetSuccs_Track(
     int SourceStateID,
     std::vector<int> *SuccIDV,
     std::vector<int> *CostV)
@@ -452,7 +452,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::GetSuccs_Track(
     representations_[entry->dimID]->GetTrackSuccs(SourceStateID, SuccIDV, CostV, env_data_.get());
 }
 
-void MultiRepAdaptiveDiscreteSpaceInformation::GetSuccs_Track(
+void MultiRepAdaptiveDiscreteSpace::GetSuccs_Track(
     int SourceStateID,
     int expansion_step,
     std::vector<int> *SuccIDV,
@@ -462,7 +462,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::GetSuccs_Track(
     GetSuccs_Track(SourceStateID, SuccIDV, CostV);
 }
 
-void MultiRepAdaptiveDiscreteSpaceInformation::GetSuccs_Plan(
+void MultiRepAdaptiveDiscreteSpace::GetSuccs_Plan(
     int SourceStateID,
     std::vector<int> *SuccIDV,
     std::vector<int> *CostV)
@@ -474,7 +474,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::GetSuccs_Plan(
     //ROS_INFO_NAMED(GLOG, "%d -> Got %zu [%zu] successors", SourceStateID, SuccIDV->size(), CostV->size());
 }
 
-void MultiRepAdaptiveDiscreteSpaceInformation::GetSuccs_Plan(
+void MultiRepAdaptiveDiscreteSpace::GetSuccs_Plan(
     int SourceStateID,
     int expansion_step,
     std::vector<int> *SuccIDV,
@@ -485,7 +485,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::GetSuccs_Plan(
     GetSuccs_Plan(SourceStateID, SuccIDV, CostV);
 }
 
-void MultiRepAdaptiveDiscreteSpaceInformation::GetPreds_Track(
+void MultiRepAdaptiveDiscreteSpace::GetPreds_Track(
     int TargetStateID,
     std::vector<int> *PredIDV,
     std::vector<int> *CostV)
@@ -498,7 +498,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::GetPreds_Track(
     representations_[entry->dimID]->GetPreds(TargetStateID, PredIDV, CostV, env_data_.get());
 }
 
-void MultiRepAdaptiveDiscreteSpaceInformation::GetPreds_Track(
+void MultiRepAdaptiveDiscreteSpace::GetPreds_Track(
     int TargetStateID,
     int expansion_step,
     std::vector<int> *PredIDV,
@@ -508,7 +508,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::GetPreds_Track(
     GetPreds_Track(TargetStateID, PredIDV, CostV);
 }
 
-void MultiRepAdaptiveDiscreteSpaceInformation::GetPreds_Plan(
+void MultiRepAdaptiveDiscreteSpace::GetPreds_Plan(
     int TargetStateID,
     std::vector<int> *PredIDV,
     std::vector<int> *CostV)
@@ -517,7 +517,7 @@ void MultiRepAdaptiveDiscreteSpaceInformation::GetPreds_Plan(
     representations_[entry->dimID]->GetSuccs(TargetStateID, PredIDV, CostV, env_data_.get());
 }
 
-void MultiRepAdaptiveDiscreteSpaceInformation::GetPreds_Plan(
+void MultiRepAdaptiveDiscreteSpace::GetPreds_Plan(
     int TargetStateID,
     int expansion_step,
     std::vector<int> *PredIDV,

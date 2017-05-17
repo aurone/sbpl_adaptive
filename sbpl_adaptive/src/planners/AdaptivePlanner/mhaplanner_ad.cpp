@@ -31,11 +31,11 @@ ADMHAPlannerAllocator::ADMHAPlannerAllocator(
 }
 
 SBPLPlanner *ADMHAPlannerAllocator::make(
-    AdaptiveDiscreteSpaceInformation*space,
+    AdaptiveDiscreteSpace*space,
     bool forward_search) const
 {
-    MultiRepAdaptiveDiscreteSpaceInformation* mrep_space =
-            dynamic_cast<MultiRepAdaptiveDiscreteSpaceInformation*>(space);
+    MultiRepAdaptiveDiscreteSpace* mrep_space =
+            dynamic_cast<MultiRepAdaptiveDiscreteSpace*>(space);
     if (!mrep_space) {
         ROS_ERROR("AdaptiveDiscreteSpaceInformation must be a MultiRepAdaptiveDiscreteSpaceInformation");
         return nullptr;
@@ -45,7 +45,7 @@ SBPLPlanner *ADMHAPlannerAllocator::make(
 }
 
 MHAPlanner_AD::MHAPlanner_AD(
-    MultiRepAdaptiveDiscreteSpaceInformation* space,
+    MultiRepAdaptiveDiscreteSpace* space,
     MultiRepHeuristic* hanchor,
     MultiRepHeuristic** heurs,
     int hcount)

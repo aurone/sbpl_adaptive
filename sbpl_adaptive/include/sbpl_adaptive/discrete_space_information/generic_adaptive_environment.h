@@ -58,7 +58,7 @@ private:
     DiscreteSpaceInformation *env_;
 };
 
-class GenericAdaptiveEnvironment : public AdaptiveDiscreteSpaceInformation
+class GenericAdaptiveEnvironment : public AdaptiveDiscreteSpace
 {
 public:
 

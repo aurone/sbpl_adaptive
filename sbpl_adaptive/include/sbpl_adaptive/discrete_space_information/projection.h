@@ -54,13 +54,13 @@ public:
 
     bool executable() const { return executable_; }
 
-    void setPlanningSpace(MultiRepAdaptiveDiscreteSpaceInformation *space)
+    void setPlanningSpace(MultiRepAdaptiveDiscreteSpace *space)
     { space_ = space; }
 
-    MultiRepAdaptiveDiscreteSpaceInformation *space()
+    MultiRepAdaptiveDiscreteSpace *space()
     { return space_; }
 
-    const MultiRepAdaptiveDiscreteSpaceInformation *space() const
+    const MultiRepAdaptiveDiscreteSpace *space() const
     { return space_; }
 
     template <class T> T *space()
@@ -71,7 +71,7 @@ public:
 
 private:
 
-    MultiRepAdaptiveDiscreteSpaceInformation *space_;
+    MultiRepAdaptiveDiscreteSpace *space_;
     AdaptiveStateRepresentationPtr src_rep_;
     AdaptiveStateRepresentationPtr tgt_rep_;
     bool executable_;

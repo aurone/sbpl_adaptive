@@ -13,7 +13,7 @@ class MultiRepHeuristic : public Heuristic
 {
 public:
 
-    MultiRepHeuristic(MultiRepAdaptiveDiscreteSpaceInformation *space) :
+    MultiRepHeuristic(MultiRepAdaptiveDiscreteSpace *space) :
         Heuristic(space)
     { }
 
@@ -26,7 +26,7 @@ class MultiRepEmbeddedHeuristic : public MultiRepHeuristic
 {
 public:
 
-    MultiRepEmbeddedHeuristic(MultiRepAdaptiveDiscreteSpaceInformation *space) :
+    MultiRepEmbeddedHeuristic(MultiRepAdaptiveDiscreteSpace *space) :
         MultiRepHeuristic(space),
         space_(space)
     { }
@@ -44,7 +44,7 @@ public:
 
 protected:
 
-    MultiRepAdaptiveDiscreteSpaceInformation *space_;
+    MultiRepAdaptiveDiscreteSpace *space_;
 };
 
 } // namespace adim

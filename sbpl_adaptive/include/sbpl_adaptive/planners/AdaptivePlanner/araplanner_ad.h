@@ -32,11 +32,11 @@
 
 // system includes
 #include <sbpl/headers.h>
+#include <sbpl_adaptive/discrete_space_information/adaptive_discrete_space.h>
 #include <smpl/forward.h>
 #include <smpl/time.h>
 
 // project includes
-#include <sbpl_adaptive/discrete_space_information/adaptive_discrete_space_information.h>
 #include <sbpl_adaptive/planners/AdaptivePlanner/adaptive_planner.h>
 
 namespace adim {
@@ -46,7 +46,7 @@ class ADARAPlannerAllocator : public PlannerAllocator
 public:
 
     SBPLPlanner *make(
-        AdaptiveDiscreteSpaceInformation *space,
+        AdaptiveDiscreteSpace *space,
         bool forward_search) const override;
 };
 
@@ -68,7 +68,7 @@ class ARAPlanner_AD : public SBPLPlanner
 public:
 
     ARAPlanner_AD(
-        AdaptiveDiscreteSpaceInformation* environment,
+        AdaptiveDiscreteSpace* environment,
         bool bforwardsearch);
 
     ~ARAPlanner_AD();
@@ -107,7 +107,7 @@ public:
 
 private:
 
-    AdaptiveDiscreteSpaceInformation* environment_;
+    AdaptiveDiscreteSpace* environment_;
 
     double finitial_eps;
     double finitial_eps_planning_time;

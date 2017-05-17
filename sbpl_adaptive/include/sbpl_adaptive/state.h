@@ -46,7 +46,6 @@ const T *state_cast(const AdaptiveState *state)
 struct AdaptiveHashEntry
 {
     size_t stateID;           // the state ID
-    size_t heur;              // the heuristic value
     char dimID;               // the dimensionality ID
     AdaptiveState *stateData; // the state data specific to this dimensionality
 

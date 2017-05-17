@@ -9,12 +9,9 @@
 #include <sbpl/headers.h>
 #include <smpl/forward.h>
 
-// project includes
-#include <sbpl_adaptive/discrete_space_information/environment_mha.h>
-
 namespace adim {
 
-SBPL_CLASS_FORWARD(AdaptiveDiscreteSpaceInformation)
+SBPL_CLASS_FORWARD(AdaptiveDiscreteSpace)
 
 /// \brief base class for environments defining planning graphs
 ///
@@ -24,13 +21,13 @@ SBPL_CLASS_FORWARD(AdaptiveDiscreteSpaceInformation)
 /// doesn't know anything about the actual state variables. Environment, on the
 /// other hand, maintains a mapping from stateID to actual state variables
 /// (coordinates) using StateID2IndexMapping array
-class AdaptiveDiscreteSpaceInformation : public DiscreteSpaceInformation
+class AdaptiveDiscreteSpace : public DiscreteSpaceInformation
 {
 public:
 
-    AdaptiveDiscreteSpaceInformation();
+    AdaptiveDiscreteSpace();
 
-    virtual ~AdaptiveDiscreteSpaceInformation() { }
+    virtual ~AdaptiveDiscreteSpace() { }
 
     /// \brief used by the tracker to tell the environment which state is being
     /// expanded
@@ -196,14 +193,14 @@ private:
 };
 
 inline
-AdaptiveDiscreteSpaceInformation::AdaptiveDiscreteSpaceInformation() :
+AdaptiveDiscreteSpace::AdaptiveDiscreteSpace() :
     trackMode(false),
     lastAdaptivePath_()
 {
 }
 
 inline
-void AdaptiveDiscreteSpaceInformation::GetPreds(
+void AdaptiveDiscreteSpace::GetPreds(
     int TargetStateID,
     int expansionStep,
     std::vector<int>* PredIDV,
@@ -218,7 +215,7 @@ void AdaptiveDiscreteSpaceInformation::GetPreds(
 };
 
 inline
-void AdaptiveDiscreteSpaceInformation::GetSuccs(
+void AdaptiveDiscreteSpace::GetSuccs(
     int SourceStateID,
     int expansionStep,
     std::vector<int>* SuccIDV,
@@ -233,7 +230,7 @@ void AdaptiveDiscreteSpaceInformation::GetSuccs(
 };
 
 inline
-void AdaptiveDiscreteSpaceInformation::GetPreds(
+void AdaptiveDiscreteSpace::GetPreds(
     int TargetStateID,
     std::vector<int>* PredIDV,
     std::vector<int>* CostV)
@@ -247,7 +244,7 @@ void AdaptiveDiscreteSpaceInformation::GetPreds(
 }
 
 inline
-void AdaptiveDiscreteSpaceInformation::GetSuccs(
+void AdaptiveDiscreteSpace::GetSuccs(
     int SourceStateID,
     std::vector<int>* SuccIDV,
     std::vector<int>* CostV)
@@ -261,7 +258,7 @@ void AdaptiveDiscreteSpaceInformation::GetSuccs(
 }
 
 inline
-void AdaptiveDiscreteSpaceInformation::visualizeStatePath(
+void AdaptiveDiscreteSpace::visualizeStatePath(
     std::vector<int> *path,
     int scolor,
     int ecolor,
@@ -271,7 +268,7 @@ void AdaptiveDiscreteSpaceInformation::visualizeStatePath(
 }
 
 inline
-void AdaptiveDiscreteSpaceInformation::visualizeState(
+void AdaptiveDiscreteSpace::visualizeState(
     int sID,
     int scolor,
     std::string name)
@@ -280,14 +277,14 @@ void AdaptiveDiscreteSpaceInformation::visualizeState(
 }
 
 inline
-void AdaptiveDiscreteSpaceInformation::setPlanMode()
+void AdaptiveDiscreteSpace::setPlanMode()
 {
     trackMode = false;
     onSetPlanMode();
 }
 
 inline
-void AdaptiveDiscreteSpaceInformation::setTrackMode(
+void AdaptiveDiscreteSpace::setTrackMode(
     const std::vector<int> &stateIDs_V,
     int cost,
     std::vector<int> *ModStates)

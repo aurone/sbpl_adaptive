@@ -13,7 +13,7 @@ PlannerAllocator::~PlannerAllocator()
 }
 
 AdaptivePlanner::AdaptivePlanner(
-    AdaptiveDiscreteSpaceInformation *environment,
+    AdaptiveDiscreteSpace *environment,
     const PlannerAllocator &plan_search_alloc,
     const PlannerAllocator &track_search_alloc,
     bool forward_search)

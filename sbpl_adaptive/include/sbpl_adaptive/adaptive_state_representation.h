@@ -24,7 +24,7 @@
 namespace adim {
 
 // breaks cyclic dependency
-SBPL_CLASS_FORWARD(MultiRepAdaptiveDiscreteSpaceInformation)
+SBPL_CLASS_FORWARD(MultiRepAdaptiveDiscreteSpace)
 
 SBPL_CLASS_FORWARD(AdaptiveStateRepresentation)
 
@@ -57,7 +57,7 @@ class AdaptiveStateRepresentation :
 public:
 
     AdaptiveStateRepresentation(
-        const MultiRepAdaptiveDiscreteSpaceInformationPtr &env,
+        const MultiRepAdaptiveDiscreteSpacePtr &env,
         bool executable,
         const std::string &name);
 
@@ -180,7 +180,7 @@ protected:
     double near_radius_;
     double tunnel_radius_;
 
-    MultiRepAdaptiveDiscreteSpaceInformationPtr env_;
+    MultiRepAdaptiveDiscreteSpacePtr env_;
     int dimID_;
     bool executable_;
     std::string name_;
@@ -193,7 +193,7 @@ protected:
 
 inline
 AdaptiveStateRepresentation::AdaptiveStateRepresentation(
-    const MultiRepAdaptiveDiscreteSpaceInformationPtr &env,
+    const MultiRepAdaptiveDiscreteSpacePtr &env,
     bool executable,
     const std::string &description)
 :

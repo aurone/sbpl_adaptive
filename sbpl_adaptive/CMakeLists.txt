@@ -37,12 +37,10 @@ add_library(
     src/adaptive_grid_3d.cpp
     src/sparse_adaptive_grid_3d.cpp
     src/common.cpp
-#    src/expansion_grid_3d.cpp
     src/discrete_space_information/multirep_adaptive_environment.cpp
     src/discrete_space_information/projection.cpp
     src/planners/AdaptivePlanner/adaptive_planner.cpp
     src/planners/AdaptivePlanner/araplanner_ad.cpp
-    src/planners/AdaptivePlanner/improved_mhaplanner_ad.cpp
     src/planners/AdaptivePlanner/mhaplanner_ad.cpp)
 
 target_link_libraries(

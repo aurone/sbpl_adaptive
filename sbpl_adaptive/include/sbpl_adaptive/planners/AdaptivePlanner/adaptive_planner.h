@@ -7,12 +7,12 @@
 // system includes
 #include <ros/console.h>
 #include <sbpl/headers.h>
+#include <sbpl_adaptive/discrete_space_information/adaptive_discrete_space.h>
 #include <smpl/forward.h>
 #include <smpl/time.h>
 
 // project includes
 #include <sbpl_adaptive/SCVStat.h>
-#include <sbpl_adaptive/discrete_space_information/adaptive_discrete_space_information.h>
 
 namespace adim {
 
@@ -25,7 +25,7 @@ public:
     virtual ~PlannerAllocator();
 
     virtual SBPLPlanner *make(
-        AdaptiveDiscreteSpaceInformation *space,
+        AdaptiveDiscreteSpace *space,
         bool forward_search) const = 0;
 };
 
@@ -57,7 +57,7 @@ class AdaptivePlanner : public SBPLPlanner
 public:
 
     AdaptivePlanner(
-        AdaptiveDiscreteSpaceInformation *space,
+        AdaptiveDiscreteSpace *space,
         const PlannerAllocator &plan_search_alloc,
         const PlannerAllocator &track_search_alloc,
         bool forward_search);
@@ -128,7 +128,7 @@ public:
 
 private:
 
-    AdaptiveDiscreteSpaceInformation* adaptive_environment_;
+    AdaptiveDiscreteSpace* adaptive_environment_;
 
     std::unique_ptr<SBPLPlanner> planner_;
     std::unique_ptr<SBPLPlanner> tracker_;
