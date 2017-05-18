@@ -11,7 +11,7 @@
 
 // project includes
 #include <sbpl_adaptive/common.h>
-#include <sbpl_adaptive/discrete_space_information/multirep_adaptive_environment.h>
+#include <sbpl_adaptive/discrete_space_information/multirep_adaptive_discrete_space.h>
 
 namespace adim {
 
@@ -37,7 +37,7 @@ SBPLPlanner *ADMHAPlannerAllocator::make(
     MultiRepAdaptiveDiscreteSpace* mrep_space =
             dynamic_cast<MultiRepAdaptiveDiscreteSpace*>(space);
     if (!mrep_space) {
-        ROS_ERROR("AdaptiveDiscreteSpaceInformation must be a MultiRepAdaptiveDiscreteSpaceInformation");
+        ROS_ERROR("AdaptiveDiscreteSpaceInformation must be a MultiRepAdaptiveDiscreteSpace");
         return nullptr;
     }
 

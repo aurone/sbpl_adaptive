@@ -16,7 +16,7 @@
 
 // projects includes
 #include <sbpl_adaptive/common.h>
-#include <sbpl_adaptive/discrete_space_information/multirep_adaptive_environment.h>
+#include <sbpl_adaptive/discrete_space_information/multirep_adaptive_discrete_space.h>
 
 namespace adim {
 

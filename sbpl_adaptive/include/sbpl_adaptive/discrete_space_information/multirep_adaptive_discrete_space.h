@@ -1,12 +1,7 @@
-/*
- * environment.h
- *
- *  Created on: Jan 28, 2016
- *      Author: kalin
- */
+/// \author Kalin Gochev
 
-#ifndef SBPL_ADAPTIVE_MULTIREP_ADAPTIVE_ENVIRONMENT_H
-#define SBPL_ADAPTIVE_MULTIREP_ADAPTIVE_ENVIRONMENT_H
+#ifndef SBPL_ADAPTIVE_MULTIREP_ADAPTIVE_DISCRETE_SPACE_H
+#define SBPL_ADAPTIVE_MULTIREP_ADAPTIVE_DISCRETE_SPACE_H
 
 // standard includes
 #include <stdlib.h>
@@ -69,15 +64,6 @@ public:
 
     const EnvStateData *getEnvStateDataPtr() { return &data_; }
 
-    const void *getEnvDataPtr() { return env_data_.get(); }
-
-    // perform (unsafe) downcast to subclass-specific environment data
-    template <class T>
-    T *envDataAs() { return static_cast<T *>(env_data_.get()); }
-
-    template <class T>
-    const T *envDataAs() const { return static_cast<const T *>(env_data_.get()); }
-
     /// \name Representation Management
     ///@{
     bool RegisterFullDRepresentation(
@@ -135,51 +121,51 @@ public:
     /// \name Required Public Functions From AdaptiveDiscreteSpaceInformation
     ///@{
 
-    bool isExecutablePath(const std::vector<int> &stateIDV) override;
-
-    void GetSuccs_Track(
-        int SourceStateID,
-        std::vector<int> *SuccIDV,
-        std::vector<int> *CostV) override;
-
-    void GetSuccs_Track(
-        int SourceStateID,
-        int expansion_step,
-        std::vector<int> *SuccIDV,
-        std::vector<int> *CostV) override;
+    bool isExecutablePath(const std::vector<int> &path) override;
 
     void GetSuccs_Plan(
-        int SourceStateID,
-        std::vector<int> *SuccIDV,
-        std::vector<int> *CostV) override;
+        int state_id,
+        std::vector<int> *succs,
+        std::vector<int> *costs) override;
+
+    void GetSuccs_Track(
+        int state_id,
+        std::vector<int> *succs,
+        std::vector<int> *costs) override;
+
+    void GetPreds_Plan(
+        int state_id,
+        std::vector<int> *preds,
+        std::vector<int> *costs) override;
+
+    void GetPreds_Track(
+        int state_id,
+        std::vector<int> *preds,
+        std::vector<int> *costs) override;
 
     void GetSuccs_Plan(
-        int SourceStateID,
+        int state_id,
         int expansion_step,
-        std::vector<int> *SuccIDV,
-        std::vector<int> *CostV) override;
+        std::vector<int> *succs,
+        std::vector<int> *costs) override;
 
-    void GetPreds_Track(
-        int TargetStateID,
-        std::vector<int> *PredIDV,
-        std::vector<int> *CostV) override;
-
-    void GetPreds_Track(
-        int TargetStateID,
+    void GetSuccs_Track(
+        int state_id,
         int expansion_step,
-        std::vector<int> *PredIDV,
-        std::vector<int> *CostV) override;
+        std::vector<int> *succs,
+        std::vector<int> *costs) override;
 
     void GetPreds_Plan(
-        int TargetStateID,
-        std::vector<int> *PredIDV,
-        std::vector<int> *CostV) override;
-
-    void GetPreds_Plan(
-        int TargetStateID,
+        int state_id,
         int expansion_step,
-        std::vector<int> *PredIDV,
-        std::vector<int> *CostV) override;
+        std::vector<int> *preds,
+        std::vector<int> *costs) override;
+
+    void GetPreds_Track(
+        int state_id,
+        int expansion_step,
+        std::vector<int> *preds,
+        std::vector<int> *costs) override;
 
     ///@}
 
@@ -194,8 +180,6 @@ protected:
     std::vector<AdaptiveStateRepresentationPtr> representations_;
 
     EnvStateData data_;
-
-    std::shared_ptr<void> env_data_;
 
     std::vector<ProjectionPtr> proj_matrix_;
 };

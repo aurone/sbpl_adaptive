@@ -18,7 +18,7 @@
 // project includes
 #include <sbpl_adaptive/adaptive_state_representation.h>
 #include <sbpl_adaptive/common.h>
-#include <sbpl_adaptive/discrete_space_information/multirep_adaptive_3d/multirep_adaptive_3d.h>
+#include <sbpl_adaptive/discrete_space_information/multirep_adaptive_3d/multirep_adaptive_discrete_space_3d.h>
 
 namespace adim {
 
@@ -56,9 +56,11 @@ public:
 
     virtual std::vector<Position3D> getSpherePositionsForState(int StateID) = 0;
 
-protected:
+    const MultiRepAdaptiveDiscreteSpace3D *mrepSpace3D() const
+    { return mrepSpace<MultiRepAdaptiveDiscreteSpace3D>();}
 
-    MultiRepAdaptiveDiscreteSpace3DPtr env3d_;
+    MultiRepAdaptiveDiscreteSpace3D *mrepSpace3D()
+    { return mrepSpace<MultiRepAdaptiveDiscreteSpace3D>(); }
 };
 
 inline
@@ -67,10 +69,8 @@ AdaptiveStateRepresentation3D::AdaptiveStateRepresentation3D(
     bool executable,
     const std::string &description)
 :
-    AdaptiveStateRepresentation(env, executable, description),
-    env3d_(env)
+    AdaptiveStateRepresentation(env, executable, description)
 {
-
 }
 
 } // namespace adim

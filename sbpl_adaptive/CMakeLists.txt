@@ -37,8 +37,9 @@ add_library(
     src/adaptive_grid_3d.cpp
     src/sparse_adaptive_grid_3d.cpp
     src/common.cpp
-    src/discrete_space_information/multirep_adaptive_environment.cpp
+    src/discrete_space_information/multirep_adaptive_discrete_space.cpp
     src/discrete_space_information/projection.cpp
+    src/discrete_space_information/adaptive_state_representation.cpp
     src/planners/AdaptivePlanner/adaptive_planner.cpp
     src/planners/AdaptivePlanner/araplanner_ad.cpp
     src/planners/AdaptivePlanner/mhaplanner_ad.cpp)

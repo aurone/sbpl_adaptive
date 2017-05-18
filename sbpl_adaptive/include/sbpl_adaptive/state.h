@@ -50,14 +50,10 @@ struct AdaptiveHashEntry
     AdaptiveState *stateData; // the state data specific to this dimensionality
 
     template <class T>
-    T *dataAs() {
-        return state_cast<T>(stateData);
-    }
+    T *dataAs() { return state_cast<T>(stateData); }
 
     template <class T>
-    const T *dataAs() const {
-        return state_cast<T>(const_cast<const AdaptiveState *>(stateData));
-    }
+    const T *dataAs() const { return state_cast<T>(stateData); }
 };
 
 inline

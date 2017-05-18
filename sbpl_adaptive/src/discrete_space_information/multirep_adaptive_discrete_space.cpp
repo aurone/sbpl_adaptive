@@ -1,11 +1,11 @@
 /*
- * multirep_adaptive_environment.cpp
+ * multirep_adaptive_discrete_space.cpp
  *
  *  Created on: Mar 15, 2016
  *      Author: kalin
  */
 
-#include <sbpl_adaptive/discrete_space_information/multirep_adaptive_environment.h>
+#include <sbpl_adaptive/discrete_space_information/multirep_adaptive_discrete_space.h>
 
 namespace adim {
 
@@ -235,7 +235,6 @@ MultiRepAdaptiveDiscreteSpace::MultiRepAdaptiveDiscreteSpace()
     data_.StateID2HashEntry.clear();
     data_.goalHashEntry = NULL;
     data_.startHashEntry = NULL;
-    env_data_.reset();
     BestTracked_StateID = -1;
     BestTracked_Cost = INFINITECOST;
 }
@@ -318,6 +317,8 @@ size_t MultiRepAdaptiveDiscreteSpace::InsertHashEntry(
     size_t binID)
 {
     int i;
+
+    binID &= (data_.HashTableSize - 1);
 
     /* get corresponding state ID */
     entry->stateID = data_.StateID2HashEntry.size();
@@ -422,9 +423,9 @@ bool MultiRepAdaptiveDiscreteSpace::isExecutablePath(
             }
         }
         else {
-            const auto &prev_rep = representations_[prev_entry->dimID];
-            const auto &curr_rep = representations_[curr_entry->dimID];
-            ROS_WARN_NAMED(GLOG, "Skip checking for executable projection from '%s' to '%s' for now", prev_rep->getName().c_str(), curr_rep->getName().c_str());
+            if (IsProjectionExecutable(prev_entry->dimID, curr_entry->dimID)) {
+                return false;
+            }
         }
 
         prev_entry = curr_entry;
@@ -434,43 +435,35 @@ bool MultiRepAdaptiveDiscreteSpace::isExecutablePath(
 }
 
 void MultiRepAdaptiveDiscreteSpace::GetSuccs_Track(
-    int SourceStateID,
-    std::vector<int> *SuccIDV,
-    std::vector<int> *CostV)
+    int state_id,
+    std::vector<int> *succs,
+    std::vector<int> *costs)
 {
-    SuccIDV->clear();
-    CostV->clear();
-    AdaptiveHashEntry *entry = GetState(SourceStateID);
-//    if (!representations_[entry->dimID]->isExecutable()) {
-//        std::stringstream ss;
-//        ss << "stateID " << SourceStateID << " has representation ID " <<
-//                entry->dimID << " [" <<
-//                representations_[entry->dimID]->getName() <<
-//                "] which is not executable. Cannot get tracking successors";
-//        throw SBPL_Exception(ss.str());
-//    }
-    representations_[entry->dimID]->GetTrackSuccs(SourceStateID, SuccIDV, CostV, env_data_.get());
+    succs->clear();
+    costs->clear();
+    AdaptiveHashEntry *entry = GetState(state_id);
+    representations_[entry->dimID]->GetTrackSuccs(state_id, succs, costs);
 }
 
 void MultiRepAdaptiveDiscreteSpace::GetSuccs_Track(
-    int SourceStateID,
+    int state_id,
     int expansion_step,
-    std::vector<int> *SuccIDV,
-    std::vector<int> *CostV)
+    std::vector<int> *succs,
+    std::vector<int> *costs)
 {
     ROS_ERROR_NAMED(GLOG, "GetSuccs_Track with exp_step not implemented---defaulting");
-    GetSuccs_Track(SourceStateID, SuccIDV, CostV);
+    GetSuccs_Track(state_id, succs, costs);
 }
 
 void MultiRepAdaptiveDiscreteSpace::GetSuccs_Plan(
-    int SourceStateID,
-    std::vector<int> *SuccIDV,
-    std::vector<int> *CostV)
+    int state_id,
+    std::vector<int> *succs,
+    std::vector<int> *costs)
 {
-    SuccIDV->clear();
-    CostV->clear();
-    AdaptiveHashEntry *entry = GetState(SourceStateID);
-    representations_[entry->dimID]->GetSuccs(SourceStateID, SuccIDV, CostV, env_data_.get());
+    succs->clear();
+    costs->clear();
+    AdaptiveHashEntry *entry = GetState(state_id);
+    representations_[entry->dimID]->GetSuccs(state_id, succs, costs);
     //ROS_INFO_NAMED(GLOG, "%d -> Got %zu [%zu] successors", SourceStateID, SuccIDV->size(), CostV->size());
 }
 
@@ -495,7 +488,7 @@ void MultiRepAdaptiveDiscreteSpace::GetPreds_Track(
         ROS_ERROR_NAMED(GLOG, "stateID [%d] has representation ID %d [%s], which is not executable. Cannot get tracking successors!", TargetStateID, entry->dimID, representations_[entry->dimID]->getName().c_str());
         throw SBPL_Exception();
     }
-    representations_[entry->dimID]->GetPreds(TargetStateID, PredIDV, CostV, env_data_.get());
+    representations_[entry->dimID]->GetPreds(TargetStateID, PredIDV, CostV);
 }
 
 void MultiRepAdaptiveDiscreteSpace::GetPreds_Track(
@@ -514,7 +507,7 @@ void MultiRepAdaptiveDiscreteSpace::GetPreds_Plan(
     std::vector<int> *CostV)
 {
     AdaptiveHashEntry *entry = GetState(TargetStateID);
-    representations_[entry->dimID]->GetSuccs(TargetStateID, PredIDV, CostV, env_data_.get());
+    representations_[entry->dimID]->GetSuccs(TargetStateID, PredIDV, CostV);
 }
 
 void MultiRepAdaptiveDiscreteSpace::GetPreds_Plan(

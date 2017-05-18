@@ -10,7 +10,7 @@
 #include <smpl/time.h>
 
 // project includes
-#include <sbpl_adaptive/discrete_space_information/multirep_adaptive_environment.h>
+#include <sbpl_adaptive/discrete_space_information/multirep_adaptive_discrete_space.h>
 #include <sbpl_adaptive/heuristics/multirep_heuristic.h>
 #include <sbpl_adaptive/planners/AdaptivePlanner/adaptive_planner.h>
 
