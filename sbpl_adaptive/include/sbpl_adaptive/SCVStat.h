@@ -1,12 +1,5 @@
-/*
- * SCVStat.h
- *
- *  Created on: Sep 14, 2015
- *      Author: kalin
- */
-
-#ifndef _SBPL_ADAPTIVE_SCVSTAT_H_
-#define _SBPL_ADAPTIVE_SCVSTAT_H_
+#ifndef SBPL_ADAPTIVE_SCVSTATE_H
+#define SBPL_ADAPTIVE_SCVSTATE_H
 
 // standard includes
 #include <stdio.h>

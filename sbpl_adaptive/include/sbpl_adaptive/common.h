@@ -1,10 +1,3 @@
-/*
- * common.h
- *
- *  Created on: Mar 15, 2016
- *      Author: kalin
- */
-
 #ifndef SBPL_ADAPTIVE_COMMON_H
 #define SBPL_ADAPTIVE_COMMON_H
 

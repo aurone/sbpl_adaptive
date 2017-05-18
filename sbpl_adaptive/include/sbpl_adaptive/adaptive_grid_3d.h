@@ -1,10 +1,3 @@
-/*
- * adaptive_grid_3d.h
- *
- *  Created on: Nov 4, 2014
- *      Author: Kalin Gochev
- */
-
 #ifndef SBPL_ADAPTIVE_ADAPTIVE_GRID_3D_H
 #define SBPL_ADAPTIVE_ADAPTIVE_GRID_3D_H
 

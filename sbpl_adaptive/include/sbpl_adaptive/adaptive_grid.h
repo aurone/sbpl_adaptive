@@ -1,5 +1,3 @@
-/// \author Kalin Gochev
-
 #ifndef SBPL_ADAPTIVE_ADAPTIVE_GRID_H
 #define SBPL_ADAPTIVE_ADAPTIVE_GRID_H
 

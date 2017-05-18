@@ -1,10 +1,3 @@
-/*
- * sbpl_TRA_expansion_grid3D.h
- *
- *  Created on: Sep 22, 2015
- *      Author: kalin
- */
-
 #include <sbpl_adaptive/expansion_grid_3d.h>
 
 #include <Eigen/Dense>

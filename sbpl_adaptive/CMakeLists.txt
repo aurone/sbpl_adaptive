@@ -37,12 +37,12 @@ add_library(
     src/adaptive_grid_3d.cpp
     src/sparse_adaptive_grid_3d.cpp
     src/common.cpp
-    src/discrete_space_information/multirep_adaptive_discrete_space.cpp
-    src/discrete_space_information/projection.cpp
-    src/discrete_space_information/adaptive_state_representation.cpp
-    src/planners/AdaptivePlanner/adaptive_planner.cpp
-    src/planners/AdaptivePlanner/araplanner_ad.cpp
-    src/planners/AdaptivePlanner/mhaplanner_ad.cpp)
+    src/core/search/adaptive_planner.cpp
+    src/core/search/araplanner_ad.cpp
+    src/mrep/graph/adaptive_state_representation.cpp
+    src/mrep/graph/multirep_adaptive_discrete_space.cpp
+    src/mrep/graph/projection.cpp
+    src/mrep/search/mhaplanner_ad.cpp)
 
 target_link_libraries(
     ${PROJECT_NAME}

@@ -1,10 +1,3 @@
-/*
- * sbpl_adaptive_grid3D.cpp
- *
- *  Created on: Nov 4, 2014
- *      Author: Kalin Gochev
- */
-
 #include <sbpl_adaptive/adaptive_grid_3d.h>
 
 // system includes

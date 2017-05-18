@@ -1,10 +1,3 @@
-/*
- * expansion_grid_3d.h
- *
- *  Created on: Sep 22, 2015
- *      Author: kalin
- */
-
 #ifndef SBPL_ADAPTIVE_EXPANSION_GRID_3D_H
 #define SBPL_ADAPTIVE_EXPANSION_GRID_3D_H
 
