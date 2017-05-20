@@ -85,10 +85,8 @@ void AdaptiveStateRepresentation::GetExecutableParents(
     if (isExecutable()) {
         executableParents.push_back(this);
     }
-    else {
-        for (const auto &parent : parents_) {
-            parent->GetExecutableParents(executableParents);
-        }
+    for (const auto &parent : parents_) {
+        parent->GetExecutableParents(executableParents);
     }
 }
 
