@@ -10,7 +10,7 @@
 #include <smpl/forward.h>
 
 // project includes
-#include <sbpl_adaptive/mrep/graph/state.h>
+#include <sbpl_adaptive/core/graph/state.h>
 
 namespace adim {
 
@@ -35,12 +35,12 @@ public:
     ///@{
 
     // return the state ID of the created start state
-    virtual int SetStartCoords(const AdaptiveState *disc_data) = 0;
-    virtual int SetStartConfig(const void *cont_data) = 0;
+    virtual int SetStartCoords(const AdaptiveState *state) = 0;
+    virtual int SetStartConfig(const ModelCoords *coords) = 0;
 
     // return the state ID of the created goal state
-    virtual int SetGoalCoords(const AdaptiveState *disc_data) = 0;
-    virtual int SetGoalConfig(const void *cont_data) = 0;
+    virtual int SetGoalCoords(const AdaptiveState *state) = 0;
+    virtual int SetGoalConfig(const ModelCoords *coords) = 0;
 
     virtual bool isGoalState(int StateID) const = 0;
 
@@ -70,7 +70,7 @@ public:
     ///@}
 
     virtual bool IsValidStateData(const AdaptiveState *state) const = 0;
-    virtual bool IsValidConfig(const void *cont_data) const = 0;
+    virtual bool IsValidConfig(const ModelCoords *coords) const = 0;
 
     virtual int GetGoalHeuristic(int stateID) const = 0;
 
@@ -112,9 +112,13 @@ public:
 
     virtual void deleteStateData(int stateID) = 0;
 
-    virtual void toCont(const AdaptiveState *state, void *cont_data) const = 0;
+    virtual void toCont(
+        const AdaptiveState *state,
+        ModelCoords *coords) const = 0;
 
-    virtual void toDisc(const void *cont_data, AdaptiveState *state) const = 0;
+    virtual void toDisc(
+        const ModelCoords *coords,
+        AdaptiveState *state) const = 0;
 
     virtual std::string StateToString(int state_id);
 

@@ -5,259 +5,181 @@ namespace adim {
 static const char *GLOG = "mrep";
 static const char *GPLOG = "mrep.projection";
 
-/// \brief Return the HD states up-projected from a LD state
-bool MultiRepAdaptiveDiscreteSpace::ProjectToFullD(
-    const AdaptiveState *state,
-    int fromID,
-    std::vector<int> &proj_stateIDs,
-    int adPathIdx)
+/// \class MultiRepAdaptiveDiscreteSpace
+///
+/// An implementation of a discrete space composed of multiple state
+/// representations. This class maintains the set of representation-aware states
+/// and dispatches calls to retrieve the successor/predecessor states of a given
+/// state to the appropriate representation.
+///
+/// Transitions between states of the same representations are maintained by the
+/// the representations themselves. Transitions between states of differing
+/// representations are managed by additional Projection instances linked to
+/// this combined space.
+///
+/// One state, from any representation, may be specified as the start state.
+/// Multiple states may be specified as being goal states, via an abstract goal
+/// condition. The abstract goal condition is implemented as a single state,
+/// with no associated repressentation, whose ID can be queried through
+/// GetGoalStateID(). The goal state should never be expanded by the search
+/// routine.
+///
+/// The set of representations may be arranged to form an abstraction hierarchy,
+/// such that less abstract representations are parents of more abstract
+/// representations. States from more abstract representations are assumed to be
+/// able to be projected to a set of states in their parent, less abstract
+/// representations. States from less abstract representations are allowed to
+/// possibly project to states in more abstract representations via a many-to-
+/// one mapping. For successful operation, one representation must be chosen as
+/// the least abstract representation, which acts as the most ancient descendant
+/// of any class in the hierarchy. Every state should be able to be recursively
+/// projected to a set of states in this least abstract representation. This
+/// representation is typically the representation containing states with the
+/// highest dimensionality, and is oftened referred to as the full-dimensional
+/// representation.
+///
+/// This class manages states at the abstract level, but is not aware of the
+/// concrete implementation of a state for any of its representations. For this
+/// reason, representations are expected, in most cases, to downcast states to
+/// its internal state representation type.
+///
+/// Similarly, subclasses of this class and subclasses of
+/// AdaptiveStateRepresentation may need to downcast to explicit instances of
+/// AdaptiveStateRepresentation. They will also likely need to be aware of the
+/// concrete implementation of AbstractGoal used to specify the goal condition.
+/// Convenience functions are provided to cleanly perform this (unsafe)
+/// downcasting.
+///
+/// This class implements the AdaptiveDiscreteSpace interface so that it may be
+/// used in the Planning with Adaptive Dimensionality framework. It is aware of
+/// the current planning mode (plan mode vs. track mode), and calls the
+/// appropriate methods on each of its associated representations to return the
+/// correct successors for the given mode. This class makes no attempt to
+/// dictate what successors are available in which each representation for a
+/// given planning mode/iteration. This state must be implemented by a subclass
+/// of this class and shared between concrete AdaptiveStateRepresentation
+/// instances.
+
+/// Constructor
+MultiRepAdaptiveDiscreteSpace::MultiRepAdaptiveDiscreteSpace() :
+    full_representation_(),
+    representations_(),
+    goal_(nullptr),
+    goal_hash_entry_(nullptr),
+    start_hash_entry_(nullptr),
+    hash_table_size_(32 * 1024),
+    hash_tables_(),
+    state_id_to_hash_entry_(),
+    proj_matrix_()
 {
-    if (fromID >= representations_.size()) {
-        ROS_ERROR_NAMED(GLOG, "Dimensionality ID %d is out of bounds!", fromID);
-        throw SBPL_Exception();
-        return false;
-    }
-    return representations_[fromID]->ProjectToFullD(state, proj_stateIDs, adPathIdx);
 }
 
-/// \brief Project a state to a set of states in another dimension
-bool MultiRepAdaptiveDiscreteSpace::Project(
-    const AdaptiveState *state,
-    int fromID,
-    int toID,
-    std::vector<int> &proj_stateIDs,
-    int adPathIdx)
+/// Destructor
+MultiRepAdaptiveDiscreteSpace::~MultiRepAdaptiveDiscreteSpace()
 {
-    if (toID >= (int)representations_.size() || toID < 0) {
-        ROS_WARN_NAMED(GLOG, "Dimensionality ID %d is out of bounds!", toID);
-        return false;
-    }
-    if (fromID >= (int)representations_.size() || fromID < 0) {
-        ROS_WARN_NAMED(GLOG, "Dimensionality ID %d is out of bounds!", toID);
-        return false;
-    }
-
-//    if (isInTrackingMode() && !representations_[toID]->isExecutable()) {
-//        ROS_WARN("Can't project to non-executable type in tracking mode!");
-//        return false; //no projections to non-executable types in trackmode
-//    }
-
-    int proj_idx = fromID * NumRepresentations() + toID;
-    if (proj_matrix_[proj_idx]) {
-        proj_matrix_[proj_idx]->project(state, proj_stateIDs, adPathIdx);
-        return true;
-    } else {
-        return false;
-    }
-
-    // optimization when toID is fullD: directly up-project to HD
-    if (toID == fulld_representation_->getID()) {
-        //fromID understands state
-        bool bRes = representations_[fromID]->ProjectToFullD(state, proj_stateIDs, adPathIdx);
-        ROS_DEBUG_NAMED(GPLOG, "Got %zu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getName().c_str(), representations_[toID]->getName().c_str());
-        if (!bRes) {
-            ROS_DEBUG_NAMED(GPLOG, "Failed to project from [%s] to [%s]", representations_[fromID]->getName().c_str(), representations_[toID]->getName().c_str());
+    for (size_t i = 0; i < state_id_to_hash_entry_.size(); i++) {
+        adim::AdaptiveHashEntry *entry = state_id_to_hash_entry_[i];
+        if (IsValidRepID(entry->dimID)) { // skip the goal
+            // tell the representation to delete its state data (the void *)
+            representations_[entry->dimID]->deleteStateData(entry->stateID);
         }
-        return bRes;
-    }
-
-    // optimization when fromID is fullD: directly down-project to LD
-    if (fromID == fulld_representation_->getID()) {
-        //state is hd toID understands it
-        bool bRes = representations_[toID]->ProjectFromFullD(state, proj_stateIDs, adPathIdx);
-        ROS_DEBUG_NAMED(GPLOG, "Got %zu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getName().c_str(), representations_[toID]->getName().c_str());
-        if (!bRes) {
-            ROS_DEBUG_NAMED(GPLOG, "Failed to project from [%s] to [%s]", representations_[fromID]->getName().c_str(), representations_[toID]->getName().c_str());
-        }
-        return bRes;
-    }
-
-    // project state to HD and project the hd-projections to a different LD
-    std::vector<int> hd_proj_stateIDs;
-    ROS_DEBUG_NAMED(GPLOG, "Projecting %d [%s] to FullD first! (adPathIdx=%d)", fromID, representations_[fromID]->getName().c_str(), adPathIdx);
-    if (!ProjectToFullD(state, fromID, hd_proj_stateIDs, adPathIdx)) {
-        ROS_DEBUG_NAMED(GPLOG, "Failed to project state data from representation %d [%s] to fullD representation", fromID, representations_[fromID]->getName().c_str());
-        return false;
-    }
-    ROS_DEBUG_NAMED(GPLOG, "Got %zu FullD projections", hd_proj_stateIDs.size());
-    ROS_DEBUG_NAMED(GPLOG, "Now projecting to %d [%s] (adPathIdx=%d)", toID, representations_[toID]->getName().c_str(), adPathIdx);
-    for (int hd_stateID : hd_proj_stateIDs) {
-        AdaptiveHashEntry *entry = GetState(hd_stateID);
-        if (entry) {
-            if (!representations_[toID]->ProjectFromFullD(entry->stateData, proj_stateIDs, adPathIdx)) {
-                ROS_DEBUG_NAMED(GPLOG, "Failed to project HD state data to representation %d [%s]", toID, representations_[toID]->getName().c_str());
-                return false;
-            }
-        }
-        else {
-            ROS_ERROR_NAMED(GPLOG, "Hmm... something is wrong here!");
-            ROS_ERROR_NAMED(GPLOG, "Could not get hash entry for HD state stateID %d", hd_stateID);
-            pause();
-            return false;
-        }
-    }
-    ROS_DEBUG_NAMED(GPLOG, "Got %zu projections when projecting from [%s] to [%s]", proj_stateIDs.size(), representations_[fromID]->getName().c_str(), representations_[toID]->getName().c_str());
-    return true;
-}
-
-bool MultiRepAdaptiveDiscreteSpace::IsProjectionExecutable(
-    int fromID,
-    int toID) const
-{
-    int proj_idx = fromID * NumRepresentations() + toID;
-    if (!proj_matrix_[proj_idx]) {
-        return false;
-    } else {
-        return proj_matrix_[proj_idx]->executable();
+        delete entry;
+        state_id_to_hash_entry_[i] = nullptr;
     }
 }
 
-int MultiRepAdaptiveDiscreteSpace::SetGoalCoords(
-    int dimID,
-    const AdaptiveState *state)
+/// Insert a new state into the state table and assigns a state id to the
+/// inserted state. The state should not currently exist in the state table as
+/// this function will not check for prior existence and may insert duplicate
+/// entries. The dimID of the state should correctly initialized to refer to
+/// an existing representation registered with this multi-representation space.
+///
+/// \param The state to be inserted
+/// \param The hash value of the state to be inserted
+/// \return The id assigned to the state, or -1 if the state's dimID is invalid
+int MultiRepAdaptiveDiscreteSpace::InsertHashEntry(
+    AdaptiveHashEntry *entry,
+    size_t binID)
 {
-    ROS_INFO_NAMED(GLOG, "setting goal coordinates");
-    int GoalID = representations_[dimID]->SetGoalCoords(state);
-    if (!representations_[dimID]->isExecutable()) {
-        ROS_WARN_NAMED(GLOG, "the start representation is of non-executable type!");
-    }
-    if (GoalID == -1) {
+    if (!IsValidRepID(entry->dimID)) { // TODO(Andrew): assertion material
+        ROS_ERROR_NAMED(GLOG, "dimID %d does not have a hash table!", entry->dimID);
         return -1;
     }
-    this->data_.goalHashEntry = GetState(GoalID);
-    ROS_INFO_NAMED(GLOG, "start set %d", GoalID);
-    return GoalID;
-}
 
-int MultiRepAdaptiveDiscreteSpace::SetGoalConfig(
-    int dimID,
-    const void *representation_specific_cont_data)
-{
-    ROS_INFO_NAMED(GLOG, "setting goal configuration");
-    int GoalID = representations_[dimID]->SetGoalConfig(
-            representation_specific_cont_data);
-    if (!representations_[dimID]->isExecutable()) {
-        ROS_WARN_NAMED(GLOG, "the start representation is of non-executable type!");
-    }
-    if (GoalID == -1) {
-        return -1;
-    }
-    this->data_.goalHashEntry = GetState(GoalID);
-    ROS_INFO_NAMED(GLOG, "start set %d", GoalID);
-    return GoalID;
-}
+    binID &= (hash_table_size_ - 1);
 
-int MultiRepAdaptiveDiscreteSpace::SetStartCoords(
-    int dimID,
-    const AdaptiveState *state)
-{
-    ROS_INFO_NAMED(GLOG, "setting start coordinates");
-    int StartID = representations_[dimID]->SetStartCoords(state);
-    if (!representations_[dimID]->isExecutable()) {
-        ROS_WARN_NAMED(GLOG, "the start representation is of non-executable type!");
-    }
-    if (StartID == -1) {
-        return -1;
-    }
-    this->data_.startHashEntry = GetState(StartID);
-    ROS_INFO_NAMED(GLOG, "start set %d", StartID);
-    return StartID;
-}
+    // get corresponding state ID
+    entry->stateID = state_id_to_hash_entry_.size();
 
-int MultiRepAdaptiveDiscreteSpace::SetStartConfig(
-    int dimID,
-    const void *representation_specific_cont_data)
-{
-    ROS_INFO_NAMED(GLOG, "setting start configuration");
-    int StartID = representations_[dimID]->SetStartConfig(
-            representation_specific_cont_data);
-    if (!representations_[dimID]->isExecutable()) {
-        ROS_WARN_NAMED(GLOG, "the start representation is of non-executable type!");
-    }
-    if (StartID == -1) {
-        return -1;
-    }
-    this->data_.startHashEntry = GetState(StartID);
-    ROS_INFO_NAMED(GLOG, "start set %d", StartID);
-    return StartID;
-}
+    // insert into list of states
+    state_id_to_hash_entry_.push_back(entry);
 
-void MultiRepAdaptiveDiscreteSpace::InsertMetaGoalHashEntry(
-    AdaptiveHashEntry *entry)
-{
-    int i;
-    /* get corresponding state ID */
-    entry->stateID = data_.StateID2HashEntry.size();
-    /* insert into list of states */
-    data_.StateID2HashEntry.push_back(entry);
-    /* insert into hash table in corresponding bin */
-    //don't insert it into hash table because it does not fit any dimensionality ID -- only way to get to it is by ID or by data_.goalHashEntry ptr
-    /* check if everything ok */
-    if (entry->stateID != StateID2IndexMapping.size()) {
-        ROS_ERROR_NAMED(GLOG, "last state has incorrect stateID");
-        throw SBPL_Exception();
-    }
-    /* make room and insert planner data */
+    // insert into hash table in corresponding bin
+    hash_tables_[entry->dimID][binID].push_back(entry);
+
+    // make room to map and insert planner data
     int *planner_data = new int[NUMOFINDICES_STATEID2IND];
+    std::fill(planner_data, planner_data + NUMOFINDICES_STATEID2IND, -1);
     StateID2IndexMapping.push_back(planner_data);
-    for (i = 0; i < NUMOFINDICES_STATEID2IND; i++) {
-        StateID2IndexMapping[entry->stateID][i] = -1;
-    }
-    data_.goalHashEntry = entry;
-    return;
-}
 
-int MultiRepAdaptiveDiscreteSpace::SetAbstractGoal(
-    AbstractGoal *goal)
-{
-    ROS_INFO_NAMED(GLOG, "Setting abstract goal...");
-    data_.goaldata = goal;
-    // create a fake metagoal
-    AdaptiveHashEntry *entry = new AdaptiveHashEntry;
-    entry->dimID = -1;
-    entry->stateData = NULL;
-    InsertMetaGoalHashEntry(entry);
-    data_.goalHashEntry = entry;
-    ROS_INFO_NAMED(GLOG, "Metagoal ID: %zu --> %d", entry->stateID, entry->dimID);
     return entry->stateID;
 }
 
-MultiRepAdaptiveDiscreteSpace::MultiRepAdaptiveDiscreteSpace()
+/// Lookup a state by its id.
+///
+/// \param stateID The id of a previously inserted state
+/// \return A pointer to the referenced state, or nullptr if the id is invalid
+AdaptiveHashEntry *MultiRepAdaptiveDiscreteSpace::GetState(int stateID) const
 {
-    data_.HashTableSize = 32 * 1024; //should be power of two
-    data_.StateID2HashEntry.clear();
-    data_.goalHashEntry = NULL;
-    data_.startHashEntry = NULL;
-    BestTracked_StateID = -1;
-    BestTracked_Cost = INFINITECOST;
-}
-
-MultiRepAdaptiveDiscreteSpace::~MultiRepAdaptiveDiscreteSpace()
-{
-    for (size_t i = 0; i < data_.StateID2HashEntry.size(); i++) {
-        adim::AdaptiveHashEntry *entry = data_.StateID2HashEntry[i];
-        representations_[entry->dimID]->deleteStateData(entry->stateID); //tell the representation to delete its state data (the void*)
-        delete entry;
-        data_.StateID2HashEntry[i] = NULL;
+    if (!IsValidStateID(stateID)) { // TODO(Andrew): assertion material
+        ROS_ERROR("stateID [%d] out of range [0,%zu)", stateID, state_id_to_hash_entry_.size());
+        return nullptr;
     }
-    data_.StateID2HashEntry.clear();
-    data_.HashTables.clear();
+    return state_id_to_hash_entry_[stateID];
 }
 
+/// Lookup the representation of a state by its id.
+///
+/// \param stateID The id of a previously inserted state.
+/// \return The id of the state's associated representation.
+int MultiRepAdaptiveDiscreteSpace::GetDimID(int stateID)
+{
+    if (!IsValidStateID(stateID)) { // TODO(Andrew): assertion material
+        ROS_ERROR("stateID [%d] out of range [0,%zu)", stateID, state_id_to_hash_entry_.size());
+        return -1;
+    }
+    return state_id_to_hash_entry_[stateID]->dimID;
+}
+
+/// Register a new representation and mark it as the full-dimensional
+/// representation.
+///
+/// \param The full-dimensional representation to be registered.
+/// \return true if registration was successful; see RegisterRepresentation for
+///     details on successful registration.
 bool MultiRepAdaptiveDiscreteSpace::RegisterFullDRepresentation(
     const AdaptiveStateRepresentationPtr &rep)
 {
-    fulld_representation_ = rep;
-    return RegisterRepresentation(rep);
+    bool res = RegisterRepresentation(rep);
+    if (res) {
+        full_representation_ = rep;
+    }
+    return res;
 }
 
+/// Register a new representation. If successfully registered, the
+/// representation will be assigned a unique id to refer to it. Registration
+/// will fail if the space already has a registered representation with the same
+/// id.
+///
+/// \param rep The representation to be registered
+/// \return true if registration was successful
 bool MultiRepAdaptiveDiscreteSpace::RegisterRepresentation(
     const AdaptiveStateRepresentationPtr &rep)
 {
-    for (int i = 0; i < representations_.size(); i++) {
+    for (size_t i = 0; i < representations_.size(); i++) {
         if (representations_[i]->getID() == rep->getID()) {
             ROS_ERROR_NAMED(GLOG, "Failed to register new representation (%s) with ID (%d) -- duplicate ID registered already", rep->getName().c_str(), rep->getID());
-            ROS_ERROR_NAMED(GLOG, "Duplicate (%d)(%s)", representations_[i]->getID(), representations_[i]->getName().c_str());
             return false;
         }
     }
@@ -265,11 +187,11 @@ bool MultiRepAdaptiveDiscreteSpace::RegisterRepresentation(
     rep->setID(representations_.size());
     representations_.push_back(rep);
 
-    // make room in hash table
-    std::vector<std::vector<AdaptiveHashEntry*>> HashTable(data_.HashTableSize + 1);
+    // create a new hash table
+    std::vector<std::vector<AdaptiveHashEntry*>> hash_table(hash_table_size_ + 1);
+    hash_tables_.push_back(std::move(hash_table));
 
-    data_.HashTables.push_back(HashTable);
-
+    // update the projection matrix
     std::vector<ProjectionPtr> new_proj_matrix;
     new_proj_matrix.resize(representations_.size() * representations_.size());
 
@@ -286,15 +208,22 @@ bool MultiRepAdaptiveDiscreteSpace::RegisterRepresentation(
     proj_matrix_ = std::move(new_proj_matrix);
 
     ROS_INFO_NAMED(GLOG, "Registered representation %d '%s'", rep->getID(), rep->getName().c_str());
-
     return true;
 }
 
+/// Register a new projection between representations. If successfully
+/// registered, the projection will be linked to this space. Registration will
+/// fail if the source or target representation of the projection is not yet
+/// registered to this space.
+///
+/// \param proj The projection to be registered
+/// \return true if registration was successful
 bool MultiRepAdaptiveDiscreteSpace::RegisterProjection(
     const ProjectionPtr &proj)
 {
-    if (proj->sourceRepID() < 0 || proj->sourceRepID() >= NumRepresentations() ||
-        proj->targetRepID() < 0 || proj->targetRepID() >= NumRepresentations())
+    // TODO(Andrew): assertion material?
+    if (!IsValidRepID(proj->sourceRepID()) ||
+        !IsValidRepID(proj->targetRepID()))
     {
         return false;
     }
@@ -305,64 +234,250 @@ bool MultiRepAdaptiveDiscreteSpace::RegisterProjection(
     return true;
 }
 
-size_t MultiRepAdaptiveDiscreteSpace::InsertHashEntry(
-    AdaptiveHashEntry *entry,
-    size_t binID)
+/// Set the start state from a discrete state.
+///
+/// In the event of a failure, the start state is not set and -1 is returned as
+/// the state id. Failure may occur if the representation id is invalid or if
+/// the representation could not set the start state.
+///
+/// \param dimID The id of the start state representation
+/// \param state The state to use as the start state
+/// \return The id of the start state or -1 in the event of failure
+int MultiRepAdaptiveDiscreteSpace::SetStartCoords(
+    int dimID,
+    const AdaptiveState *state)
 {
-    int i;
+    ROS_INFO_NAMED(GLOG, "Set start coordinates");
 
-    binID &= (data_.HashTableSize - 1);
-
-    /* get corresponding state ID */
-    entry->stateID = data_.StateID2HashEntry.size();
-
-    /* insert into list of states */
-    data_.StateID2HashEntry.push_back(entry);
-
-    /* insert into hash table in corresponding bin */
-
-    if (entry->dimID >= data_.HashTables.size()) {
-        ROS_ERROR_NAMED(GLOG, "dimID %d does not have a hash table!", entry->dimID);
-        throw SBPL_Exception();
+    if (!IsValidRepID(dimID)) { // TODO(Andrew): assertion material
+        return -1;
     }
 
-    data_.HashTables[entry->dimID][binID].push_back(entry);
-
-    /* check if everything ok */
-    if (entry->stateID != StateID2IndexMapping.size()) {
-        ROS_ERROR_NAMED(GLOG, "last state has incorrect stateID");
-        throw SBPL_Exception();
+    int start_id = representations_[dimID]->SetStartCoords(state);
+    if (start_id == -1) {
+        return -1;
     }
 
-    /* make room and insert planner data */
-    int *planner_data = new int[NUMOFINDICES_STATEID2IND];
-    StateID2IndexMapping.push_back(planner_data);
-    for (i = 0; i < NUMOFINDICES_STATEID2IND; i++) {
-        StateID2IndexMapping[entry->stateID][i] = -1;
+    start_hash_entry_ = GetState(start_id);
+    ROS_INFO_NAMED(GLOG, "start set %d", start_id);
+    return start_id;
+}
+
+/// Set the start state from a continuous state.
+///
+/// In the event of a failure, the start state is not set and -1 is returned as
+/// the state id. Failure may occur if the representation id is invalid or if
+/// the representation could not set the start state.
+///
+/// \param dimID The id of the start state representation
+/// \param state The state to use as the start state
+/// \return The id of the start state or -1 in the event of failure
+int MultiRepAdaptiveDiscreteSpace::SetStartConfig(
+    int dimID,
+    const ModelCoords *coords)
+{
+    ROS_INFO_NAMED(GLOG, "Set start configuration");
+
+    if (!IsValidRepID(dimID)) { // TODO(Andrew): assertion material
+        return -1;
     }
 
+    int start_id = representations_[dimID]->SetStartConfig(coords);
+    if (start_id == -1) {
+        return -1;
+    }
+
+    start_hash_entry_ = GetState(start_id);
+    ROS_INFO_NAMED(GLOG, "start set %d", start_id);
+    return start_id;
+}
+
+/// Set the goal state from a discrete state.
+///
+/// In the event of a failure, the goal state is not set and -1 is returned as
+/// the state id. Failure may occur if the representation id is invalid or if
+/// the representation could not set the goal state.
+///
+/// \param dimID The id of the goal state representation
+/// \param state The state to use as the goal state
+/// \return The id of the goal state or -1 in the event of failure
+int MultiRepAdaptiveDiscreteSpace::SetGoalCoords(
+    int dimID,
+    const AdaptiveState *state)
+{
+    ROS_INFO_NAMED(GLOG, "Set goal coordinates");
+
+    if (!IsValidRepID(dimID)) { // TODO(Andrew): assertion material
+        return -1;
+    }
+
+    int goal_id = representations_[dimID]->SetGoalCoords(state);
+    if (goal_id == -1) {
+        return -1;
+    }
+
+    goal_hash_entry_ = GetState(goal_id);
+    ROS_INFO_NAMED(GLOG, "start set %d", goal_id);
+    return goal_id;
+}
+
+/// Set the goal state from a continuous state.
+///
+/// In the event of a failure, the goal state is not set and -1 is returned as
+/// the state id. Failure may occur if the representation id is invalid or if
+/// the representation could not set the goal state.
+///
+/// \param dimID The id of the goal state representation
+/// \param state The state to use as the goal state
+/// \return The id of the goal state or -1 in the event of failure
+int MultiRepAdaptiveDiscreteSpace::SetGoalConfig(
+    int dimID,
+    const ModelCoords *coords)
+{
+    ROS_INFO_NAMED(GLOG, "Set goal configuration");
+
+    if (!IsValidRepID(dimID)) { // TODO(Andrew): assertion material
+        return -1;
+    }
+
+    int GoalID = representations_[dimID]->SetGoalConfig(coords);
+    if (GoalID == -1) {
+        return -1;
+    }
+
+    goal_hash_entry_ = GetState(GoalID);
+    ROS_INFO_NAMED(GLOG, "start set %d", GoalID);
+    return GoalID;
+}
+
+int MultiRepAdaptiveDiscreteSpace::GetStartStateID() const
+{
+    return goal_hash_entry_ ? goal_hash_entry_->stateID : -1;
+}
+
+int MultiRepAdaptiveDiscreteSpace::GetGoalStateID() const
+{
+    return start_hash_entry_ ? start_hash_entry_->stateID : -1;
+}
+
+/// Set an abstract goal condition.
+///
+/// The abstract goal is represented as a discrete state, with a valid state id,
+/// but belonging to no representation (its representation id is -1) and
+/// containing no state data.
+///
+/// \param The abstract goal condition
+/// \return The id of the abstract goal state
+int MultiRepAdaptiveDiscreteSpace::SetAbstractGoal(AbstractGoal *goal)
+{
+    ROS_INFO_NAMED(GLOG, "Setting abstract goal...");
+    goal_ = goal;
+
+    // create a fake metagoal
+    // TODO(Andrew): probably shouldn't do this multiple times?
+    AdaptiveHashEntry *entry = new AdaptiveHashEntry;
+    entry->dimID = -1;
+    entry->stateData = nullptr;
+    InsertMetaGoalHashEntry(entry);
+    goal_hash_entry_ = entry;
+    ROS_INFO_NAMED(GLOG, "Metagoal ID: %d --> %d", entry->stateID, entry->dimID);
     return entry->stateID;
 }
 
-AdaptiveHashEntry *MultiRepAdaptiveDiscreteSpace::GetState(
-    size_t stateID) const
+/// Project a low-dimensional state to the full-dimensional representation
+///
+/// \param state The state to be up-projected
+/// \param fromID The representation of the source state
+/// \param proj_ids Output vector to store up-projection state ids
+/// \param ad_path_idx Index into the most recently computed low-dimensional
+///     path
+/// \return Whether projection to the full-dimensional representation was
+///     successful
+bool MultiRepAdaptiveDiscreteSpace::ProjectToFullD(
+    const AdaptiveState *state,
+    int fromID,
+    std::vector<int> &proj_ids,
+    int ad_path_idx)
 {
-    if (stateID >= data_.StateID2HashEntry.size()) {
-        ROS_ERROR("stateID [%zu] out of range [%zu]", stateID, data_.StateID2HashEntry.size());
-        throw SBPL_Exception();
+    if (!IsValidRepID(fromID)) { // TODO(Andrew): assertion material
+        ROS_ERROR_NAMED(GLOG, "Dimensionality ID %d is out of bounds!", fromID);
+        return false;
     }
-    return data_.StateID2HashEntry[stateID];
+
+    return representations_[fromID]->ProjectToFullD(state, proj_ids, ad_path_idx);
 }
 
-int MultiRepAdaptiveDiscreteSpace::GetDimID(size_t stateID)
+/// Project a state to a different representation. The semantics depend on the
+/// relationship between the two representations:
+///
+/// For projections from a low-dimensional representation to the high-
+/// dimensional representation, this should return the states from the higher-
+/// dimensional representation whose projections to the lower-dimensional
+/// representation map back to this state.
+///
+/// For projections from the high-dimensional representation to a lower-
+/// dimensional representation, this should return either a single state in the
+/// lower-dimensional representation or no states at all.
+///
+/// For projections between representations not immediately associated, this
+/// should return a subset of states in the target representation that are
+/// reachable via a projection from the source state to the high-dimensional
+/// representation, followed by a path through the high-dimensional
+/// representation, and eventually a down-projection to the target
+/// representation.
+bool MultiRepAdaptiveDiscreteSpace::Project(
+    const AdaptiveState *state,
+    int fromID,
+    int toID,
+    std::vector<int> &proj_stateIDs,
+    int adPathIdx)
 {
-    if (stateID >= data_.StateID2HashEntry.size()) {
-        ROS_ERROR("stateID [%zu] out of range [%zu]", stateID, data_.StateID2HashEntry.size());
-        throw SBPL_Exception();
+    if (!IsValidRepID(toID)) { // TODO(Andrew): assertion material
+        ROS_WARN_NAMED(GLOG, "Dimensionality ID %d is out of bounds!", toID);
+        return false;
     }
-    return (int)data_.StateID2HashEntry[stateID]->dimID;
+
+    if (!IsValidRepID(fromID)) { // TODO(Andrew): assertion material
+        ROS_WARN_NAMED(GLOG, "Dimensionality ID %d is out of bounds!", fromID);
+        return false;
+    }
+
+    int proj_idx = GetProjectionIndex(fromID, toID);
+    if (proj_matrix_[proj_idx]) {
+        proj_matrix_[proj_idx]->project(state, proj_stateIDs, adPathIdx);
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
+/// Test whether a projection transition is executable.
+bool MultiRepAdaptiveDiscreteSpace::IsProjectionExecutable(
+    int fromID,
+    int toID) const
+{
+    int proj_idx = GetProjectionIndex(fromID, toID);
+    if (!proj_matrix_[proj_idx]) {
+        return false;
+    }
+    else {
+        return proj_matrix_[proj_idx]->executable();
+    }
+}
+
+/// Test whether a path is executable, i.e., an executable transition exists
+/// between all consecutive state pairs.
+///
+/// An error will be encountered in the following cases:
+/// * Any of the state ids in the path do not refer to an existing state in the
+///   state table.
+/// * Any of the states, other than the final state, listed in the path do not
+///   belong to a registered representation
+///
+/// \param stateIDV A path of states represented by their ids
+/// \return true if the path is executable, false otherwise or as result of an
+///     error.
 bool MultiRepAdaptiveDiscreteSpace::isExecutablePath(
     const std::vector<int> &stateIDV)
 {
@@ -374,17 +489,15 @@ bool MultiRepAdaptiveDiscreteSpace::isExecutablePath(
     AdaptiveHashEntry *prev_entry = GetState(stateIDV.front());
 
     if (!prev_entry) {
-        std::stringstream ss;
-        ss << __FUNCTION__ << ": no hash entry for state id " << stateIDV.front();
-        throw SBPL_Exception(ss.str());
+        ROS_ERROR_NAMED(GLOG, "No hash entry for state id %d", stateIDV.front());
+        return false;
     }
 
     if (prev_entry->dimID < 0 ||
         prev_entry->dimID >= (int)representations_.size())
     {
-        std::stringstream ss;
-        ss << __FUNCTION__ << ": dimID " << (int)prev_entry->dimID << " is out of range";
-        throw SBPL_Exception(ss.str());
+        ROS_ERROR_NAMED(GLOG, "Invalid representation %d for state %d", prev_entry->dimID, stateIDV.front());
+        return false;
     }
 
     for (size_t i = 1; i < stateIDV.size(); ++i) {
@@ -393,9 +506,8 @@ bool MultiRepAdaptiveDiscreteSpace::isExecutablePath(
 
         AdaptiveHashEntry *curr_entry = GetState(curr_id);
         if (!curr_entry) {
-            std::stringstream ss;
-            ss << __FUNCTION__ << ": no hash entry for state id " << curr_id;
-            throw SBPL_Exception(ss.str());
+            ROS_ERROR_NAMED(GLOG, "No hash entry for state id %d", curr_id);
+            return false;
         }
 
         if (curr_entry->dimID == -1) {
@@ -403,10 +515,11 @@ bool MultiRepAdaptiveDiscreteSpace::isExecutablePath(
             continue;
         }
 
-        if (curr_entry->dimID < 0 || curr_entry->dimID >= (int)representations_.size()) {
-            std::stringstream ss;
-            ss << __FUNCTION__ << ": dimID " << (int)curr_entry->dimID << " is out of range";
-            throw SBPL_Exception(ss.str());
+        if (curr_entry->dimID < 0 ||
+            curr_entry->dimID >= (int)representations_.size())
+        {
+            ROS_ERROR_NAMED(GLOG, "Invalid representation %d for state %d", curr_entry->dimID, curr_id);
+            return false;
         }
 
         if (curr_entry->dimID == prev_entry->dimID) {
@@ -427,6 +540,17 @@ bool MultiRepAdaptiveDiscreteSpace::isExecutablePath(
     return true;
 }
 
+void MultiRepAdaptiveDiscreteSpace::GetSuccs_Plan(
+    int state_id,
+    std::vector<int> *succs,
+    std::vector<int> *costs)
+{
+    succs->clear();
+    costs->clear();
+    AdaptiveHashEntry *entry = GetState(state_id);
+    representations_[entry->dimID]->GetSuccs(state_id, succs, costs);
+}
+
 void MultiRepAdaptiveDiscreteSpace::GetSuccs_Track(
     int state_id,
     std::vector<int> *succs,
@@ -438,79 +562,97 @@ void MultiRepAdaptiveDiscreteSpace::GetSuccs_Track(
     representations_[entry->dimID]->GetTrackSuccs(state_id, succs, costs);
 }
 
-void MultiRepAdaptiveDiscreteSpace::GetSuccs_Track(
+void MultiRepAdaptiveDiscreteSpace::GetPreds_Plan(
     int state_id,
-    int expansion_step,
-    std::vector<int> *succs,
+    std::vector<int> *preds,
     std::vector<int> *costs)
 {
-    ROS_ERROR_NAMED(GLOG, "GetSuccs_Track with exp_step not implemented---defaulting");
-    GetSuccs_Track(state_id, succs, costs);
-}
-
-void MultiRepAdaptiveDiscreteSpace::GetSuccs_Plan(
-    int state_id,
-    std::vector<int> *succs,
-    std::vector<int> *costs)
-{
-    succs->clear();
+    preds->clear();
     costs->clear();
     AdaptiveHashEntry *entry = GetState(state_id);
-    representations_[entry->dimID]->GetSuccs(state_id, succs, costs);
-    //ROS_INFO_NAMED(GLOG, "%d -> Got %zu [%zu] successors", SourceStateID, SuccIDV->size(), CostV->size());
+    representations_[entry->dimID]->GetSuccs(state_id, preds, costs);
+}
+
+void MultiRepAdaptiveDiscreteSpace::GetPreds_Track(
+    int state_id,
+    std::vector<int> *preds,
+    std::vector<int> *costs)
+{
+    preds->clear();
+    costs->clear();
+    AdaptiveHashEntry *entry = GetState(state_id);
+    representations_[entry->dimID]->GetPreds(state_id, preds, costs);
 }
 
 void MultiRepAdaptiveDiscreteSpace::GetSuccs_Plan(
     int SourceStateID,
     int expansion_step,
     std::vector<int> *SuccIDV,
-    std::vector<int> *CostV)
+    std::vector<int> *costs)
 {
-    //TODO GetSuccs_Plan
-    ROS_ERROR_NAMED(GLOG, "GetSuccs_Plan with exp_step not implemented---defaulting");
-    GetSuccs_Plan(SourceStateID, SuccIDV, CostV);
+    ROS_ERROR_NAMED(GLOG, "GetSuccs_Plan with exp_step not implemented. Defaulting");
+    GetSuccs_Plan(SourceStateID, SuccIDV, costs);
 }
 
-void MultiRepAdaptiveDiscreteSpace::GetPreds_Track(
-    int TargetStateID,
-    std::vector<int> *PredIDV,
-    std::vector<int> *CostV)
-{
-    AdaptiveHashEntry *entry = GetState(TargetStateID);
-    if (!representations_[entry->dimID]->isExecutable()) {
-        ROS_ERROR_NAMED(GLOG, "stateID [%d] has representation ID %d [%s], which is not executable. Cannot get tracking successors!", TargetStateID, entry->dimID, representations_[entry->dimID]->getName().c_str());
-        throw SBPL_Exception();
-    }
-    representations_[entry->dimID]->GetPreds(TargetStateID, PredIDV, CostV);
-}
-
-void MultiRepAdaptiveDiscreteSpace::GetPreds_Track(
-    int TargetStateID,
+void MultiRepAdaptiveDiscreteSpace::GetSuccs_Track(
+    int state_id,
     int expansion_step,
-    std::vector<int> *PredIDV,
-    std::vector<int> *CostV)
+    std::vector<int> *succs,
+    std::vector<int> *costs)
 {
-    ROS_ERROR_NAMED(GLOG, "GetPreds_Track with exp_step not implemented---defaulting");
-    GetPreds_Track(TargetStateID, PredIDV, CostV);
+    // TODO(Andrew): once
+    ROS_ERROR_NAMED(GLOG, "GetSuccs_Track with exp_step not implemented. Defaulting");
+    GetSuccs_Track(state_id, succs, costs);
 }
 
 void MultiRepAdaptiveDiscreteSpace::GetPreds_Plan(
-    int TargetStateID,
-    std::vector<int> *PredIDV,
-    std::vector<int> *CostV)
+    int state_id,
+    int expansion_step,
+    std::vector<int> *preds,
+    std::vector<int> *costs)
 {
-    AdaptiveHashEntry *entry = GetState(TargetStateID);
-    representations_[entry->dimID]->GetSuccs(TargetStateID, PredIDV, CostV);
+    ROS_ERROR_NAMED(GLOG, "GetPreds_Plan with exp_step not implemented. Defaulting");
+    GetPreds_Plan(state_id, preds, costs);
 }
 
-void MultiRepAdaptiveDiscreteSpace::GetPreds_Plan(
-    int TargetStateID,
+void MultiRepAdaptiveDiscreteSpace::GetPreds_Track(
+    int state_id,
     int expansion_step,
-    std::vector<int> *PredIDV,
-    std::vector<int> *CostV)
+    std::vector<int> *preds,
+    std::vector<int> *costs)
 {
-    ROS_ERROR_NAMED(GLOG, "GetPreds_Plan with exp_step not implemented---defaulting");
-    GetPreds_Plan(TargetStateID, PredIDV, CostV);
+    ROS_ERROR_NAMED(GLOG, "GetPreds_Track with exp_step not implemented. Defaulting");
+    GetPreds_Track(state_id, preds, costs);
+}
+
+int MultiRepAdaptiveDiscreteSpace::InsertMetaGoalHashEntry(
+    AdaptiveHashEntry *entry)
+{
+    entry->stateID = state_id_to_hash_entry_.size(); // assign state id
+    state_id_to_hash_entry_.push_back(entry); // insert into state table
+
+    // initialize mapping from search state to graph state
+    int *planner_data = new int[NUMOFINDICES_STATEID2IND];
+    std::fill(planner_data, planner_data + NUMOFINDICES_STATEID2IND, -1);
+    StateID2IndexMapping.push_back(planner_data);
+
+    goal_hash_entry_ = entry;
+    return entry->stateID;
+}
+
+bool MultiRepAdaptiveDiscreteSpace::IsValidStateID(int stateID) const
+{
+    return stateID >= 0 && stateID < (int)state_id_to_hash_entry_.size();
+}
+
+bool MultiRepAdaptiveDiscreteSpace::IsValidRepID(int dimID) const
+{
+    return dimID >= 0 && dimID < representations_.size();
+}
+
+int MultiRepAdaptiveDiscreteSpace::GetProjectionIndex(int srep, int trep) const
+{
+    return srep * NumRepresentations() + trep;
 }
 
 } // namespace adim

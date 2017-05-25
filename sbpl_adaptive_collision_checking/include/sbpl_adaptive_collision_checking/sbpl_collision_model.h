@@ -57,13 +57,12 @@
 #include <std_msgs/ColorRGBA.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
+#include <sbpl_adaptive/core/graph/state.h>
 
 // project includes
 #include <sbpl_adaptive_collision_checking/common.h>
 
 namespace adim {
-
-struct ModelCoords { };
 
 SBPL_CLASS_FORWARD(SBPLCollisionModel);
 
