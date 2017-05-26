@@ -3,7 +3,6 @@
 namespace adim {
 
 static const char *GLOG = "mrep";
-static const char *GPLOG = "mrep.projection";
 
 /// \class MultiRepAdaptiveDiscreteSpace
 ///
@@ -136,7 +135,7 @@ int MultiRepAdaptiveDiscreteSpace::InsertHashEntry(
 AdaptiveHashEntry *MultiRepAdaptiveDiscreteSpace::GetState(int stateID) const
 {
     if (!IsValidStateID(stateID)) { // TODO(Andrew): assertion material
-        ROS_ERROR("stateID [%d] out of range [0,%zu)", stateID, state_id_to_hash_entry_.size());
+        ROS_ERROR_NAMED(GLOG, "stateID [%d] out of range [0,%zu)", stateID, state_id_to_hash_entry_.size());
         return nullptr;
     }
     return state_id_to_hash_entry_[stateID];
@@ -149,7 +148,7 @@ AdaptiveHashEntry *MultiRepAdaptiveDiscreteSpace::GetState(int stateID) const
 int MultiRepAdaptiveDiscreteSpace::GetDimID(int stateID)
 {
     if (!IsValidStateID(stateID)) { // TODO(Andrew): assertion material
-        ROS_ERROR("stateID [%d] out of range [0,%zu)", stateID, state_id_to_hash_entry_.size());
+        ROS_ERROR_NAMED(GLOG, "stateID [%d] out of range [0,%zu)", stateID, state_id_to_hash_entry_.size());
         return -1;
     }
     return state_id_to_hash_entry_[stateID]->dimID;
