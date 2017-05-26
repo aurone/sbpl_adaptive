@@ -258,7 +258,7 @@ adim::AdaptiveHashEntry *MultiRepAdaptiveDiscreteSpace::FindHashEntry(
 {
     size_t bin = binID & (hash_table_size_ - 1);
     const auto &state_table = hash_tables_[dimID];
-    for (size_t i = 0; i < state_table[binID].size(); ++i) {
+    for (size_t i = 0; i < state_table[bin].size(); ++i) {
         adim::AdaptiveHashEntry *entry = state_table[bin][i];
         if (eq(entry)) {
             return entry;
