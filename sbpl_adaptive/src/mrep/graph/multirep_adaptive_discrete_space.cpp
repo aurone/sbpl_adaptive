@@ -7,9 +7,11 @@ static const char *GPLOG = "mrep.projection";
 
 /// \class MultiRepAdaptiveDiscreteSpace
 ///
-/// An implementation of a discrete space composed of multiple state
-/// representations. This class maintains the set of representation-aware states
-/// and dispatches calls to retrieve the successor/predecessor states of a given
+/// An implementation of a discrete space composed of multiple state space
+/// representations.
+///
+/// This class maintains the set of generated representation-aware states and
+/// dispatches calls to retrieve the successor/predecessor states of a given
 /// state to the appropriate representation.
 ///
 /// Transitions between states of the same representations are maintained by the
@@ -26,16 +28,18 @@ static const char *GPLOG = "mrep.projection";
 ///
 /// The set of representations may be arranged to form an abstraction hierarchy,
 /// such that less abstract representations are parents of more abstract
-/// representations. States from more abstract representations are assumed to be
-/// able to be projected to a set of states in their parent, less abstract
-/// representations. States from less abstract representations are allowed to
-/// possibly project to states in more abstract representations via a many-to-
-/// one mapping. For successful operation, one representation must be chosen as
-/// the least abstract representation, which acts as the most ancient descendant
-/// of any class in the hierarchy. Every state should be able to be recursively
+/// representations. For two representations (r1, r2) where r1 is a parent (less
+/// abstract) representation to r2, states from r1 may project to a single state
+/// in r2, and states from r2 should project to a set of states in r1. This
+/// relationship forms a many-to-(one-or-none) mapping from r1 to r2 and a 1-to-
+/// many mapping from r2 to r1.
+///
+/// For successful operation, one representation must be chosen as the least
+/// abstract representation, which acts as the most ancient descendant of any
+/// class in the hierarchy. Every state should be able to be recursively
 /// projected to a set of states in this least abstract representation. This
 /// representation is typically the representation containing states with the
-/// highest dimensionality, and is oftened referred to as the full-dimensional
+/// highest dimensionality, and is referred to as the full-dimensional
 /// representation.
 ///
 /// This class manages states at the abstract level, but is not aware of the
