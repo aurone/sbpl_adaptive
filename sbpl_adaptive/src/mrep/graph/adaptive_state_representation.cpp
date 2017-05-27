@@ -50,11 +50,6 @@ AdaptiveStateRepresentation::~AdaptiveStateRepresentation()
 {
 }
 
-std::string AdaptiveStateRepresentation::StateToString(int state_id)
-{
-    return std::to_string(state_id);
-}
-
 void AdaptiveStateRepresentation::addParentRepresentation(
     const AdaptiveStateRepresentationPtr &parent)
 {

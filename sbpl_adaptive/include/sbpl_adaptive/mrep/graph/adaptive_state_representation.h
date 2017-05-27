@@ -120,8 +120,6 @@ public:
         const ModelCoords *coords,
         AdaptiveState *state) const = 0;
 
-    virtual std::string StateToString(int state_id);
-
     const MultiRepAdaptiveDiscreteSpace *mrepSpace() const { return env_.get(); }
     MultiRepAdaptiveDiscreteSpace *mrepSpace() { return env_.get(); }
 
