@@ -355,12 +355,12 @@ int MultiRepAdaptiveDiscreteSpace::SetGoalConfig(
 
 int MultiRepAdaptiveDiscreteSpace::GetStartStateID() const
 {
-    return goal_hash_entry_ ? goal_hash_entry_->stateID : -1;
+    return start_hash_entry_ ? start_hash_entry_->stateID : -1;
 }
 
 int MultiRepAdaptiveDiscreteSpace::GetGoalStateID() const
 {
-    return start_hash_entry_ ? start_hash_entry_->stateID : -1;
+    return goal_hash_entry_ ? goal_hash_entry_->stateID : -1;
 }
 
 /// Set an abstract goal condition.
