@@ -59,6 +59,8 @@ public:
 
     SparseAdaptiveGrid3D(const sbpl::OccupancyGridPtr& grid);
 
+    const sbpl::OccupancyGridPtr &grid() { return oc_grid_; }
+
     bool isInPlanningMode() const { return !trackMode_; }
     bool isInTrackingMode() const { return trackMode_; }
 
