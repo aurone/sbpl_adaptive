@@ -11,7 +11,7 @@
 
 namespace adim {
 
-SBPL_CLASS_FORWARD(AdaptiveDiscreteSpace)
+SBPL_CLASS_FORWARD(AdaptiveDiscreteSpace);
 
 /// \brief base class for environments defining planning graphs
 ///
@@ -63,16 +63,16 @@ public:
     virtual void addSphere(int StateID, int &first_mod_step) = 0;
 
     void GetPreds(
-        int TargetStateID,
+        int state_id,
         int expansionStep,
-        std::vector<int> *PredIDV,
-        std::vector<int> *CostV);
+        std::vector<int> *preds,
+        std::vector<int> *costs);
 
     void GetSuccs(
-        int SourceStateID,
+        int state_id,
         int expansionStep,
-        std::vector<int> *SuccIDV,
-        std::vector<int> *CostV);
+        std::vector<int> *succs,
+        std::vector<int> *costs);
 
     ///@}
 
@@ -104,14 +104,14 @@ public:
     ///@{
 
     void GetSuccs(
-        int SourceStateID,
-        std::vector<int>* SuccIDV,
-        std::vector<int>* CostV);
+        int state_id,
+        std::vector<int>* succs,
+        std::vector<int>* costs);
 
     void GetPreds(
-        int TargetStateID,
-        std::vector<int>* PredIDV,
-        std::vector<int>* CostV);
+        int state_id,
+        std::vector<int>* preds,
+        std::vector<int>* costs);
 
     ///@}
 
@@ -127,57 +127,57 @@ protected:
     ///   environment mode when generating successor or predecessor states for
     ///   the planner
 
-    /// \brief gets successors for tracking mode
-    virtual void GetSuccs_Track(
-        int SourceStateID,
-        std::vector<int>* SuccIDV,
-        std::vector<int>* CostV) = 0;
-
     /// \brief gets successors for planning mode
     virtual void GetSuccs_Plan(
-        int SourceStateID,
-        std::vector<int>* SuccIDV,
-        std::vector<int>* CostV) = 0;
-
-    /// \brief gets predecessors for tracking mode
-    virtual void GetPreds_Track(
-        int TargetStateID,
-        std::vector<int>* PredIDV,
-        std::vector<int>* CostV) = 0;
-
-    /// \brief gets predecessors for planning mode
-    virtual void GetPreds_Plan(
-        int TargetStateID,
-        std::vector<int>* PredIDV,
-        std::vector<int>* CostV) = 0;
+        int state_id,
+        std::vector<int>* succs,
+        std::vector<int>* costs) = 0;
 
     /// \brief gets successors for tracking mode
     virtual void GetSuccs_Track(
-        int SourceStateID,
-        int expansion_step,
-        std::vector<int>* SuccIDV,
-        std::vector<int>* CostV) = 0;
-
-    /// \brief gets successors for planning mode
-    virtual void GetSuccs_Plan(
-        int SourceStateID,
-        int expansion_step,
-        std::vector<int>* SuccIDV,
-        std::vector<int>* CostV) = 0;
-
-    /// \brief gets predecessors for tracking mode
-    virtual void GetPreds_Track(
-        int TargetStateID,
-        int expansion_step,
-        std::vector<int>* PredIDV,
-        std::vector<int>* CostV) = 0;
+        int state_id,
+        std::vector<int>* succs,
+        std::vector<int>* costs) = 0;
 
     /// \brief gets predecessors for planning mode
     virtual void GetPreds_Plan(
-        int TargetStateID,
+        int state_id,
+        std::vector<int>* preds,
+        std::vector<int>* costs) = 0;
+
+    /// \brief gets predecessors for tracking mode
+    virtual void GetPreds_Track(
+        int state_id,
+        std::vector<int>* preds,
+        std::vector<int>* costs) = 0;
+
+    /// \brief gets successors for planning mode
+    virtual void GetSuccs_Plan(
+        int state_id,
         int expansion_step,
-        std::vector<int>* PredIDV,
-        std::vector<int>* CostV) = 0;
+        std::vector<int>* succs,
+        std::vector<int>* costs) = 0;
+
+    /// \brief gets successors for tracking mode
+    virtual void GetSuccs_Track(
+        int state_id,
+        int expansion_step,
+        std::vector<int>* succs,
+        std::vector<int>* costs) = 0;
+
+    /// \brief gets predecessors for planning mode
+    virtual void GetPreds_Plan(
+        int state_id,
+        int expansion_step,
+        std::vector<int>* preds,
+        std::vector<int>* costs) = 0;
+
+    /// \brief gets predecessors for tracking mode
+    virtual void GetPreds_Track(
+        int state_id,
+        int expansion_step,
+        std::vector<int>* preds,
+        std::vector<int>* costs) = 0;
 
     virtual void onSetPlanMode() { }
 
@@ -201,59 +201,59 @@ AdaptiveDiscreteSpace::AdaptiveDiscreteSpace() :
 
 inline
 void AdaptiveDiscreteSpace::GetPreds(
-    int TargetStateID,
+    int state_id,
     int expansionStep,
-    std::vector<int>* PredIDV,
-    std::vector<int>* CostV)
+    std::vector<int>* preds,
+    std::vector<int>* costs)
 {
     if (trackMode) {
-        GetPreds_Track(TargetStateID, expansionStep, PredIDV, CostV);
+        GetPreds_Track(state_id, expansionStep, preds, costs);
     }
     else {
-        GetPreds_Plan(TargetStateID, expansionStep, PredIDV, CostV);
+        GetPreds_Plan(state_id, expansionStep, preds, costs);
     }
 };
 
 inline
 void AdaptiveDiscreteSpace::GetSuccs(
-    int SourceStateID,
+    int state_id,
     int expansionStep,
-    std::vector<int>* SuccIDV,
-    std::vector<int>* CostV)
+    std::vector<int>* succs,
+    std::vector<int>* costs)
 {
     if (trackMode) {
-        GetSuccs_Track(SourceStateID, expansionStep, SuccIDV, CostV);
+        GetSuccs_Track(state_id, expansionStep, succs, costs);
     }
     else {
-        GetSuccs_Plan(SourceStateID, expansionStep, SuccIDV, CostV);
+        GetSuccs_Plan(state_id, expansionStep, succs, costs);
     }
 };
 
 inline
 void AdaptiveDiscreteSpace::GetPreds(
-    int TargetStateID,
-    std::vector<int>* PredIDV,
-    std::vector<int>* CostV)
+    int state_id,
+    std::vector<int>* preds,
+    std::vector<int>* costs)
 {
     if (trackMode) {
-        GetPreds_Track(TargetStateID, PredIDV, CostV);
+        GetPreds_Track(state_id, preds, costs);
     }
     else {
-        GetPreds_Plan(TargetStateID, PredIDV, CostV);
+        GetPreds_Plan(state_id, preds, costs);
     }
 }
 
 inline
 void AdaptiveDiscreteSpace::GetSuccs(
-    int SourceStateID,
-    std::vector<int>* SuccIDV,
-    std::vector<int>* CostV)
+    int state_id,
+    std::vector<int>* succs,
+    std::vector<int>* costs)
 {
     if (trackMode) {
-        GetSuccs_Track(SourceStateID, SuccIDV, CostV);
+        GetSuccs_Track(state_id, succs, costs);
     }
     else {
-        GetSuccs_Plan(SourceStateID, SuccIDV, CostV);
+        GetSuccs_Plan(state_id, succs, costs);
     }
 }
 

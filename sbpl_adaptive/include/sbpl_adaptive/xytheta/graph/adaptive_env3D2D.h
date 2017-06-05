@@ -16,8 +16,8 @@ typedef struct
     short int sphereIndex;
 } tGridCell;
 
-class AdaptiveEnvironment3D2D : public GenericAdaptiveEnvironment
-{ 
+class AdaptiveEnvironment3D2D : public GenericAdaptiveSpace
+{
 private:
     EnvNAVXYTHETALATConfig_t EnvNAVXYTHETALATCfg;
     EnvironmentNAVXYTHETALAT_t EnvNAVXYTHETALAT;
