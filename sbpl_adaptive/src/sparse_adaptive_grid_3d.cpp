@@ -49,17 +49,17 @@ void SparseAdaptiveGrid3D::reset()
 
 void SparseAdaptiveGrid3D::world2grid(
     double wx, double wy, double wz,
-    size_t& gx, size_t& gy, size_t& gz) const
+    int& gx, int& gy, int& gz) const
 {
     int cx, cy, cz;
     oc_grid_->worldToGrid(wx, wy, wz, cx, cy, cz);
-    gx = (size_t)cx;
-    gy = (size_t)cy;
-    gz = (size_t)cz;
+    gx = cx;
+    gy = cy;
+    gz = cz;
 }
 
 void SparseAdaptiveGrid3D::grid2world(
-    size_t gx, size_t gy, size_t gz,
+    int gx, int gy, int gz,
     double& wx, double& wy, double& wz) const
 {
     double wx_, wy_, wz_;
@@ -168,9 +168,9 @@ void SparseAdaptiveGrid3D::setCellCostToGoal(
 
 bool SparseAdaptiveGrid3D::setCellNearDim(
     bool tracking,
-    size_t x,
-    size_t y,
-    size_t z,
+    int x,
+    int y,
+    int z,
     int dimID)
 {
     max_dimID_ = std::max(max_dimID_, dimID);
@@ -235,9 +235,9 @@ unsigned int SparseAdaptiveGrid3D::getCellCostToGoal(int gx, int gy, int gz) con
 }
 
 void SparseAdaptiveGrid3D::getOverlappingSpheres(
-    size_t x,
-    size_t y,
-    size_t z,
+    int x,
+    int y,
+    int z,
     int dimID,
     std::vector<std::vector<int>> &spheres)
 {
@@ -254,9 +254,9 @@ void SparseAdaptiveGrid3D::getOverlappingSpheres(
 
 void SparseAdaptiveGrid3D::addSphere(
     bool tracking,
-    size_t x,
-    size_t y,
-    size_t z,
+    int x,
+    int y,
+    int z,
     int rad,
     int near_rad,
     int dimID,
@@ -537,9 +537,9 @@ visualization_msgs::Marker SparseAdaptiveGrid3D::getCostToGoalGridVisualization(
     marker.color.b = 1;
     marker.color.a = 1;
     if (max_costToGoal_ > 0) {
-        for (size_t x = 0; x < (size_t)grid_sizes_[0]; x += throttle) {
-        for (size_t y = 0; y < (size_t)grid_sizes_[1]; y += throttle) {
-        for (size_t z = 0; z < (size_t)grid_sizes_[2]; z += throttle) {
+        for (int x = 0; x < grid_sizes_[0]; x += throttle) {
+        for (int y = 0; y < grid_sizes_[1]; y += throttle) {
+        for (int z = 0; z < grid_sizes_[2]; z += throttle) {
             unsigned int idx = getCellCostToGoal((int)x, (int)y, (int)z);
 
             if (idx > max_costToGoal_) {

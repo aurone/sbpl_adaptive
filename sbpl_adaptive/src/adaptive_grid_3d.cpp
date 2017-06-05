@@ -49,17 +49,17 @@ void AdaptiveGrid3D::reset()
 
 void AdaptiveGrid3D::world2grid(
     double wx, double wy, double wz,
-    size_t& gx, size_t& gy, size_t& gz) const
+    int& gx, int& gy, int& gz) const
 {
     int cx, cy, cz;
     oc_grid_->worldToGrid(wx, wy, wz, cx, cy, cz);
-    gx = (size_t)cx;
-    gy = (size_t)cy;
-    gz = (size_t)cz;
+    gx = cx;
+    gy = cy;
+    gz = cz;
 }
 
 void AdaptiveGrid3D::grid2world(
-    size_t gx, size_t gy, size_t gz,
+    int gx, int gy, int gz,
     double& wx, double& wy, double& wz) const
 {
     double wx_, wy_, wz_;
@@ -175,9 +175,9 @@ void AdaptiveGrid3D::setCellCostToGoal(
 
 bool AdaptiveGrid3D::setCellNearDim(
     bool tracking,
-    size_t x,
-    size_t y,
-    size_t z,
+    int x,
+    int y,
+    int z,
     int dimID)
 {
     max_dimID_ = std::max(max_dimID_, dimID);
@@ -198,9 +198,9 @@ bool AdaptiveGrid3D::setCellNearDim(
 void AdaptiveGrid3D::clearAllSpheres()
 {
     //clears all HD regions from the grid
-    for (size_t i = 0; i < (size_t)grid_sizes_[0]; ++i) {
-    for (size_t j = 0; j < (size_t)grid_sizes_[1]; ++j) {
-    for (size_t k = 0; k < (size_t)grid_sizes_[2]; ++k) {
+    for (int i = 0; i < grid_sizes_[0]; ++i) {
+    for (int j = 0; j < grid_sizes_[1]; ++j) {
+    for (int k = 0; k < grid_sizes_[2]; ++k) {
         grid_(i, j, k).pDimID = grid_(i, j, k).pDefaultDimID;
         grid_(i, j, k).tDimID = grid_(i, j, k).pDefaultDimID;
         grid_(i, j, k).costToGoal = INFINITECOST;
@@ -237,9 +237,9 @@ unsigned int AdaptiveGrid3D::getCellCostToGoal(int gx, int gy, int gz) const
 }
 
 void AdaptiveGrid3D::getOverlappingSpheres(
-    size_t x,
-    size_t y,
-    size_t z,
+    int x,
+    int y,
+    int z,
     int dimID,
     std::vector<std::vector<int>> &spheres)
 {
@@ -256,9 +256,9 @@ void AdaptiveGrid3D::getOverlappingSpheres(
 
 void AdaptiveGrid3D::addSphere(
     bool tracking,
-    size_t x,
-    size_t y,
-    size_t z,
+    int x,
+    int y,
+    int z,
     int rad,
     int near_rad,
     int dimID,
@@ -435,9 +435,9 @@ visualization_msgs::Marker AdaptiveGrid3D::getCostToGoalGridVisualization(
     marker.color.b = 1;
     marker.color.a = 1;
     if (max_costToGoal_ > 0) {
-        for (size_t x = 0; x < (size_t)grid_sizes_[0]; x += throttle) {
-        for (size_t y = 0; y < (size_t)grid_sizes_[1]; y += throttle) {
-        for (size_t z = 0; z < (size_t)grid_sizes_[2]; z += throttle) {
+        for (int x = 0; x < grid_sizes_[0]; x += throttle) {
+        for (int y = 0; y < grid_sizes_[1]; y += throttle) {
+        for (int z = 0; z < grid_sizes_[2]; z += throttle) {
             unsigned int idx = getCellCostToGoal((int)x, (int)y, (int)z);
 
             if (idx > max_costToGoal_) {

@@ -80,10 +80,10 @@ public:
 
     void world2grid(
         double wx, double wy, double wz,
-        size_t &gx, size_t &gy, size_t &gz) const;
+        int &gx, int &gy, int &gz) const;
 
     void grid2world(
-        size_t gx, size_t gy, size_t gz,
+        int gx, int gy, int gz,
         double& wx, double& wy, double& wz) const;
     ///@}
 
@@ -177,9 +177,9 @@ private:
 
     void addSphere(
         bool tracking,
-        size_t x,
-        size_t y,
-        size_t z,
+        int x,
+        int y,
+        int z,
         int rad,
         int near_rad,
         int dimID,
@@ -188,9 +188,9 @@ private:
 
     bool setCellNearDim(
         bool tracking,
-        size_t x,
-        size_t y,
-        size_t z,
+        int x,
+        int y,
+        int z,
         int dimID);
 
     void addTrackingSphere(
@@ -198,7 +198,7 @@ private:
         std::vector<Position3D> &modCells);
 
     void getOverlappingSpheres(
-        size_t x, size_t y, size_t z,
+        int x, int y, int z,
         int dimID,
         std::vector<std::vector<int>> &spheres);
 
@@ -455,7 +455,7 @@ void AdaptiveGrid3D::addPlanningSphere(
     const AdaptiveSphere3D &sphere,
     std::vector<Position3D> &modCells)
 {
-    size_t gx, gy, gz;
+    int gx, gy, gz;
     world2grid(sphere.x,sphere.y,sphere.z,gx,gy,gz);
     int r = round(sphere.rad / oc_grid_->resolution());
     int nr = round(sphere.near_rad / oc_grid_->resolution());
@@ -484,17 +484,17 @@ const AdaptiveGridCell &AdaptiveGrid3D::getCell(int gx, int gy, int gz) const
 inline
 const AdaptiveGridCell &AdaptiveGrid3D::getCell(double wx, double wy, double wz) const
 {
-    size_t gcoordx, gcoordy, gcoordz;
+    int gcoordx, gcoordy, gcoordz;
     world2grid(wx, wy, wz, gcoordx, gcoordy, gcoordz);
-    return getCell((int)gcoordx, (int)gcoordy, (int)gcoordz);
+    return getCell(gcoordx, gcoordy, gcoordz);
 }
 
 inline
 unsigned int AdaptiveGrid3D::getCellCostToGoal(double wx, double wy, double wz) const
 {
-    size_t gcoordx, gcoordy, gcoordz;
+    int gcoordx, gcoordy, gcoordz;
     world2grid(wx, wy, wz, gcoordx, gcoordy, gcoordz);
-    return getCellCostToGoal((int)gcoordx, (int)gcoordy, (int)gcoordz);
+    return getCellCostToGoal(gcoordx, gcoordy, gcoordz);
 }
 
 inline
@@ -506,9 +506,9 @@ bool AdaptiveGrid3D::isInBounds(int gx, int gy, int gz) const
 inline
 bool AdaptiveGrid3D::isInBounds(double wx, double wy, double wz) const
 {
-    size_t gx, gy, gz;
+    int gx, gy, gz;
     world2grid(wx, wy, wz, gx, gy, gz);
-    return isInBounds((int)gx, (int)gy, (int)gz);
+    return isInBounds(gx, gy, gz);
 }
 
 inline
@@ -516,7 +516,7 @@ void AdaptiveGrid3D::addTrackingSphere(
     const AdaptiveSphere3D &sphere,
     std::vector<Position3D> &modCells)
 {
-    size_t gx, gy, gz;
+    int gx, gy, gz;
     world2grid(sphere.x, sphere.y, sphere.z, gx, gy, gz);
     int r = round(sphere.rad / oc_grid_->resolution());
     int nr = round(sphere.near_rad / oc_grid_->resolution());
