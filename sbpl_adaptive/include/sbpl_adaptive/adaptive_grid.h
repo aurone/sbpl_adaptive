@@ -1,6 +1,8 @@
 #ifndef SBPL_ADAPTIVE_ADAPTIVE_GRID_H
 #define SBPL_ADAPTIVE_ADAPTIVE_GRID_H
 
+#include <tuple>
+
 namespace adim {
 
 struct AdaptiveGridCell
