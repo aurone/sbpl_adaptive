@@ -387,29 +387,6 @@ int MultiRepAdaptiveDiscreteSpace::SetAbstractGoal(AbstractGoal *goal)
     return entry->stateID;
 }
 
-/// Project a low-dimensional state to the full-dimensional representation
-///
-/// \param state The state to be up-projected
-/// \param fromID The representation of the source state
-/// \param proj_ids Output vector to store up-projection state ids
-/// \param ad_path_idx Index into the most recently computed low-dimensional
-///     path
-/// \return Whether projection to the full-dimensional representation was
-///     successful
-bool MultiRepAdaptiveDiscreteSpace::ProjectToFullD(
-    const AdaptiveState *state,
-    int fromID,
-    std::vector<int> &proj_ids,
-    int ad_path_idx)
-{
-    if (!IsValidRepID(fromID)) { // TODO(Andrew): assertion material
-        ROS_ERROR_NAMED(GLOG, "Dimensionality ID %d is out of bounds!", fromID);
-        return false;
-    }
-
-    return representations_[fromID]->ProjectToFullD(state, proj_ids, ad_path_idx);
-}
-
 /// Project a state to a different representation. The semantics depend on the
 /// relationship between the two representations:
 ///

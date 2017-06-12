@@ -88,16 +88,10 @@ public:
     ///@{
     bool RegisterProjection(const ProjectionPtr &proj);
 
-    bool ProjectToFullD(
-        const adim::AdaptiveState *local_state_data,
-        int fromID,
-        std::vector<int> &proj_stateIDs,
-        int adPathIdx = 0);
-
     bool Project(
         const adim::AdaptiveState *hd_state_data,
-        int fromID,
-        int toID,
+        int src_rep,
+        int dst_rep,
         std::vector<int> &proj_stateIDs,
         int adPathIdx = 0);
 
