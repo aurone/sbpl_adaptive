@@ -90,7 +90,7 @@ public:
     virtual void VisualizeState(
         int stateID,
         int hue,
-        std::string ns,
+        const std::string &ns,
         int &viz_idx) const = 0;
 
     ///@}
@@ -170,8 +170,12 @@ protected:
 
     MultiRepAdaptiveDiscreteSpacePtr env_;
     int dimID_;
+
+private:
+
     bool executable_;
     std::string name_;
+
     AdaptiveStateRepresentationPtr fullD_rep_;
 
     // less abstract representations

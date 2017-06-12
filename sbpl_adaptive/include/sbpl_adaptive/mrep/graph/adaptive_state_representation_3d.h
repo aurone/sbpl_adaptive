@@ -50,7 +50,7 @@ public:
     virtual std::vector<Position3D> getSpherePositionsForState(int StateID) = 0;
 
     const MultiRepAdaptiveDiscreteSpace3D *mrepSpace3D() const
-    { return mrepSpace<MultiRepAdaptiveDiscreteSpace3D>();}
+    { return mrepSpace<MultiRepAdaptiveDiscreteSpace3D>(); }
 
     MultiRepAdaptiveDiscreteSpace3D *mrepSpace3D()
     { return mrepSpace<MultiRepAdaptiveDiscreteSpace3D>(); }
