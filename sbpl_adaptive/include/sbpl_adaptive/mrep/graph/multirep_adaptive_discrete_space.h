@@ -92,7 +92,8 @@ public:
         const adim::AdaptiveState *hd_state_data,
         int src_rep,
         int dst_rep,
-        std::vector<int> &proj_stateIDs,
+        std::vector<int> &proj_state_ids,
+        std::vector<int> &proj_costs,
         int adPathIdx = 0);
 
     bool IsProjectionExecutable(int fromID, int toID) const;

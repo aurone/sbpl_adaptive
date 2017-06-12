@@ -26,10 +26,30 @@ public:
 
     virtual ~Projection();
 
+    /// Return projection successors from a state in the source representation
+    /// to states in the target representation and their associated costs. A
+    /// cost of -1 implies that the cost should be overridden by the caller,
+    /// often the source representation.
+    ///
+    /// Successors (and costs) should only be appended to the output array of
+    /// successors and the previous contents should not be modified or cleared.
+    ///
+    /// \param state A state in the source representation
+    /// \param proj_state_ids The state ids of the successor states in the
+    ///     target representation
+    /// \param proj_costs Associated costs of projection transitions, -1 for
+    ///     each transition whose cost should be determined by the caller
+    /// \param ad_path_idx The index of the nearest state on the adaptive path
     virtual void project(
         const adim::AdaptiveState *state,
         std::vector<int> &proj_state_ids,
+        std::vector<int> &proj_costs,
         int ad_path_idx = 0) = 0;
+
+    /// Associate a multi-representation space with this projection. Need only
+    /// be called by the multi-representation space upon registration.
+    void setPlanningSpace(MultiRepAdaptiveDiscreteSpace *space)
+    { space_ = space; }
 
     const AdaptiveStateRepresentationPtr &sourceRep() const
     { return src_rep_; }
@@ -53,9 +73,6 @@ public:
     int targetRepID() const { return tgt_rep_->getID(); }
 
     bool executable() const { return executable_; }
-
-    void setPlanningSpace(MultiRepAdaptiveDiscreteSpace *space)
-    { space_ = space; }
 
     MultiRepAdaptiveDiscreteSpace *space()
     { return space_; }

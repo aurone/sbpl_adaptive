@@ -409,7 +409,8 @@ bool MultiRepAdaptiveDiscreteSpace::Project(
     const AdaptiveState *state,
     int fromID,
     int toID,
-    std::vector<int> &proj_stateIDs,
+    std::vector<int> &proj_state_ids,
+    std::vector<int> &proj_costs,
     int adPathIdx)
 {
     if (!IsValidRepID(toID)) { // TODO(Andrew): assertion material
@@ -424,7 +425,7 @@ bool MultiRepAdaptiveDiscreteSpace::Project(
 
     int proj_idx = GetProjectionIndex(fromID, toID);
     if (proj_matrix_[proj_idx]) {
-        proj_matrix_[proj_idx]->project(state, proj_stateIDs, adPathIdx);
+        proj_matrix_[proj_idx]->project(state, proj_state_ids, proj_costs, adPathIdx);
         return true;
     }
     else {
