@@ -450,7 +450,7 @@ visualization_msgs::MarkerArray SparseAdaptiveGrid3D::getAdaptiveGridVisualizati
         m.id = id++;
     }
 
-    ROS_INFO_STREAM("Created Visualization from " << grid_.num_nodes() << " nodes");
+    ROS_INFO_STREAM("Created Visualization from " << grid_.tree().num_nodes() << " nodes");
     return ma;
 }
 
