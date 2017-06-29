@@ -452,64 +452,6 @@ visualization_msgs::MarkerArray SparseAdaptiveGrid3D::getAdaptiveGridVisualizati
 
     ROS_INFO_STREAM("Created Visualization from " << grid_.num_nodes() << " nodes");
     return ma;
-
-//    visualization_msgs::Marker marker;
-//    double m_scale = scale * oc_grid_->resolution();
-//    marker.header.stamp = ros::Time::now();
-//    marker.header.frame_id = oc_grid_->getReferenceFrame();
-//    marker.ns = ns_prefix + "_AdaptiveGrid3D";
-//    marker.id = 0;
-//    marker.type = visualization_msgs::Marker::CUBE_LIST;
-//    marker.action = visualization_msgs::Marker::ADD;
-//    marker.pose.position.x = marker.pose.position.y = marker.pose.position.z = 0.0;
-//    marker.pose.orientation.w = 1.0;
-//    marker.pose.orientation.x = marker.pose.orientation.y = marker.pose.orientation.z = 0.0;
-//    marker.scale.x = marker.scale.y = marker.scale.z = m_scale;
-//    marker.color.r = marker.color.g = marker.color.b = marker.color.a = 1.0f;
-//    marker.lifetime = ros::Duration(0.0);
-//    marker.frame_locked = false;
-//    for (int x = 0; x < grid_sizes_[0]; x += throttle) {
-//    for (int y = 0; y < grid_sizes_[1]; y += throttle) {
-//    for (int z = 0; z < grid_sizes_[2]; z += throttle) {
-//        std_msgs::ColorRGBA col;
-//        for (int i = 0; i <= max_dimID_; ++i) {
-//            if (dimEnabled(x, y, z, i, trackMode_)) {
-//                double hue = 360.0 * i / (double)(max_dimID_ + 1);
-//                std_msgs::ColorRGBA c;
-//                leatherman::msgHSVToRGB(hue, 1.0, 1.0, c);
-//                // additive color per dimension
-//                col.r += c.r;
-//                col.g += c.g;
-//                col.b += c.b;
-//
-//            }
-//        }
-//
-//        // normalize color
-//        float m = col.r;
-//        m = std::max(m, col.g);
-//        m = std::max(m, col.b);
-//        if (m == 0.0f) {
-//            continue;
-//        }
-//        float minv = 1.0 / m;
-//        col.r *= minv;
-//        col.g *= minv;
-//        col.b *= minv;
-//        col.a = 1.0f;
-//
-//        double wx, wy, wz;
-//        grid2world(x, y, z, wx, wy, wz);
-//        geometry_msgs::Point p;
-//        p.x = wx;
-//        p.y = wy;
-//        p.z = wz;
-//        marker.points.push_back(p);
-//        marker.colors.push_back(col);
-//    }
-//    }
-//    }
-//    return marker;
 }
 
 visualization_msgs::Marker SparseAdaptiveGrid3D::getCostToGoalGridVisualization(
