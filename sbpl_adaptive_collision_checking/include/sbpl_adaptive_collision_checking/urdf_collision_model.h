@@ -58,8 +58,8 @@ struct URDFModelCoords : ModelCoords
 
     Eigen::Affine3d root;
     std::map<std::string, std::vector<double>> coordmap;
-    std::vector<std::string> collision_links;
-    std::vector<std::string> contact_links;
+//    std::vector<std::string> collision_links;
+//    std::vector<std::string> contact_links;
 
     bool getCoords(
         const std::string &name,

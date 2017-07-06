@@ -62,8 +62,6 @@ URDFModelCoords URDFCollisionModel::getDefaultCoordinates() const
     URDFModelCoords c;
 
     c.root = Eigen::Affine3d::Identity();
-    c.collision_links = links_with_collision_spheres_;
-    c.contact_links = links_with_contact_spheres_;
 
     for (const moveit::core::JointModel *j : robot_model_->getJointModels()) {
         if (j->getVariableCount() > 0) {
@@ -87,8 +85,6 @@ URDFModelCoords URDFCollisionModel::getRandomCoordinates(
     URDFModelCoords c;
 
     c.root = Eigen::Affine3d::Identity();
-    c.collision_links = links_with_collision_spheres_;
-    c.contact_links = links_with_contact_spheres_;
 
     for (moveit::core::JointModel *j : robot_model_->getJointModels()) {
         if (j->getVariableCount() > 0) {
@@ -250,7 +246,7 @@ bool URDFCollisionModel::initFromParam(const std::string &robot_desc_param_name)
 
 bool URDFCollisionModel::initRobotModelFromURDF(
     const std::string &urdf_string,
-    const std::string& srdf_string)
+    const std::string &srdf_string)
 {
     robot_model_loader::RobotModelLoader::Options ops;
     ops.robot_description_ = "";
@@ -533,18 +529,9 @@ bool URDFCollisionModel::getModelCollisionSpheres(
     if (!updateFK(coords)) {
         return false;
     }
-    if (coords.collision_links.empty()) {
-        for (std::string link_name : links_with_collision_spheres_) {
-            if (!getLinkCollisionSpheres_CurrentState(link_name, spheres)) {
-                return false;
-            }
-        }
-    }
-    else {
-        for (std::string link_name : coords.collision_links) {
-            if (!getLinkCollisionSpheres_CurrentState(link_name, spheres)) {
-                return false;
-            }
+    for (const std::string &link_name : links_with_collision_spheres_) {
+        if (!getLinkCollisionSpheres_CurrentState(link_name, spheres)) {
+            return false;
         }
     }
     return true;
@@ -601,18 +588,9 @@ bool URDFCollisionModel::getModelContactSpheres(
     if (!updateFK(coords)) {
         return false;
     }
-    if (coords.contact_links.empty()) {
-        for (const std::string &link_name : links_with_contact_spheres_) {
-            if (!getLinkContactSpheres_CurrentState(link_name, spheres)) {
-                return false;
-            }
-        }
-    }
-    else {
-        for (const std::string &link_name : coords.contact_links) {
-            if (!getLinkContactSpheres_CurrentState(link_name, spheres)) {
-                return false;
-            }
+    for (const std::string &link_name : links_with_contact_spheres_) {
+        if (!getLinkContactSpheres_CurrentState(link_name, spheres)) {
+            return false;
         }
     }
     return true;
