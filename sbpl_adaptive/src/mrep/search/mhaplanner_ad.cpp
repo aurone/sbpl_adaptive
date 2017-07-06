@@ -708,10 +708,14 @@ MHASearchState* MHAPlanner_AD::state_from_open_state(
 int MHAPlanner_AD::compute_heuristic(int state_id, int hidx)
 {
     if (hidx == 0) {
-        return m_hanchor->GetGoalHeuristic(state_id);
+        int h = m_hanchor->GetGoalHeuristic(state_id);
+        ROS_DEBUG_NAMED(SLOG, "h(%d, %d) = %d", state_id, hidx, h);
+        return h;
     }
     else {
-        return m_heurs[hidx - 1]->GetGoalHeuristic(state_id);
+        int h = m_heurs[hidx - 1]->GetGoalHeuristic(state_id);
+        ROS_DEBUG_NAMED(SLOG, "h(%d, %d) = %d", state_id, hidx, h);
+        return h;
     }
 }
 
