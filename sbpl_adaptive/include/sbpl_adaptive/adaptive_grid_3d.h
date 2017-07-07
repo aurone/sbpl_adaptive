@@ -25,8 +25,6 @@
 
 namespace adim {
 
-#define ADAPTIVE_GRID_EXCLUSIVE 0
-
 SBPL_CLASS_FORWARD(AdaptiveGrid3D)
 
 /// A representation of the current state of an adaptive graph with respect to
@@ -215,10 +213,6 @@ bool AdaptiveGrid3D::enableDimDefault(int gx, int gy, int gz, int dimID)
         return false;
     }
 
-#if ADAPTIVE_GRID_EXCLUSIVE
-    grid_(gx, gy, gz).pDefaultDimID = InvalidDim;
-#endif
-
     int prev_dims = grid_(gx, gy, gz).pDefaultDimID;
     grid_(gx, gy, gz).pDefaultDimID |= (1 << dimID);
     max_dimID_ = std::max(max_dimID_, dimID);
@@ -250,14 +244,10 @@ bool AdaptiveGrid3D::enableDimPlanning(int gx, int gy, int gz, int dimID)
         return false;
     }
 
-#if ADAPTIVE_GRID_EXCLUSIVE
-    grid_(gx, gy, gz).pDimID = InvalidDim;
-#endif
-
     int prev_dims = grid_(gx, gy, gz).pDimID;
     grid_(gx, gy, gz).pDimID |= (1 << dimID);
     max_dimID_ = std::max(max_dimID_, dimID);
-    return grid_(gx, gy, gz).pDimID != prev_dims |
+    return (grid_(gx, gy, gz).pDimID != prev_dims) |
             enableDimTracking(gx, gy, gz, dimID);
 }
 
@@ -271,7 +261,7 @@ bool AdaptiveGrid3D::disableDimPlanning(int gx, int gy, int gz, int dimID)
 
     int prev_dims = grid_(gx, gy, gz).pDimID;
     grid_(gx, gy, gz).pDimID &= ~(1 << dimID);
-    return grid_(gx, gy, gz).pDimID != prev_dims |
+    return (grid_(gx, gy, gz).pDimID != prev_dims) |
             disableDimTracking(gx, gy, gz, dimID);
 }
 
@@ -281,10 +271,6 @@ bool AdaptiveGrid3D::enableDimTracking(int gx, int gy, int gz, int dimID)
     if (!isInBounds(gx, gy, gz)) {
         return false;
     }
-
-#if ADAPTIVE_GRID_EXCLUSIVE
-    grid_(gx, gy, gz).tDimID = InvalidDim;
-#endif
 
     int prev_dims = grid_(gx, gy, gz).tDimID;
     grid_(gx, gy, gz).tDimID |= (1 << dimID);
