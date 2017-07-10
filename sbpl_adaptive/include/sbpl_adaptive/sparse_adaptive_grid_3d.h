@@ -217,7 +217,7 @@ bool SparseAdaptiveGrid3D::enableDimDefault(int gx, int gy, int gz, int dimID)
     int prev_dims = cell.pDefaultDimID;
     cell.pDefaultDimID |= (1 << dimID);
     max_dimID_ = std::max(max_dimID_, dimID);
-    return cell.pDefaultDimID != prev_dims | enableDimPlanning(gx, gy, gz, dimID);
+    return (cell.pDefaultDimID != prev_dims) | enableDimPlanning(gx, gy, gz, dimID);
 }
 
 /// Also disables the planning bit for the representation.
@@ -232,7 +232,7 @@ bool SparseAdaptiveGrid3D::disableDimDefault(int gx, int gy, int gz, int dimID)
     int prev_dims = cell.pDefaultDimID;
     cell.pDefaultDimID &= ~(1 << dimID);
     max_dimID_ = std::max(max_dimID_, dimID);
-    return cell.pDefaultDimID != prev_dims | disableDimDefault(gx, gy, gz, dimID);
+    return (cell.pDefaultDimID != prev_dims) | disableDimDefault(gx, gy, gz, dimID);
 }
 
 /// Also enables the tracking bit for the representation.
@@ -247,7 +247,7 @@ bool SparseAdaptiveGrid3D::enableDimPlanning(int gx, int gy, int gz, int dimID)
     int prev_dims = cell.pDimID;
     cell.pDimID |= (1 << dimID);
     max_dimID_ = std::max(max_dimID_, dimID);
-    return cell.pDimID != prev_dims | enableDimTracking(gx, gy, gz, dimID);
+    return (cell.pDimID != prev_dims) | enableDimTracking(gx, gy, gz, dimID);
 }
 
 /// Also disables the tracking bit for the representation.
@@ -261,7 +261,7 @@ bool SparseAdaptiveGrid3D::disableDimPlanning(int gx, int gy, int gz, int dimID)
     AdaptiveGridCell &cell = grid_(gx, gy, gz);
     int prev_dims = cell.pDimID;
     cell.pDimID &= ~(1 << dimID);
-    return cell.pDimID != prev_dims | disableDimTracking(gx, gy, gz, dimID);
+    return (cell.pDimID != prev_dims) | disableDimTracking(gx, gy, gz, dimID);
 }
 
 inline
