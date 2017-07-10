@@ -365,6 +365,8 @@ bool URDFCollisionModel::computeCOM(
     }
 
     com = (1.0 / mass) * com;
+
+    com = robot_state_->getGlobalLinkTransform(robot_model_->getRootLink()).inverse() * com;
     return true;
 }
 
