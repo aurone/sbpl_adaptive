@@ -201,7 +201,19 @@ auto URDFCollisionModel::getDefaultCoordinates() const -> URDFModelCoords
 bool URDFCollisionModel::checkLimits(const URDFModelCoords &coords) const
 {
     robot_state_->setVariablePositions(coords.positions);
-    return robot_state_->satisfiesBounds();
+
+    for (auto *joint : robot_model_->getActiveJointModels()) {
+        if (joint->getType() == moveit::core::JointModel::REVOLUTE &&
+            !joint->getVariableBounds()[0].position_bounded_)
+        {
+            continue;
+        }
+
+        if (!robot_state_->satisfiesPositionBounds(joint)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 auto URDFCollisionModel::getLinkGlobalTransform(
