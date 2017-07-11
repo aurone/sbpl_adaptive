@@ -68,16 +68,6 @@ struct URDFModelCoords : ModelCoords
     URDFModelCoords(std::vector<double> &&positions) :
         positions(std::move(positions))
     { }
-
-    void set(const std::string &name, const std::vector<double> &p_coords);
-
-    static void updateWith(
-        URDFModelCoords &target,
-        const URDFModelCoords &source);
-
-    static double getMaxJointDistance(
-        const URDFModelCoords &from,
-        const URDFModelCoords &to);
 };
 
 std::ostream &operator<<(std::ostream &o, const URDFModelCoords &coords);
@@ -440,31 +430,6 @@ protected:
         double res,
         std::vector<Sphere> &spheres);
 };
-
-////////////////////////////////////
-// URDFModelCoords Implementation //
-////////////////////////////////////
-
-inline void URDFModelCoords::set(
-    const std::string &name,
-    const std::vector<double> &p_coords)
-{
-    // TODO: implement
-}
-
-inline void URDFModelCoords::updateWith(
-    URDFModelCoords &target,
-    const URDFModelCoords &source)
-{
-    // TODO: implement
-}
-
-inline double URDFModelCoords::getMaxJointDistance(
-    const URDFModelCoords &from,
-    const URDFModelCoords &to)
-{
-    return std::numeric_limits<double>::infinity();
-}
 
 ///////////////////////////////////////
 // URDFCollisionModel Implementation //
