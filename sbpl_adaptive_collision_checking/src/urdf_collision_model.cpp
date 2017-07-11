@@ -299,21 +299,21 @@ bool URDFCollisionModel::computeGroupIK(
         return false;
     }
 
-    //  foreach active joint in the joint group
-    for (const moveit::core::JointModel *jm : group->getActiveJointModels()) {
-        // for revolute joints
-        if (jm->getType() == moveit::core::JointModel::REVOLUTE) {
-            if (!jm->getVariableBounds()[0].position_bounded_) {
-                // just normalize these...to keep RobotState from being upset
-                robot_state_->enforcePositionBounds(jm);
-            }
-        }
-    }
-
     if (allow_approx_solutions) {
         robot_state_->enforceBounds(group);
     }
     else {
+        // foreach active joint in the joint group
+        for (auto *jm : group->getActiveJointModels()) {
+            // for revolute joints
+            if (jm->getType() == moveit::core::JointModel::REVOLUTE) {
+                if (!jm->getVariableBounds()[0].position_bounded_) {
+                    // just normalize these...to keep RobotState from being upset
+                    robot_state_->enforcePositionBounds(jm);
+                }
+            }
+        }
+
         if (!robot_state_->satisfiesBounds(group)) {
             ROS_DEBUG("IK Solution angles are out of bounds");
             return false;
@@ -980,8 +980,7 @@ auto URDFCollisionModel::getModelVisualization(
             col, ns, ros::Duration(0), include_attached);
 
     for (auto &marker : markers.markers) {
-        marker.id = id;
-        id++;
+        marker.id = id++;
     }
 
     return markers;
