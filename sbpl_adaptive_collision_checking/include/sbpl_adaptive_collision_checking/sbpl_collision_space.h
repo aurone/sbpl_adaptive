@@ -33,7 +33,7 @@ public:
 
     SBPLCollisionSpace(
         SBPLCollisionModelPtr model,
-        const sbpl::OccupancyGridPtr& grid);
+        const sbpl::OccupancyGrid *grid);
 
     ~SBPLCollisionSpace();
 
@@ -83,8 +83,8 @@ public:
 
 private:
 
-    SBPLCollisionModelPtr model_;
-    sbpl::OccupancyGridPtr grid_;
+    SBPLCollisionModelPtr       model_;
+    const sbpl::OccupancyGrid  *grid_;
 
     double padding_;
     double contact_padding_;

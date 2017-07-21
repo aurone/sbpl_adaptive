@@ -18,7 +18,7 @@ static double getDist2(
     return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) + (z1 - z2) * (z1 - z2);
 }
 
-SparseAdaptiveGrid3D::SparseAdaptiveGrid3D(const sbpl::OccupancyGridPtr& grid) :
+SparseAdaptiveGrid3D::SparseAdaptiveGrid3D(const sbpl::OccupancyGrid *grid) :
     trackMode_(false)
 {
     oc_grid_ = grid;

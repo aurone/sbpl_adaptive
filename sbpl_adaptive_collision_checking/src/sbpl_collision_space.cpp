@@ -6,7 +6,7 @@ namespace adim {
 
 SBPLCollisionSpace::SBPLCollisionSpace(
     adim::SBPLCollisionModelPtr model,
-    const sbpl::OccupancyGridPtr& grid)
+    const sbpl::OccupancyGrid *grid)
 :
     model_(model),
     grid_(grid),

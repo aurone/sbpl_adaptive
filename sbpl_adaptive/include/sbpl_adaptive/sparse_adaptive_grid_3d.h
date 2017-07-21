@@ -57,9 +57,9 @@ public:
 
     static const int InvalidDim = 0;
 
-    SparseAdaptiveGrid3D(const sbpl::OccupancyGridPtr& grid);
+    SparseAdaptiveGrid3D(const sbpl::OccupancyGrid *grid);
 
-    const sbpl::OccupancyGridPtr &grid() { return oc_grid_; }
+    const sbpl::OccupancyGrid *grid() { return oc_grid_; }
 
     bool isInPlanningMode() const { return !trackMode_; }
     bool isInTrackingMode() const { return trackMode_; }
@@ -165,7 +165,7 @@ private:
     int max_dimID_;
     unsigned int max_costToGoal_;
 
-    sbpl::OccupancyGridPtr oc_grid_;
+    const sbpl::OccupancyGrid *oc_grid_;
 
     void clearAllSpheres();
 
