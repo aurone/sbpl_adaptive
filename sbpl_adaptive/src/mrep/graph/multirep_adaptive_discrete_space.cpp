@@ -200,7 +200,7 @@ bool MultiRepAdaptiveDiscreteSpace::RegisterRepresentation(
 
     // copy over projection matrix
     int prev_rep_count = NumRepresentations() - 1;
-    ROS_INFO_NAMED(GLOG, "Resize projection matrix to %d^2 -> %d^2", prev_rep_count, NumRepresentations());
+    ROS_DEBUG_NAMED(GLOG, "Resize projection matrix to %d^2 -> %d^2", prev_rep_count, NumRepresentations());
     for (int i = 0; i < prev_rep_count; ++i) {
         for (int j = 0; j < prev_rep_count; ++j) {
             int prev_rep_idx = i * prev_rep_count + j;
@@ -210,7 +210,7 @@ bool MultiRepAdaptiveDiscreteSpace::RegisterRepresentation(
     }
     proj_matrix_ = std::move(new_proj_matrix);
 
-    ROS_INFO_NAMED(GLOG, "Registered representation %d '%s'", rep->getID(), rep->getName().c_str());
+    ROS_DEBUG_NAMED(GLOG, "Registered representation %d '%s'", rep->getID(), rep->getName().c_str());
     return true;
 }
 

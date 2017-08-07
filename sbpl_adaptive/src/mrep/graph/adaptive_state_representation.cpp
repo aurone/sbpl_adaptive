@@ -55,7 +55,7 @@ void AdaptiveStateRepresentation::addParentRepresentation(
 {
     auto it = std::find(parents_.begin(), parents_.end(), parent);
     if (it == parents_.end()) {
-        ROS_INFO("Added %s as parent representation to %s!", parent->getName().c_str(), getName().c_str());
+        ROS_DEBUG("Added %s as parent representation to %s!", parent->getName().c_str(), getName().c_str());
         parents_.push_back(parent);
         parent->addChildRepresentation(shared_from_this());
     }
@@ -66,7 +66,7 @@ void AdaptiveStateRepresentation::addChildRepresentation(
 {
     auto it = std::find(children_.begin(), children_.end(), child);
     if (it == children_.end()) {
-        ROS_INFO("Added %s as child representation to %s!", child->getName().c_str(), getName().c_str());
+        ROS_DEBUG("Added %s as child representation to %s!", child->getName().c_str(), getName().c_str());
         children_.push_back(child);
         child->addParentRepresentation(shared_from_this());
     }
