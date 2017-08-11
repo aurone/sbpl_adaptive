@@ -1,35 +1,163 @@
-/*
- * simpleviz.h
- *
- *  Created on: Feb 8, 2016
- *      Author: kalin
- */
+#ifndef PVIZ_SIMPLE_VIZ_H
+#define PVIZ_SIMPLE_VIZ_H
 
-#ifndef ADAPTIVE_PLANNING_PVIZ_INCLUDE_PVIZ_SIMPLEVIZ_H_
-#define ADAPTIVE_PLANNING_PVIZ_INCLUDE_PVIZ_SIMPLEVIZ_H_
-
-
-/* \author Benjamin Cohen */
+/// \author Benjamin Cohen
+/// \author Kalin Gochev
+/// \author Andrew Dornbush
 
 // standard includes
-#include <math.h>
-#include <stdlib.h>
-#include <time.h>
-#include <fstream>
+#include <map>
 #include <string>
+#include <vector>
 
 // system includes
-#include <boost/lexical_cast.hpp>
+#include <geometry_msgs/Point.h>
+#include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/Vector3.h>
-#include <ros/ros.h>
 #include <smpl/forward.h>
-#include <smpl/debug/visualize.h>
-#include <tf/tf.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 
-SBPL_CLASS_FORWARD(SimpleViz)
+namespace pviz {
+
+auto MakePoseVisualization(
+    const std::vector<double> &pose,
+    const std::string &text,
+    const std::string &ns,
+    int &id,
+    const std::string &frame_id)
+    -> visualization_msgs::MarkerArray;
+
+auto MakePoseVisualization(
+    const geometry_msgs::Pose &pose,
+    const std::string &text,
+    const std::string &ns,
+    int &id,
+    const std::string &frame_id)
+    -> visualization_msgs::MarkerArray;
+
+auto MakePosesVisualization(
+    const std::vector<std::vector<double>> &poses,
+    const std::string &frame_id)
+    -> visualization_msgs::MarkerArray;
+
+auto MakeObstaclesVisualization(
+    const std::vector<std::vector<double>> &obstacles,
+    const std::string &frame_id,
+    const std::string &ns = "")
+    -> visualization_msgs::MarkerArray;
+
+auto Make3DPathVisualization(
+    const std::vector<std::vector<double>> &dpath,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker;
+
+auto MakeSphereVisualization(
+    const std::vector<double> &pos3,
+    int color,
+    const std::string &ns,
+    double radius,
+    int &id,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker;
+
+auto MakeSphereVisualization(
+    const std::vector<double> &pose,
+    int color,
+    const std::string &ns,
+    double radius,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker;
+
+auto MakeSpheresVisualization(
+    const std::vector<std::vector<double>> &pose,
+    int color,
+    const std::string &ns,
+    double radius,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker;
+
+auto MakeSpheresVisualization(
+    const std::vector<std::vector<double>> &pose,
+    int color,
+    const std::string &ns,
+    const std::vector<double> &radius,
+    const std::string &frame_id)
+    -> visualization_msgs::MarkerArray;
+
+auto MakeSpheresVisualization(
+    const std::vector<std::vector<double>> &pose,
+    int color,
+    const std::string &ns,
+    const std::string &frame_id)
+    -> visualization_msgs::MarkerArray;
+
+auto MakeSpheresVisualization(
+    const std::vector<std::vector<double>> &pose,
+    const std::vector<int> &hue,
+    const std::string &ns,
+    const std::string &frame_id)
+    -> visualization_msgs::MarkerArray;
+
+auto MakeLineVisualization(
+    const std::vector<geometry_msgs::Point> &points,
+    const std::string &ns,
+    int &id,
+    int hue,
+    double thickness,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker;
+
+auto MakeTextVisualization(
+    const geometry_msgs::Pose &pose,
+    const std::string &text,
+    const std::string &ns,
+    int id,
+    int hue,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker;
+
+auto MakeTextVisualization(
+    const geometry_msgs::Pose &pose,
+    const std::string &text,
+    const std::string &ns,
+    int id,
+    const std::vector<double> &color,
+    double size,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker;
+
+auto MakeCubeVisualization(
+    const geometry_msgs::PoseStamped &pose,
+    int color,
+    const std::string &ns,
+    int id,
+    const std::vector<double> &dim)
+    -> visualization_msgs::Marker;
+
+auto MakeMeshVisualization(
+    const std::string& mesh_resource,
+    const geometry_msgs::PoseStamped& pose,
+    int color,
+    const std::string &ns,
+    int id,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker;
+
+auto MakeMeshTrianglesVisualization(
+    const std::vector<geometry_msgs::Point>& vertices,
+    const std::vector<int>& triangles,
+    const geometry_msgs::PoseStamped& pose,
+    int color,
+    const std::string &ns,
+    int id,
+    bool psychadelic,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker;
+
+} // namespace pviz
+
+SBPL_CLASS_FORWARD(SimpleViz);
 class SimpleViz
 {
 public:
@@ -38,167 +166,153 @@ public:
 
     ~SimpleViz();
 
-    int getMaxMarkerID(std::string ns);
-    bool hasNamespace(std::string ns);
+    int getMaxMarkerID(const std::string &ns);
+    bool hasNamespace(const std::string &ns);
 
-    void waitForSubscribers() { }
-
-    void clearVisualization(std::string ns);
+    void clearVisualization(const std::string &ns);
     void clearAllVisualizations();
 
     /**************** Meshes, Shapes, Text, & Lines ****************/
 
-    /* \brief visualize a pose (sphere, arrow, string of text) */
+    /// \brief visualize a pose (sphere, arrow, string of text)
     void visualizePose(
         const std::vector<double> &pose,
-        std::string text,
-        std::string ns,
+        const std::string &text,
+        const std::string &ns,
         int &id,
-        std::string frame_id);
+        const std::string &frame_id);
 
     void visualizePose(
         const geometry_msgs::Pose &pose,
-        std::string text,
-        std::string ns,
+        const std::string &text,
+        const std::string &ns,
         int &id,
-        std::string frame_id);
+        const std::string &frame_id);
 
-    /* \brief visualize a list of poses (sphere, arrow, pose index number) */
+    /// \brief visualize a list of poses (sphere, arrow, pose index number)
     void visualizePoses(
         const std::vector<std::vector<double>> &poses,
-        std::string reference_frame_);
+        const std::string &frame_id);
 
-    /* \brief visualize cuboids */
+    /// \brief visualize cuboids
     void visualizeObstacles(
         const std::vector<std::vector<double>> &obstacles,
-        std::string reference_frame_,
+        const std::string &frame_id,
         const std::string &ns = "");
 
     void visualize3DPath(
-        std::vector<std::vector<double>> &dpath,
-        std::string reference_frame_);
+        const std::vector<std::vector<double>> &dpath,
+        const std::string &frame_id);
 
-    /* \brief display a sphere */
+    /// \brief display a sphere
     void visualizeSphere(
-        std::vector<double> pos3,
+        const std::vector<double> &pos3,
         int color,
-        std::string ns,
+        const std::string &ns,
         double radius,
         int &id,
-        std::string reference_frame_);
+        const std::string &frame_id);
 
     void visualizeSphere(
-        std::vector<double> pose,
+        const std::vector<double> &pose,
         int color,
-        std::string text,
+        const std::string &text,
         double radius,
-        std::string reference_frame_);
+        const std::string &frame_id);
 
-    /* \brief display a list of spheres of the same radius and color */
+    /// \brief display a list of spheres of the same radius and color
     void visualizeSpheres(
         const std::vector<std::vector<double>> &pose,
         int color,
-        std::string text,
+        const std::string &text,
         double radius,
-        std::string reference_frame_);
+        const std::string &frame_id);
 
     void visualizeSpheres(
         const std::vector<std::vector<double>> &pose,
         int color,
-        std::string text,
-        std::vector<double> &radius,
-        std::string reference_frame_);
+        const std::string &text,
+        const std::vector<double> &radius,
+        const std::string &frame_id);
 
     void visualizeSpheres(
         const std::vector<std::vector<double>> &pose,
         int color,
-        std::string text,
-        std::string reference_frame_);
+        const std::string &text,
+        const std::string &frame_id);
 
     void visualizeSpheres(
         const std::vector<std::vector<double>> &pose,
         const std::vector<int> &hue,
-        std::string text,
-        std::string reference_frame_);
+        const std::string &text,
+        const std::string &frame_id);
 
     void visualizeLine(
-        const std::vector<geometry_msgs::Point> points,
-        std::string ns,
+        const std::vector<geometry_msgs::Point> &points,
+        const std::string &ns,
         int &id,
         int hue,
         double thickness,
-        std::string reference_frame_);
+        const std::string &frame_id);
 
     void visualizeText(
-        geometry_msgs::Pose pose,
-        std::string text,
-        std::string ns,
+        const geometry_msgs::Pose &pose,
+        const std::string &text,
+        const std::string &ns,
         int id,
         int hue,
-        std::string reference_frame_);
+        const std::string &frame_id);
 
     void visualizeText(
-        geometry_msgs::Pose pose,
-        std::string text,
-        std::string ns,
+        const geometry_msgs::Pose &pose,
+        const std::string &text,
+        const std::string &ns,
         int id,
-        std::vector<double> color,
+        const std::vector<double> &color,
         double size,
-        std::string reference_frame_);
+        const std::string &frame_id);
 
     void visualizeCube(
-        geometry_msgs::PoseStamped pose,
+        const geometry_msgs::PoseStamped &pose,
         int color,
-        std::string ns,
+        const std::string &ns,
         int id,
-        std::vector<double> dim);
+        const std::vector<double> &dim);
 
-    // visualize a mesh where $mesh_resource is the path to the mesh using the
-    // URI used by resource_retriever package
+    /// visualize a mesh where $mesh_resource is the path to the mesh using the
+    /// URI used by resource_retriever package
     void visualizeMesh(
         const std::string& mesh_resource,
         const geometry_msgs::PoseStamped& pose,
         int color,
         const std::string &ns,
         int id,
-        const std::string &reference_frame_);
+        const std::string &frame_id);
 
-    // visualizes a triangle list; if psychadelic is true then each triangle has
-    // one of each red, green, and blue vertices
+    /// visualizes a triangle list; if psychadelic is true then each triangle
+    /// has one of each red, green, and blue vertices
     void visualizeMeshTriangles(
         const std::vector<geometry_msgs::Point>& vertices,
         const std::vector<int>& triangles,
         const geometry_msgs::PoseStamped& pose,
         int color,
-        std::string ns,
+        const std::string &ns,
         int id,
         bool psychadelic,
-        std::string reference_frame_);
-
-    void deleteVisualizations(
-        std::string ns,
-        int max_id,
-        std::string reference_frame_);
+        const std::string &frame_id);
 
     void publish(const visualization_msgs::MarkerArray &markers);
     void publish(const visualization_msgs::Marker &marker);
+    void publish(visualization_msgs::Marker &&marker);
 
     void showMarker(visualization_msgs::Marker&& m);
     void showMarker(const visualization_msgs::Marker& m);
 
 protected:
 
-    void update(std::string ns, int id);
-
-    ros::NodeHandle nh_;
-    ros::NodeHandle ph_;
+    void update(const std::string &ns, int id);
 
     std::map<std::string, int> marker_ns_id_map_;
-
-    visualization_msgs::MarkerArray marker_array_;
-    visualization_msgs::Marker marker_;
-
-    void toMarkers(const visualization_msgs::Marker& m) const;
 };
 
-#endif /* ADAPTIVE_PLANNING_PVIZ_INCLUDE_PVIZ_SIMPLEVIZ_H_ */
+#endif
