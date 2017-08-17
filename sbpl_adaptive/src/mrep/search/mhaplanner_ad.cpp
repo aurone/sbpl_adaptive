@@ -576,8 +576,8 @@ void MHAPlanner_AD::init_state(
     int dimID = space_->GetDimID(state_id);
     for (int i : m_heuristic_list[dimID]) {
     // for (int i = 0; i < num_heuristics(); i++) {
-        state->od[i].open_state.heapindex = 0;
-        state->od[i].h = compute_heuristic(state->state_id, i);
+//        state->od[i].open_state.heapindex = 0;
+//        state->od[i].h = compute_heuristic(state->state_id, i);
         // hijack list element pointers to map back to mha search state
         assert(sizeof(state->od[i].open_state.listelem) >= sizeof(struct listelement*));
         reinterpret_cast<size_t&>(state->od[i].open_state.listelem[0]) = mha_state_idx;
