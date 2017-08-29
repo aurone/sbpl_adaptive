@@ -19,6 +19,348 @@ static const char *LOG = "pviz";
 
 namespace pviz {
 
+auto MakeSphereVisualization(
+    const std::vector<double> &pos3,
+    const std_msgs::ColorRGBA &color,
+    const std::string &ns,
+    double radius,
+    int &id,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker
+{
+    visualization_msgs::Marker marker;
+
+    marker.header.stamp = ros::Time::now();
+    marker.header.frame_id = frame_id;
+    marker.ns = ns;
+    marker.id = id; id++;
+    marker.type = visualization_msgs::Marker::SPHERE;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.position.x = pos3[0];
+    marker.pose.position.y = pos3[1];
+    marker.pose.position.z = pos3[2];
+    marker.scale.x = 2.0 * radius;
+    marker.scale.y = 2.0 * radius;
+    marker.scale.z = 2.0 * radius;
+    marker.color = color;
+    marker.lifetime = ros::Duration(0.0);
+
+    return marker;
+}
+
+auto MakeSphereVisualization(
+    const std::vector<double> &pose,
+    const std_msgs::ColorRGBA &color,
+    const std::string &ns,
+    double radius,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker
+{
+    visualization_msgs::Marker marker;
+
+    marker.header.stamp = ros::Time::now();
+    marker.header.frame_id = frame_id;
+    marker.ns = ns;
+    marker.id = 1;
+    marker.type = visualization_msgs::Marker::SPHERE;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.position.x = pose[0];
+    marker.pose.position.y = pose[1];
+    marker.pose.position.z = pose[2];
+    marker.scale.x = 2.0 * radius;
+    marker.scale.y = 2.0 * radius;
+    marker.scale.z = 2.0 * radius;
+    marker.color = color;
+    marker.lifetime = ros::Duration(0.0);
+
+    return marker;
+}
+
+auto MakeSpheresVisualization(
+    const std::vector<std::vector<double>> &pose,
+    const std_msgs::ColorRGBA &color,
+    const std::string &ns,
+    double radius,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker
+{
+    visualization_msgs::Marker marker;
+
+    marker.header.stamp = ros::Time::now();
+    marker.header.frame_id = frame_id;
+    marker.ns = "spheres-" + ns;
+    marker.type = visualization_msgs::Marker::SPHERE_LIST;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.scale.x = 2.0 * radius;
+    marker.scale.y = 2.0 * radius;
+    marker.scale.z = 2.0 * radius;
+    marker.color = color;
+    marker.lifetime = ros::Duration(0.0);
+    marker.id = 1;
+
+    marker.points.resize(pose.size());
+    for (size_t i = 0; i < pose.size(); i++) {
+        marker.points[i].x = pose[i][0];
+        marker.points[i].y = pose[i][1];
+        marker.points[i].z = pose[i][2];
+    }
+
+    return marker;
+}
+
+auto MakeSpheresVisualization(
+    const std::vector<std::vector<double>> &pose,
+    const std_msgs::ColorRGBA &color,
+    const std::string &ns,
+    const std::vector<double> &radius,
+    const std::string &frame_id)
+    -> visualization_msgs::MarkerArray
+{
+    visualization_msgs::MarkerArray ma;
+
+    for (size_t i = 0; i < pose.size(); ++i) {
+        visualization_msgs::Marker marker;
+        marker.header.stamp = ros::Time::now();
+        marker.header.frame_id = frame_id;
+        marker.ns = ns;
+        marker.type = visualization_msgs::Marker::SPHERE;
+        marker.action = visualization_msgs::Marker::ADD;
+        marker.scale.x = 2.0 * radius[i];
+        marker.scale.y = 2.0 * radius[i];
+        marker.scale.z = 2.0 * radius[i];
+        marker.color = color;
+        marker.lifetime = ros::Duration(0.0);
+        marker.id = i;
+
+        marker.pose.position.x = pose[i][0];
+        marker.pose.position.y = pose[i][1];
+        marker.pose.position.z = pose[i][2];
+
+        ma.markers.push_back(std::move(marker));
+    }
+
+    return ma;
+}
+
+auto MakeSpheresVisualization(
+    const std::vector<std::vector<double>> &pose,
+    const std_msgs::ColorRGBA &color,
+    const std::string &ns,
+    const std::string &frame_id)
+    -> visualization_msgs::MarkerArray
+{
+    visualization_msgs::Marker marker;
+    visualization_msgs::MarkerArray marker_array;
+
+    for (size_t i = 0; i < pose.size(); ++i) {
+        marker.header.stamp = ros::Time::now();
+        marker.header.frame_id = frame_id;
+        marker.ns = ns;
+        marker.type = visualization_msgs::Marker::SPHERE;
+        marker.action = visualization_msgs::Marker::ADD;
+        marker.scale.x = 2.0 * pose[i][3];
+        marker.scale.y = 2.0 * pose[i][3];
+        marker.scale.z = 2.0 * pose[i][3];
+        marker.color = color;
+        marker.lifetime = ros::Duration(0.0);
+        marker.id = i;
+
+        marker.pose.position.x = pose[i][0];
+        marker.pose.position.y = pose[i][1];
+        marker.pose.position.z = pose[i][2];
+
+        marker_array.markers.push_back(marker);
+    }
+
+    return marker_array;
+}
+
+auto MakeLineVisualization(
+    const std::vector<geometry_msgs::Point> &points,
+    const std::string &ns,
+    int &id,
+    const std_msgs::ColorRGBA &color,
+    double thickness,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker
+{
+    visualization_msgs::Marker marker;
+
+    marker.header.stamp = ros::Time::now();
+    marker.header.frame_id = frame_id;
+    marker.ns = ns;
+    marker.id = id; id++;
+    marker.type = visualization_msgs::Marker::LINE_STRIP;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.points = points;
+    marker.scale.x = thickness;
+    marker.pose.position.x = 0.0;
+    marker.pose.position.y = 0.0;
+    marker.pose.position.z = 0.0;
+
+    marker.color = color;
+    marker.lifetime = ros::Duration(0.0);
+
+    return marker;
+}
+
+auto MakeTextVisualization(
+    const geometry_msgs::Pose &pose,
+    const std::string &text,
+    const std::string &ns,
+    int id,
+    const std_msgs::ColorRGBA &color,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker
+{
+    visualization_msgs::Marker marker;
+
+    marker.header.stamp = ros::Time::now();
+    marker.header.frame_id = frame_id;
+    marker.ns = ns;
+    marker.id = id;
+    marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.scale.x = 0.2;
+    marker.scale.y = 0.2;
+    marker.scale.z = 0.2;
+    marker.pose = pose;
+
+    marker.color = color;
+    marker.text = text;
+    marker.lifetime = ros::Duration(0.0);
+
+    return marker;
+}
+
+auto MakeCubeVisualization(
+    const geometry_msgs::PoseStamped &pose,
+    const std_msgs::ColorRGBA &color,
+    const std::string &ns,
+    int id,
+    const std::vector<double> &dim)
+    -> visualization_msgs::Marker
+{
+    if (dim.empty()) {
+        return visualization_msgs::Marker();
+    }
+
+    visualization_msgs::Marker marker;
+
+    const std::vector<double>& dim_ = dim.size() < 3 ?
+            std::vector<double>(3, dim[0]) : dim;
+
+    marker.header.stamp = ros::Time::now();
+    marker.header.frame_id = pose.header.frame_id;
+    marker.ns = ns;
+    marker.id = id;
+    marker.type = visualization_msgs::Marker::CUBE;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose = pose.pose;
+    marker.scale.x = dim_[0];
+    marker.scale.y = dim_[1];
+    marker.scale.z = dim_[2];
+    marker.color = color;
+    marker.lifetime = ros::Duration(0.0);
+
+    return marker;
+}
+
+auto MakeMeshVisualization(
+    const std::string& mesh_resource,
+    const geometry_msgs::PoseStamped& pose,
+    const std_msgs::ColorRGBA &color,
+    const std::string &ns,
+    int id,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker
+{
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = frame_id;
+    marker.header.stamp = ros::Time::now();
+    marker.ns = ns;
+    marker.id = id;
+    marker.type = visualization_msgs::Marker::MESH_RESOURCE;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.position.x = pose.pose.position.x;
+    marker.pose.position.y = pose.pose.position.y;
+    marker.pose.position.z = pose.pose.position.z;
+    marker.pose.orientation.x = pose.pose.orientation.x;
+    marker.pose.orientation.y = pose.pose.orientation.y;
+    marker.pose.orientation.z = pose.pose.orientation.z;
+    marker.pose.orientation.w = pose.pose.orientation.w;
+    marker.scale.x = 1.0;
+    marker.scale.y = 1.0;
+    marker.scale.z = 1.0;
+    marker.color = color;
+    marker.mesh_resource = mesh_resource;
+
+    return marker;
+}
+
+auto MakeMeshTrianglesVisualization(
+    const std::vector<geometry_msgs::Point>& vertices,
+    const std::vector<int>& triangles,
+    const geometry_msgs::PoseStamped& pose,
+    const std_msgs::ColorRGBA &color,
+    const std::string &ns,
+    int id,
+    bool psychadelic,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker
+{
+    visualization_msgs::Marker marker;
+
+    marker.header.frame_id = frame_id;
+    marker.header.stamp = ros::Time::now();
+    marker.ns = ns;
+    marker.id = id;
+    marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.position.x = pose.pose.position.x;
+    marker.pose.position.y = pose.pose.position.y;
+    marker.pose.position.z = pose.pose.position.z;
+    marker.pose.orientation.x = pose.pose.orientation.x;
+    marker.pose.orientation.y = pose.pose.orientation.y;
+    marker.pose.orientation.z = pose.pose.orientation.z;
+    marker.pose.orientation.w = pose.pose.orientation.w;
+    marker.scale.x = 1.0;
+    marker.scale.y = 1.0;
+    marker.scale.z = 1.0;
+    marker.points = vertices;
+
+    if (psychadelic) {
+        marker.color.a = 1.0;
+        marker.color.r = 1.0;
+        marker.color.g = 1.0;
+        marker.color.b = 1.0;
+
+        std_msgs::ColorRGBA red; red.a = 1.0f; red.r = 1.0f; red.g = 0.0f; red.b = 0.0f;
+        std_msgs::ColorRGBA green; green.a = 1.0f; green.r = 0.0f; green.g = 1.0f; green.b = 0.0f;
+        std_msgs::ColorRGBA blue; blue.a = 1.0f; blue.r = 0.0f; blue.g = 0.0f; blue.b = 1.0f;
+
+        std::vector<std_msgs::ColorRGBA> colors;
+        for (size_t i = 0; i < vertices.size(); i++) {
+            if (i % 3 == 0) {
+                colors.push_back(red);
+            }
+            if (i % 3 == 1) {
+                colors.push_back(green);
+            }
+            if (i % 3 == 2) {
+                colors.push_back(blue);
+            }
+        }
+
+        marker.colors = colors;
+    }
+    else {
+        marker.color = color;
+    }
+
+    return marker;
+}
+
 auto MakePoseVisualization(
     const std::vector<double> &pose,
     const std::string &text,
@@ -288,188 +630,67 @@ auto Make3DPathVisualization(
 
 auto MakeSphereVisualization(
     const std::vector<double> &pos3,
-    int color,
+    int hue,
     const std::string &ns,
     double radius,
     int &id,
     const std::string &frame_id)
     -> visualization_msgs::Marker
 {
-    double r = 0.0, g = 0.0, b = 0.0;
-    visualization_msgs::Marker marker;
-
-    leatherman::HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
-
-    marker.header.stamp = ros::Time::now();
-    marker.header.frame_id = frame_id;
-    marker.ns = ns;
-    marker.id = id; id++;
-    marker.type = visualization_msgs::Marker::SPHERE;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.pose.position.x = pos3[0];
-    marker.pose.position.y = pos3[1];
-    marker.pose.position.z = pos3[2];
-    marker.scale.x = 2.0 * radius;
-    marker.scale.y = 2.0 * radius;
-    marker.scale.z = 2.0 * radius;
-    marker.color.r = r;
-    marker.color.g = g;
-    marker.color.b = b;
-    marker.color.a = 1.0;
-    marker.lifetime = ros::Duration(0.0);
-
-    return marker;
+    std_msgs::ColorRGBA color;
+    leatherman::msgHSVToRGB((double)hue, 1.0, 1.0, color);
+    return MakeSphereVisualization(pos3, color, ns, radius, id, frame_id);
 }
 
 auto MakeSphereVisualization(
     const std::vector<double> &pose,
-    int color,
+    int hue,
     const std::string &ns,
     double radius,
     const std::string &frame_id)
     -> visualization_msgs::Marker
 {
-    double r = 0.0, g = 0.0, b = 0.0;
-    visualization_msgs::Marker marker;
-
-    leatherman::HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
-
-    marker.header.stamp = ros::Time::now();
-    marker.header.frame_id = frame_id;
-    marker.ns = ns;
-    marker.id = 1;
-    marker.type = visualization_msgs::Marker::SPHERE;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.pose.position.x = pose[0];
-    marker.pose.position.y = pose[1];
-    marker.pose.position.z = pose[2];
-    marker.scale.x = 2.0 * radius;
-    marker.scale.y = 2.0 * radius;
-    marker.scale.z = 2.0 * radius;
-    marker.color.r = r;
-    marker.color.g = g;
-    marker.color.b = b;
-    marker.color.a = 1.0;
-    marker.lifetime = ros::Duration(0.0);
-
-    return marker;
+    std_msgs::ColorRGBA color;
+    leatherman::msgHSVToRGB((double)hue, 1.0, 1.0, color);
+    return MakeSphereVisualization(pose, color, ns, radius, frame_id);
 }
 
 auto MakeSpheresVisualization(
     const std::vector<std::vector<double>> &pose,
-    int color,
+    int hue,
     const std::string &ns,
     double radius,
     const std::string &frame_id)
     -> visualization_msgs::Marker
 {
-    double r = 0.0, g = 0.0, b = 0.0;
-    visualization_msgs::Marker marker;
-
-    leatherman::HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
-
-    marker.header.stamp = ros::Time::now();
-    marker.header.frame_id = frame_id;
-    marker.ns = "spheres-" + ns;
-    marker.type = visualization_msgs::Marker::SPHERE_LIST;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.scale.x = 2.0 * radius;
-    marker.scale.y = 2.0 * radius;
-    marker.scale.z = 2.0 * radius;
-    marker.color.r = r;
-    marker.color.g = g;
-    marker.color.b = b;
-    marker.color.a = 0.6;
-    marker.lifetime = ros::Duration(0.0);
-    marker.id = 1;
-
-    marker.points.resize(pose.size());
-    for (size_t i = 0; i < pose.size(); i++) {
-        marker.points[i].x = pose[i][0];
-        marker.points[i].y = pose[i][1];
-        marker.points[i].z = pose[i][2];
-    }
-
-    return marker;
+    std_msgs::ColorRGBA color;
+    leatherman::msgHSVToRGB((double)hue, 1.0, 1.0, color);
+    return MakeSpheresVisualization(pose, color, ns, radius, frame_id);
 }
 
 auto MakeSpheresVisualization(
     const std::vector<std::vector<double>> &pose,
-    int color,
+    int hue,
     const std::string &ns,
     const std::vector<double> &radius,
     const std::string &frame_id)
     -> visualization_msgs::MarkerArray
 {
-    visualization_msgs::MarkerArray ma;
-
-    double r = 0.0, g = 0.0, b = 0.0;
-
-    leatherman::HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
-
-    for (size_t i = 0; i < pose.size(); ++i) {
-        visualization_msgs::Marker marker;
-        marker.header.stamp = ros::Time::now();
-        marker.header.frame_id = frame_id;
-        marker.ns = ns;
-        marker.type = visualization_msgs::Marker::SPHERE;
-        marker.action = visualization_msgs::Marker::ADD;
-        marker.scale.x = 2.0 * radius[i];
-        marker.scale.y = 2.0 * radius[i];
-        marker.scale.z = 2.0 * radius[i];
-        marker.color.r = r;
-        marker.color.g = g;
-        marker.color.b = b;
-        marker.color.a = 0.6;
-        marker.lifetime = ros::Duration(0.0);
-        marker.id = i;
-
-        marker.pose.position.x = pose[i][0];
-        marker.pose.position.y = pose[i][1];
-        marker.pose.position.z = pose[i][2];
-
-        ma.markers.push_back(std::move(marker));
-    }
-
-    return ma;
+    std_msgs::ColorRGBA color;
+    leatherman::msgHSVToRGB((double)hue, 1.0, 1.0, color);
+    return MakeSpheresVisualization(pose, color, ns, radius, frame_id);
 }
 
 auto MakeSpheresVisualization(
     const std::vector<std::vector<double>> &pose,
-    int color,
+    int hue,
     const std::string &ns,
     const std::string &frame_id)
     -> visualization_msgs::MarkerArray
 {
-    double r = 0.0, g = 0.0, b = 0.0;
-    visualization_msgs::Marker marker;
-    visualization_msgs::MarkerArray marker_array;
-    leatherman::HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
-
-    for (size_t i = 0; i < pose.size(); ++i) {
-        marker.header.stamp = ros::Time::now();
-        marker.header.frame_id = frame_id;
-        marker.ns = ns;
-        marker.type = visualization_msgs::Marker::SPHERE;
-        marker.action = visualization_msgs::Marker::ADD;
-        marker.scale.x = 2.0 * pose[i][3];
-        marker.scale.y = 2.0 * pose[i][3];
-        marker.scale.z = 2.0 * pose[i][3];
-        marker.color.r = r;
-        marker.color.g = g;
-        marker.color.b = b;
-        marker.color.a = 0.6;
-        marker.lifetime = ros::Duration(0.0);
-        marker.id = i;
-
-        marker.pose.position.x = pose[i][0];
-        marker.pose.position.y = pose[i][1];
-        marker.pose.position.z = pose[i][2];
-
-        marker_array.markers.push_back(marker);
-    }
-
-    return marker_array;
+    std_msgs::ColorRGBA color;
+    leatherman::msgHSVToRGB((double)hue, 1.0, 1.0, color);
+    return MakeSpheresVisualization(pose, color, ns, frame_id);
 }
 
 auto MakeSpheresVisualization(
@@ -522,30 +743,9 @@ auto MakeLineVisualization(
     const std::string &frame_id)
     -> visualization_msgs::Marker
 {
-    double r = 0.0, g = 0.0, b = 0.0;
-    visualization_msgs::Marker marker;
-
-    leatherman::HSVtoRGB(&r, &g, &b, hue, 1.0, 1.0);
-
-    marker.header.stamp = ros::Time::now();
-    marker.header.frame_id = frame_id;
-    marker.ns = ns;
-    marker.id = id; id++;
-    marker.type = visualization_msgs::Marker::LINE_STRIP;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.points = points;
-    marker.scale.x = thickness;
-    marker.pose.position.x = 0.0;
-    marker.pose.position.y = 0.0;
-    marker.pose.position.z = 0.0;
-
-    marker.color.r = r;
-    marker.color.g = g;
-    marker.color.b = b;
-    marker.color.a = 0.5;
-    marker.lifetime = ros::Duration(0.0);
-
-    return marker;
+    std_msgs::ColorRGBA color;
+    leatherman::msgHSVToRGB((double)hue, 1.0, 1.0, color);
+    return MakeLineVisualization(points, ns, id, color, thickness, frame_id);
 }
 
 auto MakeTextVisualization(
@@ -557,30 +757,9 @@ auto MakeTextVisualization(
     const std::string &frame_id)
     -> visualization_msgs::Marker
 {
-    double r = 0.0, g = 0.0, b = 0.0;
-    visualization_msgs::Marker marker;
-
-    leatherman::HSVtoRGB(&r, &g, &b, hue, 1.0, 1.0);
-
-    marker.header.stamp = ros::Time::now();
-    marker.header.frame_id = frame_id;
-    marker.ns = ns;
-    marker.id = id;
-    marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.scale.x = 0.2;
-    marker.scale.y = 0.2;
-    marker.scale.z = 0.2;
-    marker.pose = pose;
-
-    marker.color.r = r;
-    marker.color.g = g;
-    marker.color.b = b;
-    marker.color.a = 1.0;
-    marker.text = text;
-    marker.lifetime = ros::Duration(0.0);
-
-    return marker;
+    std_msgs::ColorRGBA color;
+    leatherman::msgHSVToRGB((double)hue, 1.0, 1.0, color);
+    return MakeTextVisualization(pose, text, ns, id, color, frame_id);
 }
 
 auto MakeTextVisualization(
@@ -621,146 +800,46 @@ auto MakeTextVisualization(
 
 auto MakeCubeVisualization(
     const geometry_msgs::PoseStamped &pose,
-    int color,
+    int hue,
     const std::string &ns,
     int id,
     const std::vector<double> &dim)
     -> visualization_msgs::Marker
 {
-    if (dim.empty()) {
-        return visualization_msgs::Marker();
-    }
-
-    double r = 0.0, g = 0.0, b = 0.0;
-    visualization_msgs::Marker marker;
-
-    const std::vector<double>& dim_ = dim.size() < 3 ?
-            std::vector<double>(3, dim[0]) : dim;
-
-    leatherman::HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
-
-    marker.header.stamp = ros::Time::now();
-    marker.header.frame_id = pose.header.frame_id;
-    marker.ns = ns;
-    marker.id = id;
-    marker.type = visualization_msgs::Marker::CUBE;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.pose = pose.pose;
-    marker.scale.x = dim_[0];
-    marker.scale.y = dim_[1];
-    marker.scale.z = dim_[2];
-    marker.color.r = r;
-    marker.color.g = g;
-    marker.color.b = b;
-    marker.color.a = 1.0;
-    marker.lifetime = ros::Duration(0.0);
-
-    return marker;
+    std_msgs::ColorRGBA color;
+    leatherman::msgHSVToRGB((double)hue, 1.0, 1.0, color);
+    return MakeCubeVisualization(pose, color, ns, id, dim);
 }
 
 auto MakeMeshVisualization(
     const std::string& mesh_resource,
     const geometry_msgs::PoseStamped& pose,
-    int color,
+    int hue,
     const std::string &ns,
     int id,
     const std::string &frame_id)
     -> visualization_msgs::Marker
 {
-    double r = 0.0, g = 0.0, b = 0.0;
-    leatherman::HSVtoRGB(&r, &g, &b, color, 1.0, 0.6);
-
-    visualization_msgs::Marker marker;
-    marker.header.frame_id = frame_id;
-    marker.header.stamp = ros::Time::now();
-    marker.ns = ns;
-    marker.id = id;
-    marker.type = visualization_msgs::Marker::MESH_RESOURCE;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.pose.position.x = pose.pose.position.x;
-    marker.pose.position.y = pose.pose.position.y;
-    marker.pose.position.z = pose.pose.position.z;
-    marker.pose.orientation.x = pose.pose.orientation.x;
-    marker.pose.orientation.y = pose.pose.orientation.y;
-    marker.pose.orientation.z = pose.pose.orientation.z;
-    marker.pose.orientation.w = pose.pose.orientation.w;
-    marker.scale.x = 1.0;
-    marker.scale.y = 1.0;
-    marker.scale.z = 1.0;
-    marker.color.a = 0.8;
-    marker.color.r = r;
-    marker.color.g = g;
-    marker.color.b = b;
-    marker.mesh_resource = mesh_resource;
-
-    return marker;
+    std_msgs::ColorRGBA color;
+    leatherman::msgHSVToRGB((double)hue, 1.0, 1.0, color);
+    return MakeMeshVisualization(mesh_resource, pose, color, ns, id, frame_id);
 }
 
 auto MakeMeshTrianglesVisualization(
     const std::vector<geometry_msgs::Point>& vertices,
     const std::vector<int>& triangles,
     const geometry_msgs::PoseStamped& pose,
-    int color,
+    int hue,
     const std::string &ns,
     int id,
     bool psychadelic,
     const std::string &frame_id)
     -> visualization_msgs::Marker
 {
-    double r = 0.0, g = 0.0, b = 0.0;
-    leatherman::HSVtoRGB(&r, &g, &b, color, 1.0, 1.0);
-
-    std_msgs::ColorRGBA red; red.a = 1.0f; red.r = 1.0f; red.g = 0.0f; red.b = 0.0f;
-    std_msgs::ColorRGBA green; green.a = 1.0f; green.r = 0.0f; green.g = 1.0f; green.b = 0.0f;
-    std_msgs::ColorRGBA blue; blue.a = 1.0f; blue.r = 0.0f; blue.g = 0.0f; blue.b = 1.0f;
-
-    std::vector<std_msgs::ColorRGBA> colors;
-    for (int i = 0; i < (int)vertices.size(); i++) {
-        if (i % 3 == 0) {
-            colors.push_back(red);
-        }
-        if (i % 3 == 1) {
-            colors.push_back(green);
-        }
-        if (i % 3 == 2) {
-            colors.push_back(blue);
-        }
-    }
-
-    visualization_msgs::Marker marker;
-    marker.header.frame_id = frame_id;
-    marker.header.stamp = ros::Time::now();
-    marker.ns = ns;
-    marker.id = id;
-    marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.pose.position.x = pose.pose.position.x;
-    marker.pose.position.y = pose.pose.position.y;
-    marker.pose.position.z = pose.pose.position.z;
-    marker.pose.orientation.x = pose.pose.orientation.x;
-    marker.pose.orientation.y = pose.pose.orientation.y;
-    marker.pose.orientation.z = pose.pose.orientation.z;
-    marker.pose.orientation.w = pose.pose.orientation.w;
-    marker.scale.x = 1.0;
-    marker.scale.y = 1.0;
-    marker.scale.z = 1.0;
-    marker.points = vertices;
-
-    if (psychadelic) {
-        marker.color.a = 1.0;
-        marker.color.r = 1.0;
-        marker.color.g = 1.0;
-        marker.color.b = 1.0;
-        marker.colors = colors;
-    }
-    else {
-        marker.color.a = 1.0;
-        marker.color.r = r;
-        marker.color.g = g;
-        marker.color.b = b;
-    }
-
-    return marker;
+    std_msgs::ColorRGBA color;
+    leatherman::msgHSVToRGB((double)hue, 1.0, 1.0, color);
+    return MakeMeshTrianglesVisualization(
+            vertices, triangles, pose, color, ns, id, psychadelic, frame_id);
 }
 
 } // namespace pviz
@@ -896,56 +975,56 @@ void SimpleViz::visualize3DPath(
 
 void SimpleViz::visualizeSphere(
     const std::vector<double> &pos3,
-    int color,
+    int hue,
     const std::string &ns,
     double radius,
     int &id,
     const std::string &frame_id)
 {
-    auto m = pviz::MakeSphereVisualization(pos3, color, ns, radius, id, frame_id);
+    auto m = pviz::MakeSphereVisualization(pos3, hue, ns, radius, id, frame_id);
     publish(std::move(m));
 }
 
 void SimpleViz::visualizeSphere(
     const std::vector<double> &pose,
-    int color,
+    int hue,
     const std::string &ns,
     double radius,
     const std::string &frame_id)
 {
-    auto m = pviz::MakeSphereVisualization(pose, color, ns, radius, frame_id);
+    auto m = pviz::MakeSphereVisualization(pose, hue, ns, radius, frame_id);
     publish(std::move(m));
 }
 
 void SimpleViz::visualizeSpheres(
     const std::vector<std::vector<double>> &pose,
-    int color,
+    int hue,
     const std::string &ns,
     double radius,
     const std::string &frame_id)
 {
-    auto m = pviz::MakeSpheresVisualization(pose, color, ns, radius, frame_id);
+    auto m = pviz::MakeSpheresVisualization(pose, hue, ns, radius, frame_id);
     publish(std::move(m));
 }
 
 void SimpleViz::visualizeSpheres(
     const std::vector<std::vector<double>> &pose,
-    int color,
+    int hue,
     const std::string &ns,
     const std::vector<double> &radius,
     const std::string &frame_id)
 {
-    auto ma = pviz::MakeSpheresVisualization(pose, color, ns, radius, frame_id);
+    auto ma = pviz::MakeSpheresVisualization(pose, hue, ns, radius, frame_id);
     publish(ma);
 }
 
 void SimpleViz::visualizeSpheres(
     const std::vector<std::vector<double>> &pose,
-    int color,
+    int hue,
     const std::string &ns,
     const std::string &frame_id)
 {
-    auto ma = pviz::MakeSpheresVisualization(pose, color, ns, frame_id);
+    auto ma = pviz::MakeSpheresVisualization(pose, hue, ns, frame_id);
     publish(ma);
 }
 
@@ -998,24 +1077,24 @@ void SimpleViz::visualizeText(
 
 void SimpleViz::visualizeCube(
     const geometry_msgs::PoseStamped &pose,
-    int color,
+    int hue,
     const std::string &ns,
     int id,
     const std::vector<double> &dim)
 {
-    auto m = pviz::MakeCubeVisualization(pose, color, ns, id, dim);
+    auto m = pviz::MakeCubeVisualization(pose, hue, ns, id, dim);
     publish(std::move(m));
 }
 
 void SimpleViz::visualizeMesh(
     const std::string &mesh_resource,
     const geometry_msgs::PoseStamped &pose,
-    int color,
+    int hue,
     const std::string &ns,
     int id,
     const std::string &frame_id)
 {
-    auto m = pviz::MakeMeshVisualization(mesh_resource, pose, color, ns, id, frame_id);
+    auto m = pviz::MakeMeshVisualization(mesh_resource, pose, hue, ns, id, frame_id);
     publish(std::move(m));
 }
 
@@ -1023,14 +1102,14 @@ void SimpleViz::visualizeMeshTriangles(
     const std::vector<geometry_msgs::Point>& vertices,
     const std::vector<int>& triangles,
     const geometry_msgs::PoseStamped& pose,
-    int color,
+    int hue,
     const std::string &ns,
     int id,
     bool psychadelic,
     const std::string &frame_id)
 {
     auto m = pviz::MakeMeshTrianglesVisualization(
-            vertices, triangles, pose, color, ns, id, psychadelic, frame_id);
+            vertices, triangles, pose, hue, ns, id, psychadelic, frame_id);
     publish(std::move(m));
 }
 

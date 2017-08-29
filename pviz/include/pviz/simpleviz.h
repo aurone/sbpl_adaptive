@@ -20,6 +20,96 @@
 
 namespace pviz {
 
+auto MakeSphereVisualization(
+    const std::vector<double> &pos3,
+    const std_msgs::ColorRGBA &color,
+    const std::string &ns,
+    double radius,
+    int &id,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker;
+
+auto MakeSphereVisualization(
+    const std::vector<double> &pose,
+    const std_msgs::ColorRGBA &color,
+    const std::string &ns,
+    double radius,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker;
+
+auto MakeSpheresVisualization(
+    const std::vector<std::vector<double>> &pose,
+    const std_msgs::ColorRGBA &color,
+    const std::string &ns,
+    double radius,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker;
+
+auto MakeSpheresVisualization(
+    const std::vector<std::vector<double>> &pose,
+    const std_msgs::ColorRGBA &color,
+    const std::string &ns,
+    const std::vector<double> &radius,
+    const std::string &frame_id)
+    -> visualization_msgs::MarkerArray;
+
+auto MakeSpheresVisualization(
+    const std::vector<std::vector<double>> &pose,
+    const std_msgs::ColorRGBA &color,
+    const std::string &ns,
+    const std::string &frame_id)
+    -> visualization_msgs::MarkerArray;
+
+auto MakeLineVisualization(
+    const std::vector<geometry_msgs::Point> &points,
+    const std::string &ns,
+    int &id,
+    const std_msgs::ColorRGBA &color,
+    double thickness,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker;
+
+auto MakeTextVisualization(
+    const geometry_msgs::Pose &pose,
+    const std::string &text,
+    const std::string &ns,
+    int id,
+    const std_msgs::ColorRGBA &color,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker;
+
+auto MakeCubeVisualization(
+    const geometry_msgs::PoseStamped &pose,
+    const std_msgs::ColorRGBA &color,
+    const std::string &ns,
+    int id,
+    const std::vector<double> &dim)
+    -> visualization_msgs::Marker;
+
+auto MakeMeshVisualization(
+    const std::string& mesh_resource,
+    const geometry_msgs::PoseStamped& pose,
+    const std_msgs::ColorRGBA &color,
+    const std::string &ns,
+    int id,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker;
+
+auto MakeMeshTrianglesVisualization(
+    const std::vector<geometry_msgs::Point>& vertices,
+    const std::vector<int>& triangles,
+    const geometry_msgs::PoseStamped& pose,
+    const std_msgs::ColorRGBA &color,
+    const std::string &ns,
+    int id,
+    bool psychadelic,
+    const std::string &frame_id)
+    -> visualization_msgs::Marker;
+
+///////////////////
+// Hue Overloads //
+///////////////////
+
 auto MakePoseVisualization(
     const std::vector<double> &pose,
     const std::string &text,
@@ -54,7 +144,7 @@ auto Make3DPathVisualization(
 
 auto MakeSphereVisualization(
     const std::vector<double> &pos3,
-    int color,
+    int hue,
     const std::string &ns,
     double radius,
     int &id,
@@ -63,7 +153,7 @@ auto MakeSphereVisualization(
 
 auto MakeSphereVisualization(
     const std::vector<double> &pose,
-    int color,
+    int hue,
     const std::string &ns,
     double radius,
     const std::string &frame_id)
@@ -71,7 +161,7 @@ auto MakeSphereVisualization(
 
 auto MakeSpheresVisualization(
     const std::vector<std::vector<double>> &pose,
-    int color,
+    int hue,
     const std::string &ns,
     double radius,
     const std::string &frame_id)
@@ -79,7 +169,7 @@ auto MakeSpheresVisualization(
 
 auto MakeSpheresVisualization(
     const std::vector<std::vector<double>> &pose,
-    int color,
+    int hue,
     const std::string &ns,
     const std::vector<double> &radius,
     const std::string &frame_id)
@@ -87,7 +177,7 @@ auto MakeSpheresVisualization(
 
 auto MakeSpheresVisualization(
     const std::vector<std::vector<double>> &pose,
-    int color,
+    int hue,
     const std::string &ns,
     const std::string &frame_id)
     -> visualization_msgs::MarkerArray;
@@ -129,7 +219,7 @@ auto MakeTextVisualization(
 
 auto MakeCubeVisualization(
     const geometry_msgs::PoseStamped &pose,
-    int color,
+    int hue,
     const std::string &ns,
     int id,
     const std::vector<double> &dim)
@@ -138,7 +228,7 @@ auto MakeCubeVisualization(
 auto MakeMeshVisualization(
     const std::string& mesh_resource,
     const geometry_msgs::PoseStamped& pose,
-    int color,
+    int hue,
     const std::string &ns,
     int id,
     const std::string &frame_id)
@@ -148,7 +238,7 @@ auto MakeMeshTrianglesVisualization(
     const std::vector<geometry_msgs::Point>& vertices,
     const std::vector<int>& triangles,
     const geometry_msgs::PoseStamped& pose,
-    int color,
+    int hue,
     const std::string &ns,
     int id,
     bool psychadelic,
@@ -207,7 +297,7 @@ public:
     /// \brief display a sphere
     void visualizeSphere(
         const std::vector<double> &pos3,
-        int color,
+        int hue,
         const std::string &ns,
         double radius,
         int &id,
@@ -215,7 +305,7 @@ public:
 
     void visualizeSphere(
         const std::vector<double> &pose,
-        int color,
+        int hue,
         const std::string &text,
         double radius,
         const std::string &frame_id);
@@ -223,21 +313,21 @@ public:
     /// \brief display a list of spheres of the same radius and color
     void visualizeSpheres(
         const std::vector<std::vector<double>> &pose,
-        int color,
+        int hue,
         const std::string &text,
         double radius,
         const std::string &frame_id);
 
     void visualizeSpheres(
         const std::vector<std::vector<double>> &pose,
-        int color,
+        int hue,
         const std::string &text,
         const std::vector<double> &radius,
         const std::string &frame_id);
 
     void visualizeSpheres(
         const std::vector<std::vector<double>> &pose,
-        int color,
+        int hue,
         const std::string &text,
         const std::string &frame_id);
 
@@ -274,7 +364,7 @@ public:
 
     void visualizeCube(
         const geometry_msgs::PoseStamped &pose,
-        int color,
+        int hue,
         const std::string &ns,
         int id,
         const std::vector<double> &dim);
@@ -284,7 +374,7 @@ public:
     void visualizeMesh(
         const std::string& mesh_resource,
         const geometry_msgs::PoseStamped& pose,
-        int color,
+        int hue,
         const std::string &ns,
         int id,
         const std::string &frame_id);
@@ -295,7 +385,7 @@ public:
         const std::vector<geometry_msgs::Point>& vertices,
         const std::vector<int>& triangles,
         const geometry_msgs::PoseStamped& pose,
-        int color,
+        int hue,
         const std::string &ns,
         int id,
         bool psychadelic,
