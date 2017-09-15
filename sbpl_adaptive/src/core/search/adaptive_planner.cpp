@@ -254,6 +254,7 @@ bool AdaptivePlanner::onPlanningState(
     allowed_plan_time = std::min(allowed_plan_time, sbpl::to_seconds(time_remaining));
     allowed_plan_time = std::max(allowed_plan_time, 0.0);
     int p_ret = planner_->replan(allowed_plan_time, &plan_sol_, &plan_cost_);
+    search_expands_ += planner_->get_n_expands();
     auto plan_time = sbpl::clock::now() - plan_start;
     stat_->addPlanningPhaseTime(sbpl::to_seconds(plan_time));
     plan_elapsed_ += plan_time;
@@ -348,8 +349,9 @@ bool AdaptivePlanner::onTrackingState(
     allowed_track_time = std::min(allowed_track_time, sbpl::to_seconds(time_remaining));
     allowed_track_time = std::max(allowed_track_time, 0.0);
     int t_ret = tracker_->replan(allowed_track_time, &track_sol_, &track_cost_);
+    search_expands_ += tracker_->get_n_expands();
     auto track_time = sbpl::clock::now() - track_start;
-    stat_->addTrackingPhaseTime(sbpl::to_seconds(track_elapsed_));
+    stat_->addTrackingPhaseTime(sbpl::to_seconds(track_time));
     track_elapsed_ += track_time;
     iter_elapsed_ += track_time;
     time_elapsed_ += track_time;
