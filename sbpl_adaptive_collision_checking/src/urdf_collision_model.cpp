@@ -100,7 +100,7 @@ bool URDFCollisionModel::initFromURDF(
 }
 
 bool URDFCollisionModel::initFromModel(
-    const moveit::core::RobotModelPtr &robot_model)
+    const moveit::core::RobotModelConstPtr &robot_model)
 {
     if (!robot_model) {
         return false;

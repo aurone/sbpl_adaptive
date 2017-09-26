@@ -117,7 +117,7 @@ public:
         const std::string &srdf_string);
 
     virtual bool initFromModel(
-        const moveit::core::RobotModelPtr &robot_model);
+        const moveit::core::RobotModelConstPtr &robot_model);
     ///@}
 
     /// \name Model Information
