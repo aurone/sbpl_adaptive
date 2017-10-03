@@ -89,10 +89,6 @@ private:
     double padding_;
     double contact_padding_;
 
-    double isValidLineSegment(
-        const std::vector<int>& a,
-        const std::vector<int>& b,
-        const int radius);
     bool getClearance(
         const ModelCoords &coords,
         int num_spheres,
