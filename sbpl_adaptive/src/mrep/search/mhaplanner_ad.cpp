@@ -56,6 +56,7 @@ MHAPlanner_AD::MHAPlanner_AD(
     m_hanchor(hanchor),
     m_heurs(heurs),
     m_hcount(hcount),
+    m_timer_type(TimerType::Time),
     m_params(0.0),
     m_initial_eps_mha(100.0),
     m_max_expansions(0),
@@ -429,6 +430,11 @@ void MHAPlanner_AD::set_dec_eps(double eps)
     m_params.dec_eps = eps;
 }
 
+void MHAPlanner_AD::set_timer_type(TimerType type)
+{
+    m_timer_type = type;
+}
+
 void MHAPlanner_AD::set_max_expansions(int expansion_count)
 {
     m_max_expansions = expansion_count;
@@ -452,6 +458,11 @@ double MHAPlanner_AD::get_final_eps() const
 double MHAPlanner_AD::get_dec_eps() const
 {
     return m_params.dec_eps;
+}
+
+auto MHAPlanner_AD::get_timer_type() const -> TimerType
+{
+    return m_timer_type;
 }
 
 int MHAPlanner_AD::get_max_expansions() const
@@ -486,12 +497,25 @@ bool MHAPlanner_AD::check_params(const ReplanParams& params)
         return false;
     }
 
-    if (params.return_first_solution &&
-        params.max_time <= 0.0 &&
-        m_max_expansions <= 0)
-    {
-        ROS_ERROR("Max Time or Max Expansions must be positive");
-        return false;
+    if (!params.return_first_solution && params.max_time <= 0.0 && m_max_expansions <= 0) {
+
+    }
+
+    if (!params.return_first_solution) {
+        if (m_timer_type == TimerType::Time) {
+            if (params.max_time < 0.0) {
+                ROS_ERROR("allowed time must be positive");
+                return false;
+            }
+        } else if (m_timer_type == TimerType::Expansions) {
+            if (m_max_expansions < 0) {
+                ROS_ERROR("allowed expansions must be positive");
+                return false;
+            }
+        } else {
+            ROS_ERROR("Unknown timer type");
+            return false;
+        }
     }
 
     return true;
@@ -502,14 +526,16 @@ bool MHAPlanner_AD::time_limit_reached() const
     if (m_params.return_first_solution) {
         return false;
     }
-    else if (m_params.max_time > 0.0 && sbpl::to_seconds(m_elapsed) >= m_params.max_time) {
+    if (m_timer_type == TimerType::Time) {
+        if (sbpl::to_seconds(m_elapsed) >= m_params.max_time) {
+            return true;
+        }
+    } else if (m_timer_type == TimerType::Expansions) {
+        if (m_num_expansions >= m_max_expansions) {
+            return true;
+        }
+    } else {
         return true;
-    }
-    else if (m_max_expansions > 0 && m_num_expansions >= m_max_expansions) {
-        return true;
-    }
-    else {
-        return false;
     }
 }
 

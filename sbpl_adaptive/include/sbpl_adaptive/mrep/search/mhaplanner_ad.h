@@ -37,6 +37,11 @@ class MHAPlanner_AD : public SBPLPlanner
 {
 public:
 
+    enum struct TimerType {
+        Time,
+        Expansions,
+    };
+
     MHAPlanner_AD(
             MultiRepAdaptiveDiscreteSpace* space,
             MultiRepHeuristic* hanchor,
@@ -125,6 +130,7 @@ public:
     void    set_initial_mha_eps(double eps_mha);
     void    set_final_eps(double eps);
     void    set_dec_eps(double eps);
+    void    set_timer_type(TimerType type);
     void    set_max_expansions(int expansion_count);
     void    set_max_time(double max_time);
 
@@ -132,6 +138,7 @@ public:
     double  get_initial_mha_eps() const;
     double  get_final_eps() const;
     double  get_dec_eps() const;
+    auto    get_timer_type() const -> TimerType;
     int     get_max_expansions() const;
     double  get_max_time() const;
 
@@ -146,6 +153,7 @@ private:
     MultiRepHeuristic** m_heurs;
     int m_hcount;           ///< number of additional heuristics used
 
+    TimerType m_timer_type;
     ReplanParams m_params;
     double m_initial_eps_mha;
     int m_max_expansions;
