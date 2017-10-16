@@ -56,6 +56,16 @@ class AdaptivePlanner : public SBPLPlanner
 {
 public:
 
+    enum struct ReplanCode {
+        PathFound           = 0,    // an executable path was found
+        NoPathExists        = 1,    // no path exists from the start to the goal
+        TimeLimitReached    = 2,    // no path was found before the allowed time expired
+        InvalidStartState   = 4,    // the start state was not set
+        InvalidGoalState    = 5,    // the goal state was not set
+        InvalidParameters   = 6,
+        InvalidBestState    = 7,
+    };
+
     AdaptivePlanner(
         AdaptiveDiscreteSpace *space,
         const PlannerAllocator &plan_search_alloc,
@@ -114,12 +124,12 @@ public:
 
     double get_final_eps_planning_time() override { return final_eps_planning_time_; }
 
-    double get_planning_time() { return stat_->getPlanningPhaseTime(); }
-    double get_tracking_time() { return stat_->getTrackingPhaseTime(); }
-    double get_total_time() { return stat_->getTotalTime(); }
-    unsigned long get_planning_cost() { return stat_->getPlanCost(); }
-    unsigned long get_tracking_cost() { return stat_->getTrackingCost(); }
-    unsigned long get_plan_size() { return stat_->getPlanSize(); }
+    double get_planning_time() { return stat_.getPlanningPhaseTime(); }
+    double get_tracking_time() { return stat_.getTrackingPhaseTime(); }
+    double get_total_time() { return stat_.getTotalTime(); }
+    unsigned long get_planning_cost() { return stat_.getPlanCost(); }
+    unsigned long get_tracking_cost() { return stat_.getTrackingCost(); }
+    unsigned long get_plan_size() { return stat_.getPlanSize(); }
 
     double get_final_epsilon() override;
 
@@ -156,11 +166,10 @@ private:
 
     /// \name Statistics
     ///@{
-    AdaptivePlannerCSVStat_cPtr stat_;
+    AdaptivePlannerCSVStat_c stat_;
     double final_eps_planning_time_;
     double final_eps_;
     unsigned int search_expands_;
-    int num_iterations_;
 
     ///@}
 
@@ -195,8 +204,15 @@ private:
     int last_track_iter_;
     ///@}
 
-    bool onPlanningState(const sbpl::clock::duration time_remaining, std::vector<int> &sol);
-    bool onTrackingState(const sbpl::clock::duration time_remaining, std::vector<int> &sol);
+    auto onPlanningState(
+        const sbpl::clock::duration time_remaining,
+        std::vector<int> &sol)
+        -> ReplanCode;
+
+    auto onTrackingState(
+        const sbpl::clock::duration time_remaining,
+        std::vector<int> &sol)
+        -> ReplanCode;
 };
 
 inline int AdaptivePlanner::replan(

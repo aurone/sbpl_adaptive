@@ -155,46 +155,56 @@ int MHAPlanner_AD::set_goal(int goal_stateID)
 
 int MHAPlanner_AD::replan(
     double allocated_time_sec,
-    std::vector<int>* solution_stateIDs_V)
+    std::vector<int>* solution)
 {
     int solcost;
-    return replan(allocated_time_sec, solution_stateIDs_V, &solcost);
+    return replan(allocated_time_sec, solution, &solcost);
 }
 
 int MHAPlanner_AD::replan(
     double allocated_time_sec,
-    std::vector<int>* solution_stateIDs_V,
+    std::vector<int>* solution,
     int* solcost)
 {
     ReplanParams params = m_params;
     params.max_time = allocated_time_sec;
-    return replan(solution_stateIDs_V, params, solcost);
+    return replan(solution, params, solcost);
 }
 
 int MHAPlanner_AD::replan(
-    std::vector<int>* solution_stateIDs_V,
+    std::vector<int>* solution,
     ReplanParams params)
 {
     int solcost;
-    return replan(solution_stateIDs_V, params, &solcost);
+    return replan(solution, params, &solcost);
 }
 
+enum ReplanCode {
+    PathFound = 0,
+    NoPathExists = 1,
+    TimeLimitReached = 2,
+    InvalidStartState = 3,
+    InvalidGoalState = 3,
+    InvalidParameters = 3,
+    InvalidBestState = 3,
+};
+
 int MHAPlanner_AD::replan(
-    std::vector<int>* solution_stateIDs_V,
+    std::vector<int>* solution,
     ReplanParams params,
     int* solcost)
 {
     if (!m_start_state) {
         ROS_ERROR("Start state is not set");
-        return 0;
+        return ReplanCode::InvalidStartState;
     }
     if (!m_goal_state) {
         ROS_ERROR("Goal state is not set");
-        return 0;
+        return ReplanCode::InvalidGoalState;
     }
 
-    if (!check_params(m_params)) { // errors printed within
-        return 0;
+    if (!check_params(params)) { // errors printed within
+        return ReplanCode::InvalidParameters;
     }
 
     if (m_start_state->state_id != m_last_start_state_id ||
@@ -261,11 +271,11 @@ int MHAPlanner_AD::replan(
         if (num_heuristics() == 1) {
             if (m_goal_state->g <= get_minf(m_open[0])) {
                 m_eps_satisfied = m_eps * m_eps_mha;
-                extract_path(solution_stateIDs_V, solcost);
-                return 1;
+                extract_path(solution, solcost);
+                return ReplanCode::PathFound;
             }
             else {
-                MHASearchState* s = state_from_open_state(m_open[0].getminheap());
+                auto* s = state_from_open_state(m_open[0].getminheap());
                 expand(s, 0);
             }
         }
@@ -285,24 +295,22 @@ int MHAPlanner_AD::replan(
             if (get_minf(m_open[hidx]) <= m_eps_mha * get_minf(m_open[0])) {
                 if (m_goal_state->g <= get_minf(m_open[hidx])) {
                     m_eps_satisfied = m_eps * m_eps_mha;
-                    extract_path(solution_stateIDs_V, solcost);
-                    return 1;
+                    extract_path(solution, solcost);
+                    return ReplanCode::PathFound;
                 }
                 else {
-                    MHASearchState* s =
-                            state_from_open_state(m_open[hidx].getminheap());
+                    auto* s = state_from_open_state(m_open[hidx].getminheap());
                     expand(s, hidx);
                 }
             }
             else {
                 if (m_goal_state->g <= get_minf(m_open[0])) {
                     m_eps_satisfied = m_eps * m_eps_mha;
-                    extract_path(solution_stateIDs_V, solcost);
-                    return 1;
+                    extract_path(solution, solcost);
+                    return ReplanCode::PathFound;
                 }
                 else {
-                    MHASearchState* s =
-                            state_from_open_state(m_open[0].getminheap());
+                    auto* s = state_from_open_state(m_open[0].getminheap());
                     expand(s, 0);
                 }
             }
@@ -311,12 +319,11 @@ int MHAPlanner_AD::replan(
         if (all_empty && !m_open[0].emptyheap()) {
             if (m_goal_state->g <= get_minf(m_open[0])) {
                 m_eps_satisfied = m_eps * m_eps_mha;
-                extract_path(solution_stateIDs_V, solcost);
-                return 1;
+                extract_path(solution, solcost);
+                return ReplanCode::PathFound;
             }
             else {
-                MHASearchState* s =
-                        state_from_open_state(m_open[0].getminheap());
+                auto* s = state_from_open_state(m_open[0].getminheap());
                 expand(s, 0);
             }
         }
@@ -327,7 +334,9 @@ int MHAPlanner_AD::replan(
 
     if (m_open[0].emptyheap()) {
         ROS_DEBUG_NAMED(SLOG, "Anchor search exhausted");
+        return ReplanCode::NoPathExists;
     }
+
     if (time_limit_reached()) {
         ROS_DEBUG_NAMED(SLOG, "Time limit reached");
 
@@ -336,16 +345,17 @@ int MHAPlanner_AD::replan(
         if (best_state_id >= 0) {
             ROS_WARN("Reconstructing partial path!");
             MHASearchState* best_seen_state = get_state(best_state_id);
-            extract_partial_path(solution_stateIDs_V, solcost, best_seen_state);
+            extract_partial_path(solution, solcost, best_seen_state);
             if (best_state_id == m_start_state->state_id) {
-                return 0;
+                return ReplanCode::TimeLimitReached; //ReplanCode::InvalidBestState;
             }
-            return 1;
+        } else {
+            extract_partial_path(solution, solcost, m_start_state);
         }
-
+        return ReplanCode::TimeLimitReached;
     }
 
-    return 0;
+    return ReplanCode::NoPathExists;
 }
 
 int MHAPlanner_AD::force_planning_from_scratch()
@@ -763,20 +773,25 @@ void MHAPlanner_AD::insert_or_update(MHASearchState* state, int hidx, int f)
     }
 }
 
-void MHAPlanner_AD::extract_path(std::vector<int>* solution_path, int* solcost)
+void ExtractPath(MHASearchState* from_state, std::vector<int>* solution, int* solcost)
 {
     ROS_DEBUG_NAMED(SLOG, "Extracting path");
-    solution_path->clear();
+    solution->clear();
     *solcost = 0;
-    for (MHASearchState* state = m_goal_state; state; state = state->bp) {
-        solution_path->push_back(state->state_id);
+    for (auto* state = from_state; state != nullptr; state = state->bp) {
+        solution->push_back(state->state_id);
         if (state->bp) {
             *solcost += (state->g - state->bp->g);
         }
     }
 
     // TODO: special cases for backward search
-    std::reverse(solution_path->begin(), solution_path->end());
+    std::reverse(solution->begin(), solution->end());
+}
+
+void MHAPlanner_AD::extract_path(std::vector<int>* solution_path, int* solcost)
+{
+    ExtractPath(m_goal_state, solution_path, solcost);
 }
 
 void MHAPlanner_AD::extract_partial_path(
@@ -784,18 +799,7 @@ void MHAPlanner_AD::extract_partial_path(
     int* solcost,
     MHASearchState* best_seen_state)
 {
-    ROS_DEBUG_NAMED(SLOG, "Extracting path");
-    solution_path->clear();
-    *solcost = 0;
-    for (MHASearchState* state = best_seen_state; state; state = state->bp) {
-        solution_path->push_back(state->state_id);
-        if (state->bp) {
-            *solcost += (state->g - state->bp->g);
-        }
-    }
-
-    // TODO: special cases for backward search
-    std::reverse(solution_path->begin(), solution_path->end());
+    ExtractPath(best_seen_state, solution_path, solcost);
 }
 
 bool MHAPlanner_AD::closed_in_anc_search(MHASearchState* state) const
