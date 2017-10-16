@@ -34,42 +34,6 @@ public:
 
     ~AdaptivePlannerCSVStat_c(){};
 
-    bool writeToFile(const std::string &name)
-    {
-        if (fileExists(name)) {
-            return appendToFile(name);
-        }
-        else {
-            FILE *file = fopen(name.c_str(), "w");
-            if (!file) {
-                return false;
-            }
-            fprintf(file, "Success, Initial Eps, Planning Phase Time, Tracking Phase Time, Total Time, Num Iterations, Num Expansions LD, Num Expansions NearHD, Num Expansions HD, Num Expansions Track, Num Expansions Total, Final Plan Cost, Final Track Cost, Final Eps\n");
-            fprintf(file, "%s, %.5f, %.5f, %.5f, %.5f, %u, %lu, %lu, %lu, %lu, %lu, %lu, %lu, %.5f\n",
-                    (b_success) ? std::string("True").c_str() : std::string("False").c_str(), d_initial_eps, t_planning_phase, t_tracking_phase, t_total, n_iterations, n_expansions_low, n_expansions_near, n_expansions_high, n_expansions_track, n_expansions, cost_plan, cost_track, d_final_eps);
-            fclose(file);
-            return true;
-        }
-    }
-
-    bool appendToFile(const std::string &name)
-    {
-        if (!fileExists(name)) {
-            return writeToFile(name);
-        }
-        else {
-            FILE* file = fopen(name.c_str(), "a");
-            if (!file) {
-                return false;
-            }
-//            fprintf(file, "Success, Initial Eps, Planning Phase Time, Tracking Phase Time, Total Time, Num Iterations, Num Expansions LD, Num Expansions NearHD, Num Expansions HD, Num Expansions Track, Num Expansions Total, Final Plan Cost, Final Track Cost, Final Eps\n");
-            fprintf(file, "%s, %.5f, %.5f, %.5f, %.5f, %u, %lu, %lu, %lu, %lu, %lu, %lu, %lu, %.5f\n",
-                    (b_success) ? std::string("True").c_str() : std::string("False").c_str(), d_initial_eps, t_planning_phase, t_tracking_phase, t_total, n_iterations, n_expansions_low, n_expansions_near, n_expansions_high, n_expansions_track, n_expansions, cost_plan, cost_track, d_final_eps);
-            fclose(file);
-            return true;
-        }
-    }
-
     bool fileExists(const std::string &name)
     {
         if (FILE *file = fopen(name.c_str(), "r")) {
