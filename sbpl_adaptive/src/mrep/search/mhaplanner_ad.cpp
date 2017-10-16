@@ -507,10 +507,6 @@ bool MHAPlanner_AD::check_params(const ReplanParams& params)
         return false;
     }
 
-    if (!params.return_first_solution && params.max_time <= 0.0 && m_max_expansions <= 0) {
-
-    }
-
     if (!params.return_first_solution) {
         if (m_timer_type == TimerType::Time) {
             if (params.max_time < 0.0) {
