@@ -33,7 +33,7 @@ AdaptivePlanner::AdaptivePlanner(
     final_eps_planning_time_(-1.0),
     final_eps_(-1.0),
     search_expands_(0),
-    plan_mode_(PLANNING),
+    plan_mode_(PlanPhase::Planning),
     iteration_(-1),
     plan_sol_(),
     plan_cost_(-1),
@@ -120,7 +120,7 @@ int AdaptivePlanner::replan(
         // iteration
         search_expands_ = 0;
 
-        plan_mode_ = PlanMode::PLANNING;
+        plan_mode_ = PlanPhase::Planning;
         iteration_ = 0;
         plan_cost_ = -1;
         plan_sol_.clear();
@@ -159,13 +159,13 @@ int AdaptivePlanner::replan(
 
     do {
         switch (plan_mode_) {
-        case PlanMode::PLANNING: {
+        case PlanPhase::Planning: {
             auto plan_res = onPlanningState(time_remaining(), *solution);
             if (plan_res != ReplanCode::PathFound) {
                 return (int)plan_res;
             }
         }   break;
-        case PlanMode::TRACKING: {
+        case PlanPhase::Tracking: {
             auto trak_res = onTrackingState(time_remaining(), *solution);
 
             switch (trak_res) {
@@ -281,7 +281,7 @@ auto AdaptivePlanner::onPlanningState(
     adaptive_environment_->visualizeStatePath(&plan_sol_, 0, 120, "planning_path");
 
     ROS_INFO("Signal tracking phase");
-    plan_mode_ = PlanMode::TRACKING;
+    plan_mode_ = PlanPhase::Tracking;
     return ReplanCode::PathFound;
 }
 
@@ -390,7 +390,7 @@ auto AdaptivePlanner::onTrackingState(
             }
             iteration_++;
             ROS_INFO("Signal planning phase");
-            plan_mode_ = PlanMode::PLANNING;
+            plan_mode_ = PlanPhase::Planning;
             ROS_INFO("[Planning] Time: %.3fs (%.1f%% of iter time)", sbpl::to_seconds(plan_elapsed_), 100.0 * sbpl::to_seconds(plan_elapsed_) / sbpl::to_seconds(iter_elapsed_));
             ROS_INFO("[Tracking] Time: %.3fs (%.1f%% of iter time)", sbpl::to_seconds(track_elapsed_), 100.0 * sbpl::to_seconds(track_elapsed_) / sbpl::to_seconds(iter_elapsed_));
             ROS_INFO("Iteration Time: %.3f sec (avg: %.3f)", sbpl::to_seconds(iter_elapsed_), sbpl::to_seconds(iter_elapsed_) / (iteration_ + 1.0));
@@ -416,7 +416,7 @@ auto AdaptivePlanner::onTrackingState(
 
             iteration_++;
             ROS_INFO("Signal planning phase");
-            plan_mode_ = PlanMode::PLANNING;
+            plan_mode_ = PlanPhase::Planning;
             ROS_INFO("[Planning] Time: %.3fs (%.1f%% of iter time)", sbpl::to_seconds(plan_elapsed_), 100.0 * sbpl::to_seconds(plan_elapsed_) / sbpl::to_seconds(iter_elapsed_));
             ROS_INFO("[Tracking] Time: %.3fs (%.1f%% of iter time)", sbpl::to_seconds(track_elapsed_), 100.0 * sbpl::to_seconds(track_elapsed_) / sbpl::to_seconds(iter_elapsed_));
             ROS_INFO("Iteration Time: %.3f sec (avg: %.3f)", sbpl::to_seconds(iter_elapsed_), sbpl::to_seconds(iter_elapsed_) / (iteration_ + 1.0));

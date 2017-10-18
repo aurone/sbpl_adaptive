@@ -66,6 +66,8 @@ public:
         InvalidBestState    = 7,
     };
 
+    enum struct PlanPhase { Planning = 0, Tracking };
+
     AdaptivePlanner(
         AdaptiveDiscreteSpace *space,
         const PlannerAllocator &plan_search_alloc,
@@ -89,7 +91,10 @@ public:
 
     bool set_time_per_retry(double t_plan, double t_track);
 
-    /// \name Required Public Functions from SBPLPlanner
+    int iteration() const { return iteration_; }
+    PlanPhase phase() const { return plan_mode_; }
+
+    /// \name SBPLPlanner Interface
     ///@{
     int replan(
         double allocated_time_secs,
@@ -109,10 +114,7 @@ public:
     int set_search_mode(bool bSearchUntilFirstSolution) override;
 
     void costs_changed(const StateChangeQuery& stateChange) override;
-    ///@}
 
-    /// \name Reimplemented Public Functions from SBPLPlanner
-    ///@{
     int replan(
         std::vector<int>* solution_stateIDs_V,
         ReplanParams params,
@@ -175,7 +177,7 @@ private:
 
     /// \name Search State
     ///@{
-    enum PlanMode { PLANNING = 0, TRACKING } plan_mode_;
+    PlanPhase plan_mode_;
     int iteration_;
     std::vector<int> plan_sol_;
     int plan_cost_;
