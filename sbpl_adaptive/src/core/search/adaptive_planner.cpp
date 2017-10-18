@@ -93,12 +93,16 @@ int AdaptivePlanner::replan(
     auto time_remaining = [&](){ return allowed_time - time_elapsed(); };
     auto time_expired = [&](){ return time_elapsed() > allowed_time; };
 
+    const bool same_goal = last_goal_state_id_ == goal_state_id_;
+    const bool same_start = last_start_state_id_ == start_state_id_;
     auto it = std::find(track_sol_.begin(), track_sol_.end(), start_state_id_);
-    if (last_goal_state_id_ == goal_state_id_ && (
-            (last_start_state_id_ != start_state_id_ && it != plan_sol_.end()) ||
-            last_start_state_id_ == start_state_id_))
-    {
-        ROS_INFO("Skip planning phase and resume tracking from new start state on previous plan solution");
+    const bool start_on_partial_plan = it != end(track_sol_);
+    if (same_goal && (same_start || (!same_start && start_on_partial_plan))) {
+        if (same_goal && same_start) {
+            ROS_INFO("Resume previous planning phase");
+        } else {
+            ROS_INFO("Skip planning phase and resume tracking from new start state on previous plan solution");
+        }
         // in the case where the start has changed, but the goal hasn't, and on
         // a previous tracking iteration we found a (partial) path to the goal
         // through this new start state, then we skip the planning phase and
