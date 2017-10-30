@@ -19,18 +19,12 @@ if(${roscpp_VERSION} VERSION_GREATER "1.9.55")
     find_package(cmake_modules REQUIRED)
 endif()
 
-#find_package(Boost REQUIRED)
-#include_directories(${Boost_INCLUDE_DIRS})
-
 find_package(Bullet REQUIRED)
-include_directories(${BULLET_INCLUDE_DIRS})
 
 find_package(Eigen REQUIRED)
-include_directories(${EIGEN_INCLUDE_DIRS})
 add_definitions(${EIGEN_DEFINITIONS})
 
 find_package(orocos_kdl REQUIRED)
-include_directories(${OROCOS_KDL_INCLUDE_DIRS})
 
 find_package(catkin REQUIRED COMPONENTS
     roscpp
@@ -54,7 +48,10 @@ catkin_package(
     #DEPENDS sbpl
     CATKIN_DEPENDS roscpp leatherman smpl sbpl_geometry_utils)
 
-include_directories(${catkin_INCLUDE_DIRS})
+include_directories(SYSTEM ${BULLET_INCLUDE_DIRS})
+include_directories(SYSTEM ${EIGEN_INCLUDE_DIRS})
+include_directories(SYSTEM ${OROCOS_KDL_INCLUDE_DIRS})
+include_directories(SYSTEM ${catkin_INCLUDE_DIRS})
 include_directories(include)
 
 add_library(

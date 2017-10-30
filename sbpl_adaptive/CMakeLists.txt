@@ -27,9 +27,9 @@ catkin_package(
 
 #add_definitions(-DROS)
 
-include_directories(${EIGEN3_INCLUDE_DIR})
-include_directories(${SBPL_INCLUDE_DIRS})
-include_directories(${catkin_INCLUDE_DIRS})
+include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
+include_directories(SYSTEM ${SBPL_INCLUDE_DIRS})
+include_directories(SYSTEM ${catkin_INCLUDE_DIRS})
 include_directories(include)
 
 add_library(
