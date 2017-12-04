@@ -1,12 +1,7 @@
-/*
- * spherical.h
- *
- *  Created on: Mar 15, 2016
- *      Author: kalin
- */
+/// \author Kaling Gochev
 
-#ifndef SRC_SBPL_COLLISION_CHECKING_INCLUDE_SBPL_COLLISION_CHECKING_SIMPLE_SPHERICAL_H_
-#define SRC_SBPL_COLLISION_CHECKING_INCLUDE_SBPL_COLLISION_CHECKING_SIMPLE_SPHERICAL_H_
+#ifndef SBPL_ADAPTIVE_COLLISION_CHECKING_SPHERICAL_H
+#define SBPL_ADAPTIVE_COLLISION_CHECKING_SPHERICAL_H
 
 #include <sbpl_adaptive_collision_checking/interpolation.h>
 #include <sbpl_adaptive_collision_checking/sbpl_collision_model.h>
@@ -183,4 +178,4 @@ SBPLSphericalCollisionModel::getModelVisualization(
 
 } // namespace adim
 
-#endif /* SRC_SBPL_COLLISION_CHECKING_INCLUDE_SBPL_COLLISION_CHECKING_SIMPLE_SPHERICAL_H_ */
+#endif

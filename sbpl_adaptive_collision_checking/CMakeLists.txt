@@ -2,56 +2,61 @@ cmake_minimum_required(VERSION 2.8)
 project(sbpl_adaptive_collision_checking)
 
 set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+add_compile_options("-std=c++11")
 
-execute_process(
-	COMMAND rosversion -d
-	COMMAND xargs echo -n
-	OUTPUT_VARIABLE ROS_DISTRO)
-
-MESSAGE("ROS: (${ROS_DISTRO})")
-
-add_definitions(-D__ROS_DISTRO_${ROS_DISTRO}__)
-
-find_package(catkin REQUIRED COMPONENTS roscpp)
-MESSAGE("ROSCPP: (${roscpp_VERSION}) ${roscpp_VERSION_MAJOR}.${roscpp_VERSION_MINOR}")
-if(${roscpp_VERSION} VERSION_GREATER "1.9.55")
-    find_package(cmake_modules REQUIRED)
-endif()
-
-find_package(Bullet REQUIRED)
-
-find_package(Eigen REQUIRED)
-add_definitions(${EIGEN_DEFINITIONS})
+find_package(Boost REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 find_package(orocos_kdl REQUIRED)
+
+find_package(sbpl REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
     roscpp
     leatherman
     moveit_core
-    moveit_msgs
     moveit_ros_planning
-    octomap_msgs
+    eigen_conversions
+    moveit_msgs
+#    octomap_msgs
     sbpl_adaptive
     smpl
     sbpl_geometry_utils
     tf
-    tf_conversions)
-
-# external include directories
-add_definitions(-DROS)
+    tf_conversions
+    std_msgs
+    geometry_msgs
+    angles
+    urdf
+    visualization_msgs
+)
 
 catkin_package(
-    INCLUDE_DIRS include
-    LIBRARIES ${PROJECT_NAME}
-    #DEPENDS sbpl
-    CATKIN_DEPENDS roscpp leatherman smpl sbpl_geometry_utils)
+    INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIR} ${SBPL_INCLUDE_DIRS}
+    LIBRARIES ${PROJECT_NAME} ${SBPL_LIBRARIES}
+    DEPENDS
+        Boost
+    CATKIN_DEPENDS
+        angles
+        geometry_msgs
+        moveit_core
+        moveit_msgs
+        moveit_ros_planning
+        roscpp
+        sbpl_adaptive
+        sbpl_geometry_utils
+        smpl
+        std_msgs
+        tf_conversions
+        urdf
+        visualization_msgs
+)
 
-include_directories(SYSTEM ${BULLET_INCLUDE_DIRS})
-include_directories(SYSTEM ${EIGEN_INCLUDE_DIRS})
-include_directories(SYSTEM ${OROCOS_KDL_INCLUDE_DIRS})
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
+include_directories(SYSTEM ${orocos_kdl_INCLUDE_DIRS})
 include_directories(SYSTEM ${catkin_INCLUDE_DIRS})
+include_directories(SYSTEM ${SBPL_INCLUDE_DIRS})
 include_directories(include)
 
 add_library(
@@ -61,11 +66,8 @@ add_library(
     src/urdf_collision_model.cpp)
 
 target_link_libraries(sbpl_adaptive_collision_checking ${catkin_LIBRARIES})
-set_target_properties(sbpl_adaptive_collision_checking PROPERTIES COMPILE_FLAGS "-Wno-deprecated-declarations")
 
-add_executable(
-    sbpl_adaptive_collision_checking_test
-    src/test.cpp)
+add_executable(sbpl_adaptive_collision_checking_test src/test.cpp)
 target_link_libraries(
     sbpl_adaptive_collision_checking_test
     ${PROJECT_NAME}

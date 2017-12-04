@@ -1,12 +1,9 @@
-/*
- * common.h
- *
- *  Created on: Mar 30, 2016
- *      Author: kalin
- */
+/// \author Kalin Gochev
 
 #ifndef SBPL_COLLISION_CHECKING_INCLUDE_SBPL_COLLISION_CHECKING_COMMON_H_
 #define SBPL_COLLISION_CHECKING_INCLUDE_SBPL_COLLISION_CHECKING_COMMON_H_
+
+#include <Eigen/Dense>
 
 namespace adim {
 

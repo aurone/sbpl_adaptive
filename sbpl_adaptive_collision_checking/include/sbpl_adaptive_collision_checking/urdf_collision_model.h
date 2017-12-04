@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** \author Kalin Gochev */
+/// \author Kalin Gochev
 
 #ifndef SBPL_ADAPTIVE_COLLISION_CHECKING_URDF_COLLISION_MODEL_H
 #define SBPL_ADAPTIVE_COLLISION_CHECKING_URDF_COLLISION_MODEL_H
@@ -46,6 +46,9 @@
 #include <smpl/forward.h>
 #include <sbpl/sbpl_exception.h>
 #include <urdf/model.h>
+#include <moveit/robot_model/robot_model.h>
+#include <moveit/robot_state/robot_state.h>
+#include <moveit/robot_model_loader/robot_model_loader.h>
 
 // project includes
 #include <sbpl_adaptive_collision_checking/sbpl_collision_model.h>

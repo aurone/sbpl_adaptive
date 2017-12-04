@@ -1,5 +1,5 @@
-#ifndef _SBPL_COLLISION_SPACE_
-#define _SBPL_COLLISION_SPACE_
+#ifndef SBPL_ADAPTIVE_COLLISION_CHECKING_SBPL_COLLISION_SPACE_H
+#define SBPL_ADAPTIVE_COLLISION_CHECKING_SBPL_COLLISION_SPACE_H
 
 // standard includes
 #include <cmath>
@@ -25,7 +25,7 @@
 
 namespace adim {
 
-SBPL_CLASS_FORWARD(SBPLCollisionSpace)
+SBPL_CLASS_FORWARD(SBPLCollisionSpace);
 
 class SBPLCollisionSpace
 {

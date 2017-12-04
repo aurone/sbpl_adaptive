@@ -1,12 +1,7 @@
-/*
- * interpolation.h
- *
- *  Created on: Mar 15, 2016
- *      Author: kalin
- */
+/// \author Kalin Gochev
 
-#ifndef SRC_SBPL_COLLISION_CHECKING_INCLUDE_SBPL_COLLISION_CHECKING_INTERPOLATION_H_
-#define SRC_SBPL_COLLISION_CHECKING_INCLUDE_SBPL_COLLISION_CHECKING_INTERPOLATION_H_
+#ifndef SBPL_ADAPTIVE_COLLISION_CHECKING_INTERPOLATION_H
+#define SBPL_ADAPTIVE_COLLISION_CHECKING_INTERPOLATION_H
 
 #include <math.h>
 #include <angles/angles.h>
@@ -34,4 +29,4 @@ inline static double ALERP(double a0, double a1, double t)
 
 } // namespace adim
 
-#endif /* SRC_SBPL_COLLISION_CHECKING_INCLUDE_SBPL_COLLISION_CHECKING_INTERPOLATION_H_ */
+#endif
