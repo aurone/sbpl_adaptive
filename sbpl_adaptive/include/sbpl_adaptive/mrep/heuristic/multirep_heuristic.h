@@ -5,9 +5,11 @@
 #include <sbpl/heuristics/heuristic.h>
 #include <smpl/forward.h>
 
+#include <sbpl_adaptive/mrep/graph/multirep_adaptive_discrete_space.h>
+
 namespace adim {
 
-SBPL_CLASS_FORWARD(MultiRepHeuristic)
+SBPL_CLASS_FORWARD(MultiRepHeuristic);
 
 class MultiRepHeuristic : public Heuristic
 {
@@ -20,7 +22,7 @@ public:
     virtual bool IsDefinedForRepresentation(int dim_id) const = 0;
 };
 
-SBPL_CLASS_FORWARD(MultiRepEmbeddedHeuristic)
+SBPL_CLASS_FORWARD(MultiRepEmbeddedHeuristic);
 
 class MultiRepEmbeddedHeuristic : public MultiRepHeuristic
 {
