@@ -208,6 +208,9 @@ bool URDFCollisionModel::checkLimits(const URDFModelCoords &coords) const
         {
             continue;
         }
+        if (joint->getType() == moveit::core::JointModel::FLOATING) {
+            continue;
+        }
 
         if (!robot_state_->satisfiesPositionBounds(joint)) {
             return false;
