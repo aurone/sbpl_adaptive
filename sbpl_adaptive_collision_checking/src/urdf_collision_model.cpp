@@ -1337,28 +1337,13 @@ bool URDFCollisionModel::computeShapeBoundingSpheres(
     case shapes::MESH: {
         auto &obj = dynamic_cast<const shapes::Mesh&>(shape);
 
-        std::vector<Eigen::Vector3d> vert;
-        std::vector<int> tri;
-
-        for (int v = 0; v < obj.vertex_count; v++) {
-            double x = obj.vertices[3 * v];
-            double y = obj.vertices[3 * v + 1];
-            double z = obj.vertices[3 * v + 2];
-            vert.push_back(Eigen::Vector3d(x, y, z));
-        }
-
-        for (int t = 0; t < obj.triangle_count; t++) {
-            tri.push_back(obj.triangles[3 * t]);
-            tri.push_back(obj.triangles[3 * t + 1]);
-            tri.push_back(obj.triangles[3 * t + 2]);
-        }
-
-        /// bounding sphere strategy copy-pasted from old
-        /// SphereEncloser.h since it's being removed from
-        /// sbpl_geometry_utils
-        auto radius = sqrt(2.0) * res;
         std::vector<Eigen::Vector3d> centers;
-        sbpl::geometry::VoxelizeMesh(vert, tri, radius, centers, false);
+
+        sbpl::geometry::ComputeMeshBoundingSpheres(
+                obj.vertices, obj.vertex_count,
+                obj.triangles, obj.triangle_count,
+                res, centers);
+
         spheres.reserve(spheres.size() + centers.size());
         for (const auto &center : centers) {
             spheres.push_back(Sphere());
