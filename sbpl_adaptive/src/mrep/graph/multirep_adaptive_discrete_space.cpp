@@ -246,7 +246,7 @@ bool MultiRepAdaptiveDiscreteSpace::RegisterProjection(
 /// \param dimID The id of the start state representation
 /// \param state The state to use as the start state
 /// \return The id of the start state or -1 in the event of failure
-int MultiRepAdaptiveDiscreteSpace::SetStartCoords(
+int MultiRepAdaptiveDiscreteSpace::SetStartState(
     int dimID,
     const AdaptiveState *state)
 {
@@ -256,7 +256,7 @@ int MultiRepAdaptiveDiscreteSpace::SetStartCoords(
         return -1;
     }
 
-    int start_id = representations_[dimID]->SetStartCoords(state);
+    int start_id = representations_[dimID]->SetStartState(state);
     if (start_id == -1) {
         return -1;
     }
@@ -275,7 +275,7 @@ int MultiRepAdaptiveDiscreteSpace::SetStartCoords(
 /// \param dimID The id of the start state representation
 /// \param state The state to use as the start state
 /// \return The id of the start state or -1 in the event of failure
-int MultiRepAdaptiveDiscreteSpace::SetStartConfig(
+int MultiRepAdaptiveDiscreteSpace::SetStartCoords(
     int dimID,
     const ModelCoords *coords)
 {
@@ -285,7 +285,7 @@ int MultiRepAdaptiveDiscreteSpace::SetStartConfig(
         return -1;
     }
 
-    int start_id = representations_[dimID]->SetStartConfig(coords);
+    int start_id = representations_[dimID]->SetStartCoords(coords);
     if (start_id == -1) {
         return -1;
     }
@@ -304,7 +304,7 @@ int MultiRepAdaptiveDiscreteSpace::SetStartConfig(
 /// \param dimID The id of the goal state representation
 /// \param state The state to use as the goal state
 /// \return The id of the goal state or -1 in the event of failure
-int MultiRepAdaptiveDiscreteSpace::SetGoalCoords(
+int MultiRepAdaptiveDiscreteSpace::SetGoalState(
     int dimID,
     const AdaptiveState *state)
 {
@@ -314,7 +314,7 @@ int MultiRepAdaptiveDiscreteSpace::SetGoalCoords(
         return -1;
     }
 
-    int goal_id = representations_[dimID]->SetGoalCoords(state);
+    int goal_id = representations_[dimID]->SetGoalState(state);
     if (goal_id == -1) {
         return -1;
     }
@@ -333,7 +333,7 @@ int MultiRepAdaptiveDiscreteSpace::SetGoalCoords(
 /// \param dimID The id of the goal state representation
 /// \param state The state to use as the goal state
 /// \return The id of the goal state or -1 in the event of failure
-int MultiRepAdaptiveDiscreteSpace::SetGoalConfig(
+int MultiRepAdaptiveDiscreteSpace::SetGoalCoords(
     int dimID,
     const ModelCoords *coords)
 {
@@ -343,7 +343,7 @@ int MultiRepAdaptiveDiscreteSpace::SetGoalConfig(
         return -1;
     }
 
-    int GoalID = representations_[dimID]->SetGoalConfig(coords);
+    int GoalID = representations_[dimID]->SetGoalCoords(coords);
     if (GoalID == -1) {
         return -1;
     }

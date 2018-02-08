@@ -63,10 +63,10 @@ public:
 
     /// \name Start State and Goal Condition
     ///@{
-    int SetStartCoords(int dimID, const AdaptiveState *state);
-    int SetStartConfig(int dimID, const ModelCoords *coords);
-    int SetGoalCoords(int dimID, const AdaptiveState *state);
-    int SetGoalConfig(int dimID, const ModelCoords *coords);
+    int SetStartState(int dimID, const AdaptiveState *state);
+    int SetStartCoords(int dimID, const ModelCoords *coords);
+    int SetGoalState(int dimID, const AdaptiveState *state);
+    int SetGoalCoords(int dimID, const ModelCoords *coords);
 
     int GetStartStateID() const;
     int GetGoalStateID() const;

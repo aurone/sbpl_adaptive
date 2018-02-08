@@ -35,12 +35,12 @@ public:
     ///@{
 
     // return the state ID of the created start state
-    virtual int SetStartCoords(const AdaptiveState *state) = 0;
-    virtual int SetStartConfig(const ModelCoords *coords) = 0;
+    virtual int SetStartState(const AdaptiveState *state) = 0;
+    virtual int SetStartCoords(const ModelCoords *coords) = 0;
 
     // return the state ID of the created goal state
-    virtual int SetGoalCoords(const AdaptiveState *state) = 0;
-    virtual int SetGoalConfig(const ModelCoords *coords) = 0;
+    virtual int SetGoalState(const AdaptiveState *state) = 0;
+    virtual int SetGoalCoords(const ModelCoords *coords) = 0;
 
     virtual bool isGoalState(int StateID) const = 0;
 
@@ -69,8 +69,8 @@ public:
 
     ///@}
 
-    virtual bool IsValidStateData(const AdaptiveState *state) const = 0;
-    virtual bool IsValidConfig(const ModelCoords *coords) const = 0;
+    virtual bool IsValidState(const AdaptiveState *state) const = 0;
+    virtual bool IsValidCoords(const ModelCoords *coords) const = 0;
 
     virtual int GetGoalHeuristic(int stateID) const = 0;
 
@@ -82,7 +82,7 @@ public:
         bool bVerbose,
         FILE* fOut = stdout) const = 0;
 
-    virtual void PrintStateData(
+    virtual void PrintState(
         const AdaptiveState *state_data,
         bool bVerbose,
         FILE* fOut = stdout) const = 0;
