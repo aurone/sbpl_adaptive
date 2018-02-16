@@ -217,6 +217,10 @@ auto AdaptivePlanner::onPlanningState(
     std::vector<int> &sol)
     -> ReplanCode
 {
+    if (max_iterations_ != 0 && iteration_ >= max_iterations_) {
+        return ReplanCode::TimeLimitReached;
+    }
+
     if (iteration_ != last_plan_iter_) {
         ROS_INFO("=======================================");
         ROS_INFO("||          Iteration %03d            ||", iteration_);

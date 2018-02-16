@@ -105,6 +105,8 @@ public:
         std::vector<int>* solution_stateIDs_V,
         int* cost) override;
 
+    int set_max_iterations(int max_iterations) { max_iterations_ = max_iterations; }
+
     int set_goal(int goal_stateID) override;
 
     int set_start(int start_stateID) override;
@@ -151,6 +153,7 @@ private:
     ///@{
     double time_per_retry_plan_;
     double time_per_retry_track_;
+    int max_iterations_ = 0;
     ///@}
 
     /// \name Search Parameters
