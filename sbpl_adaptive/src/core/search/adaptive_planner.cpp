@@ -431,6 +431,16 @@ auto AdaptivePlanner::onTrackingState(
         stat_.setFinalEps(-1.0);
         stat_.setSuccess(false);
         stat_.setNumIterations(iteration_ + 1);
+
+        if (!track_sol_.empty()) {
+            int fail_state_id = track_sol_.back();
+            pending_spheres_.push_back(fail_state_id);
+        } else {
+            ROS_WARN("No spheres added this planning episode!");
+        }
+
+        iteration_++;
+        plan_mode_ = PlanPhase::Planning;
         return ReplanCode::NoPathExists;
     }
     else {
