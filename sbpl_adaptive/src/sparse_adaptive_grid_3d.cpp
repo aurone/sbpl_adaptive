@@ -388,9 +388,9 @@ visualization_msgs::MarkerArray SparseAdaptiveGrid3D::getAdaptiveGridVisualizati
             it->second.id = id++;
             it->second.type = visualization_msgs::Marker::CUBE_LIST;
             it->second.action = visualization_msgs::Marker::ADD;
-            it->second.scale.x = wx_to - wx_from;
-            it->second.scale.y = wy_to - wy_from;
-            it->second.scale.z = wz_to - wz_from;
+            it->second.scale.x = (wx_to - wx_from) - (1.0 - scale) * resolution();
+            it->second.scale.y = (wy_to - wy_from) - (1.0 - scale) * resolution();
+            it->second.scale.z = (wz_to - wz_from) - (1.0 - scale) * resolution();
             it->second.lifetime = ros::Duration(0.0);
             it->second.frame_locked = false;
             it->second.pose.orientation.w = 1.0;
