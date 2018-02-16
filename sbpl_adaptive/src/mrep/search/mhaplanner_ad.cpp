@@ -334,6 +334,13 @@ int MHAPlanner_AD::replan(
 
     if (m_open[0].emptyheap()) {
         ROS_DEBUG_NAMED(SLOG, "Anchor search exhausted");
+
+        int best_state_id = space_->getBestSeenState();
+        if (best_state_id >= 0) {
+            auto* best_seen_state = get_state(best_state_id);
+            extract_partial_path(solution, solcost, best_seen_state);
+        }
+
         return ReplanCode::NoPathExists;
     }
 
