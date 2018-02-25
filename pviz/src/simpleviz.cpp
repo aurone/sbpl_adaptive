@@ -186,7 +186,6 @@ auto MakeLineVisualization(
 {
     visualization_msgs::Marker marker;
 
-    marker.header.stamp = ros::Time::now();
     marker.header.frame_id = frame_id;
     marker.ns = ns;
     marker.id = id; id++;
