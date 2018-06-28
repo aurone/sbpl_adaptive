@@ -42,6 +42,10 @@ public:
     virtual int SetGoalState(const AdaptiveState *state) = 0;
     virtual int SetGoalCoords(const ModelCoords *coords) = 0;
 
+    virtual int SetUserCoords(const AdaptiveState *state) = 0;
+    virtual int SetUserConfig(const ModelCoords *coords) = 0;
+    virtual void setStuckState(int state_id) = 0;
+
     virtual bool isGoalState(int StateID) const = 0;
 
     ///@}

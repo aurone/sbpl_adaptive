@@ -83,6 +83,8 @@ struct AdaptiveHashEntry
     int stateID;              // the state ID
     int dimID;                // the representation ID
     AdaptiveState *stateData; // the state data specific to this dimensionality
+    AdaptiveHashEntry *BP;
+    bool userFlag = false;
 
     template <class T>
     T *dataAs() { return state_cast<T>(stateData); }
